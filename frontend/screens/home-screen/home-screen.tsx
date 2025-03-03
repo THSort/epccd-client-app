@@ -5,11 +5,11 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {LanguageToggle} from './components/language-toggle/language-toggle.tsx';
 import {AQISlider} from './components/aqi-slider/aqi-slider.tsx';
 import {LocationSelector} from './components/location-selector/location-selector.tsx';
-import { useLocationModal } from './components/location-modal/location-modal.types.ts';
-import { LocationModal } from './components/location-modal/location-modal.tsx';
+import {useLocationModal} from './components/location-modal/location-modal.types.ts';
+import {LocationModal} from './components/location-modal/location-modal.tsx';
 
 const HomeScreen = () => {
-    const { isModalOpen, openLocationModal, closeLocationModal } = useLocationModal();
+    const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
 
     const getLocationDisplay = () => {
         return (
@@ -71,7 +71,7 @@ const HomeScreen = () => {
 
     return (
         <View style={styles.container}>
-            {isModalOpen && <LocationModal visible={isModalOpen} onClose={closeLocationModal} />}
+            {isModalOpen && <LocationModal visible={isModalOpen} onClose={closeLocationModal}/>}
             {getLocationDisplay()}
             {getAqiValue()}
             {getAqiGradientMeter()}
