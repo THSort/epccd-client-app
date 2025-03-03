@@ -12,7 +12,7 @@ const areas = [
 export function LocationModal({visible, onClose}: LocationModalProps) {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const overlayOpacity = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(300)).current; // Start below the screen
+    const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen at bottom
 
     useEffect(() => {
         if (visible) {
@@ -47,11 +47,13 @@ export function LocationModal({visible, onClose}: LocationModalProps) {
     return (
         <Modal visible={visible} transparent animationType="none">
             <View style={styles.container}>
+                {/* Fading overlay */}
                 <Animated.View style={[styles.overlay, {opacity: overlayOpacity}]}/>
+
+                {/* Bottom sheet modal */}
                 <Animated.View style={[styles.modalContent, {transform: [{translateY: slideAnim}]}]}>
-                    {/* Center-Aligned Title */}
                     <View style={styles.header}>
-                        <Text style={styles.title}>Area</Text>
+                        <Text style={styles.title}>Select Area</Text>
                         <TouchableOpacity activeOpacity={0.7} onPress={onClose} style={styles.closeButton}>
                             <Text style={styles.closeButtonText}>X</Text>
                         </TouchableOpacity>
@@ -62,9 +64,10 @@ export function LocationModal({visible, onClose}: LocationModalProps) {
                         keyExtractor={(item) => item.name}
                         renderItem={({item}) => (
                             <View>
-                                <TouchableOpacity activeOpacity={0.7}
-                                                  onPress={() => setSelectedArea(item.name)}
-                                                  style={styles.areaButton}
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    onPress={() => setSelectedArea(item.name)}
+                                    style={styles.areaButton}
                                 >
                                     <Text style={styles.areaText}>{item.name}</Text>
                                 </TouchableOpacity>
