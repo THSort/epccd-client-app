@@ -44,10 +44,13 @@ const HomeScreen = () => {
     const getViewDetailedReportButton = (): ReactElement => {
         return (
             <View style={styles.buttonContainer}>
-                <View style={styles.viewButton}>
-                    <Icon name="info-circle" size={18} color="black" style={styles.viewButtonIcon}/>
-                    <Text style={styles.viewButtonText}>View Detailed Report</Text>
-                </View>
+                <TouchableOpacity activeOpacity={0.7}>
+                    <View style={styles.viewButton}>
+                        <Icon name="info-circle" size={18} color="black" style={styles.viewButtonIcon}/>
+                        <Text style={styles.viewButtonText}>View Detailed Report</Text>
+                    </View>
+                </TouchableOpacity>
+
             </View>
         );
     };
@@ -55,7 +58,7 @@ const HomeScreen = () => {
     const getSettingsIcon = () => {
         return (
             <View style={{alignItems: 'center', justifyContent: 'center'}}>
-                <TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.7}>
                     <Icon name="cog" size={40} color="#FFD700"/>
                 </TouchableOpacity>
             </View>

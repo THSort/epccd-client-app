@@ -5,27 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="61735cd4-247b-4afc-a4b2-ac20f8408f7f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/App.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/context/PanelNavigationContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/react-native.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/components/aqi-slider/aqi-slider.styles.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/components/aqi-slider/aqi-slider.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/components/aqi-slider/aqi-slider.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/components/language-toggle/language-toggle.styles.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/components/language-toggle/language-toggle.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/components/language-toggle/language-toggle.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/home-screen.styles.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/home-screen.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/screens/home-screen/home-screen.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/components/test.txt" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/App.styles.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ios/frontend.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/ios/frontend.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ios/frontend/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/ios/frontend/Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/screens/home-screen/home-screen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/screens/home-screen/home-screen.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +72,7 @@
       <option name="presentableId" value="Default" />
       <updated>1740975203583</updated>
       <workItem from="1740975204810" duration="46000" />
-      <workItem from="1741009767462" duration="8961000" />
+      <workItem from="1741009767462" duration="9194000" />
     </task>
     <servers />
   </component>
