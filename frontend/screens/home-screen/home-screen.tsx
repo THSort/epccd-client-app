@@ -4,8 +4,13 @@ import {styles} from './home-screen.styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {LanguageToggle} from './components/language-toggle/language-toggle.tsx';
 import {AQISlider} from './components/aqi-slider/aqi-slider.tsx';
+import {LocationSelector} from './components/location-selector/location-selector.tsx';
+import { useLocationModal } from './components/location-modal/location-modal.types.ts';
+import { LocationModal } from './components/location-modal/location-modal.tsx';
 
 const HomeScreen = () => {
+    const { isModalOpen, openLocationModal, closeLocationModal } = useLocationModal();
+
     const getLocationDisplay = () => {
         return (
             <View style={[styles.locationDisplayContainer, {marginTop: '35%'}]}>
@@ -64,21 +69,9 @@ const HomeScreen = () => {
         );
     };
 
-    const getDropdownSelector = (): ReactElement => {
-        return (
-            <TouchableOpacity style={styles.selector} onPress={() => {
-            }}>
-                <Icon name="map-marker" size={16} color="#FFD700" style={styles.icon}/>
-                <Text style={styles.selectedText} numberOfLines={1} ellipsizeMode="tail">
-                    {'Select an option'}
-                </Text>
-                <Icon name="chevron-down" size={12} color="#FFD700"/>
-            </TouchableOpacity>
-        );
-    };
-
     return (
         <View style={styles.container}>
+            {isModalOpen && <LocationModal visible={isModalOpen} onClose={closeLocationModal} />}
             {getLocationDisplay()}
             {getAqiValue()}
             {getAqiGradientMeter()}
@@ -86,7 +79,7 @@ const HomeScreen = () => {
             {getViewDetailedReportButton()}
             {getSettingsIcon()}
             <View style={[styles.homeScreenFooter, {marginTop: 50}]}>
-                {getDropdownSelector()}
+                <LocationSelector onOpenLocationModal={openLocationModal}/>
                 <LanguageToggle/>
             </View>
         </View>
