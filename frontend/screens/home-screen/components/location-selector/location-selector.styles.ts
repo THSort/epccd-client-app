@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
         elevation: 6, // Shadow for Android
     },
     selectedText: {
-        fontSize: 14,
+        fontSize: 18,
         color: '#FFD700', // Golden text
         flex: 1,
         marginHorizontal: 5,

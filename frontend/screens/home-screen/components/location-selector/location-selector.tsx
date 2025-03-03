@@ -10,7 +10,7 @@ export function LocationSelector({...props}: LocationSelectorProps): ReactElemen
     return (
         <View>
             <TouchableOpacity style={styles.selector} onPress={props.onOpenLocationModal}>
-                <Icon name="map-marker" size={16} color="#FFD700" style={styles.icon}/>
+                <Icon name="map-marker" size={18} color="#FFD700" style={styles.icon}/>
                 <Text style={styles.selectedText} numberOfLines={1} ellipsizeMode="tail">
                     {'Select an option'}
                 </Text>
