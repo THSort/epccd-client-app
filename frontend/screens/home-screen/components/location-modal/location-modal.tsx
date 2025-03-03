@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, TouchableOpacity, Modal, FlatList, Animated} from 'react-native';
+import {View, Text, TouchableOpacity, Modal, FlatList, Animated, Easing, TouchableWithoutFeedback} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import type {LocationModalProps} from './location-modal.types';
 import {styles} from './location-modal.styles';
 
@@ -12,76 +13,82 @@ const areas = [
 export function LocationModal({visible, onClose}: LocationModalProps) {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const overlayOpacity = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen at bottom
+    const slideAnim = useRef(new Animated.Value(400)).current;
 
     useEffect(() => {
         if (visible) {
             Animated.parallel([
-                Animated.timing(overlayOpacity, {
-                    toValue: 1,
-                    duration: 300,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(slideAnim, {
-                    toValue: 0,
-                    duration: 300,
-                    useNativeDriver: true,
-                }),
+                Animated.timing(overlayOpacity, {toValue: 1, duration: 300, useNativeDriver: true}),
+                Animated.timing(slideAnim, {toValue: 0, duration: 300, easing: Easing.out(Easing.quad), useNativeDriver: true}),
             ]).start();
         } else {
             Animated.parallel([
-                Animated.timing(overlayOpacity, {
-                    toValue: 0,
-                    duration: 200,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(slideAnim, {
-                    toValue: 300,
-                    duration: 200,
-                    useNativeDriver: true,
-                }),
+                Animated.timing(overlayOpacity, {toValue: 0, duration: 200, useNativeDriver: true}),
+                Animated.timing(slideAnim, {toValue: 400, duration: 200, useNativeDriver: true}),
             ]).start();
         }
     }, [visible]);
 
+    const toggleDropdown = (area: string) => {
+        setSelectedArea((prev) => (prev === area ? null : area));
+    };
+
     return (
         <Modal visible={visible} transparent animationType="none">
-            <View style={styles.container}>
-                {/* Fading overlay */}
-                <Animated.View style={[styles.overlay, {opacity: overlayOpacity}]}/>
+            <TouchableWithoutFeedback onPress={onClose}>
+                <View style={styles.container}>
+                    <Animated.View style={[styles.overlay, {opacity: overlayOpacity}]}/>
 
-                {/* Bottom sheet modal */}
-                <Animated.View style={[styles.modalContent, {transform: [{translateY: slideAnim}]}]}>
-                    <View style={styles.header}>
-                        <Text style={styles.title}>Select Area</Text>
-                        <TouchableOpacity activeOpacity={0.7} onPress={onClose} style={styles.closeButton}>
-                            <Text style={styles.closeButtonText}>X</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <FlatList
-                        data={areas}
-                        keyExtractor={(item) => item.name}
-                        renderItem={({item}) => (
-                            <View>
-                                <TouchableOpacity
-                                    activeOpacity={0.7}
-                                    onPress={() => setSelectedArea(item.name)}
-                                    style={styles.areaButton}
-                                >
-                                    <Text style={styles.areaText}>{item.name}</Text>
+                    {/* Bottom Sheet */}
+                    <TouchableWithoutFeedback>
+                        <Animated.View style={[styles.modalContent, {transform: [{translateY: slideAnim}]}]}>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <Icon name="map-marker" size={20} color="#FFD700"/>
+                                <Text style={styles.title}>Area</Text>
+                                <TouchableOpacity activeOpacity={0.7} onPress={onClose} style={styles.closeButton}>
+                                    <Icon name="close" size={22} color="#FFD700"/>
                                 </TouchableOpacity>
-                                {selectedArea === item.name &&
-                                    item.locations.map((location) => (
-                                        <TouchableOpacity activeOpacity={0.7} key={location} style={styles.locationButton}>
-                                            <Text style={styles.locationText}>{location}</Text>
-                                        </TouchableOpacity>
-                                    ))}
                             </View>
-                        )}
-                    />
-                </Animated.View>
-            </View>
+
+                            <View style={styles.divider}/>
+
+                            {/* Areas List */}
+                            <FlatList
+                                data={areas}
+                                keyExtractor={(item) => item.name}
+                                renderItem={({item}) => {
+                                    const isExpanded = selectedArea === item.name;
+                                    return (
+                                        <View>
+                                            {/* Area Button */}
+                                            <TouchableOpacity
+                                                activeOpacity={0.7}
+                                                onPress={() => toggleDropdown(item.name)}
+                                                style={styles.areaButton}
+                                            >
+                                                <Text style={styles.areaText}>{item.name}</Text>
+                                                <Icon name={isExpanded ? 'chevron-up' : 'chevron-down'} size={18} color="#FFD700"/>
+                                            </TouchableOpacity>
+
+                                            {/* Locations (Dropdown) */}
+                                            {isExpanded && (
+                                                <Animated.View style={styles.locationList}>
+                                                    {item.locations.map((location) => (
+                                                        <TouchableOpacity key={location} style={styles.locationButton}>
+                                                            <Text style={styles.locationText}>{location}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </Animated.View>
+                                            )}
+                                        </View>
+                                    );
+                                }}
+                            />
+                        </Animated.View>
+                    </TouchableWithoutFeedback>
+                </View>
+            </TouchableWithoutFeedback>
         </Modal>
     );
 }

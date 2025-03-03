@@ -1,62 +1,68 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'flex-end', // Align at the bottom
+        justifyContent: 'flex-end', // Align modal to bottom
         alignItems: 'center',
     },
     overlay: {
+        position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.5)', // White overlay with opacity
-        position: 'absolute',
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
     },
     modalContent: {
-        width: '100%',
         backgroundColor: '#000',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        padding: 20,
-        maxHeight: '80%', // Limits height for better UX
+        paddingVertical: 20,
+        width: '100%',
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative',
+        justifyContent: 'center',
         paddingBottom: 10,
+        position: 'relative',
     },
     title: {
         color: '#FFD700',
         fontSize: 18,
         fontWeight: 'bold',
-        textAlign: 'center',
+        marginLeft: 5,
     },
     closeButton: {
         position: 'absolute',
-        right: 10,
+        right: 15,
         top: 0,
     },
-    closeButtonText: {
-        color: '#FFD700',
-        fontSize: 18,
+    divider: {
+        width: '100%', // Full width
+        height: 1,
+        backgroundColor: '#FFD700',
+        marginVertical: 10,
     },
     areaButton: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#FFD700',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
     },
     areaText: {
         color: '#FFD700',
-        fontSize: 16,
+        fontSize: 20,
+    },
+    locationList: {
+        backgroundColor: '#111',
     },
     locationButton: {
-        padding: 10,
-        paddingLeft: 20,
+        paddingVertical: 15,
+        paddingHorizontal: 35,
     },
     locationText: {
         color: '#FFD700',
-        fontSize: 14,
+        fontSize: 18,
     },
 });
