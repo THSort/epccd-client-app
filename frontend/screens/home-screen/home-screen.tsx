@@ -17,7 +17,7 @@ const fetchAqiValue = async (location: string | undefined): Promise<number> => {
     return new Promise((resolve) => {
         setTimeout(() => {
             console.log(`Fetching AQI for location: ${location}`);
-            resolve(156); // Simulated AQI value
+            resolve(DEFAULT_AQI); // Simulated AQI value
         }, 1000); // Simulated delay of 1 second
     });
 };
@@ -98,8 +98,8 @@ const HomeScreen = () => {
                 <Text style={[styles.aqiText, {color: aqiColor}]}>AQI</Text>
             </View>
 
-            <View style={[styles.aqiGradientMeter, {marginTop: 30}]}>
-                <AQISlider/>
+            <View style={[styles.aqiGradientMeter, {marginTop: 40}]}>
+                <AQISlider aqi={aqiValue}/>
             </View>
 
             <View style={[styles.aqiLevelInfoContainer, {marginTop: 30}]}>

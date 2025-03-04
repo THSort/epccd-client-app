@@ -22,4 +22,13 @@ export const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 5,
     },
+    arrowContainer: {
+        position: 'absolute',
+        top: -28, // Adjust this to position the arrow below the gradient bar
+        transform: [{ translateX: -5 }], // Centers the arrow
+    },
+    arrow: {
+        fontSize: 24,
+        color: 'white',
+    },
 });

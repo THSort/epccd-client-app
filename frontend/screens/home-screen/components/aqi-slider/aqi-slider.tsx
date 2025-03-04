@@ -1,10 +1,19 @@
 import React from 'react';
-import {View} from 'react-native';
+import { View, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Slider from '@react-native-community/slider';
-import {styles} from './aqi-slider.styles.ts';
+import { styles } from './aqi-slider.styles.ts';
 
-export function AQISlider() {
+interface AQISliderProps {
+    aqi: number;
+}
+
+export function AQISlider({ aqi }: AQISliderProps) {
+    // Ensure AQI value stays within bounds
+    const normalizedAqi = Math.min(Math.max(aqi, 0), 800);
+
+    // Calculate arrow position as a percentage of the track width
+    const arrowPosition = (normalizedAqi / 800) * 100;
+
     return (
         <View style={styles.container}>
             <View style={styles.sliderContainer}>
@@ -14,17 +23,10 @@ export function AQISlider() {
                     end={{ x: 1, y: 0.5 }}
                     style={styles.gradientTrack}
                 />
-                <Slider
-                    style={styles.slider}
-                    minimumValue={0}
-                    maximumValue= {300}
-                    step={1}
-                    value={40}
-                    onValueChange={()=>{}}
-                    minimumTrackTintColor="transparent"
-                    maximumTrackTintColor="transparent"
-                    thumbTintColor="#fff"
-                />
+                {/* Arrow Indicator */}
+                <View style={[styles.arrowContainer, { left: `${arrowPosition}%` }]}>
+                    <Text style={styles.arrow}>▼</Text>
+                </View>
             </View>
         </View>
     );
