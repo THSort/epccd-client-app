@@ -94,5 +94,10 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-evenly',
     },
-
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000', // Match your theme
+    },
 });

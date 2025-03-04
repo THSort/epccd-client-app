@@ -1,9 +1,9 @@
-import { StyleSheet } from 'react-native';
+import {StyleSheet} from 'react-native';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'flex-end', // Align modal to bottom
+        justifyContent: 'flex-end',
         alignItems: 'center',
     },
     overlay: {
@@ -38,7 +38,7 @@ export const styles = StyleSheet.create({
         top: 0,
     },
     divider: {
-        width: '100%', // Full width
+        width: '100%',
         height: 1,
         backgroundColor: '#FFD700',
         marginVertical: 10,
@@ -64,5 +64,9 @@ export const styles = StyleSheet.create({
     locationText: {
         color: '#FFD700',
         fontSize: 18,
+    },
+    selectedLocation: {
+        backgroundColor: '#333', // Brighter background for selected location
+        borderRadius: 5,
     },
 });

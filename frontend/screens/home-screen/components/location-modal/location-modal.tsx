@@ -1,19 +1,33 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, TouchableOpacity, Modal, FlatList, Animated, Easing, TouchableWithoutFeedback} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import type {LocationModalProps} from './location-modal.types';
+import type {Area, LocationModalProps} from './location-modal.types';
 import {styles} from './location-modal.styles';
+import {useSelectedLocation} from '../../../../context/SelectedLocationContext.tsx';
 
-const areas = [
-    {name: 'Lahore', locations: ['Lahore location 1', 'Lahore location 2', 'Lahore location 3', 'Lahore location 4']},
-    {name: 'Islamabad', locations: ['Islamabad location 1', 'Islamabad location 2']},
-    {name: 'Karachi', locations: ['Karachi location 1', 'Karachi location 2']},
-];
-
-export function LocationModal({visible, onClose}: LocationModalProps) {
+export function LocationModal({visible, onClose, onLocationSelected}: LocationModalProps) {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(400)).current;
+
+    const {selectedLocation, setSelectedLocation} = useSelectedLocation();
+
+    const getAreasForList = (): Area[] => {
+        return [
+            {
+                name: 'Lahore',
+                locations: ['Lahore location 1', 'Lahore location 2', 'Lahore location 3', 'Lahore location 4'],
+            },
+            {
+                name: 'Islamabad',
+                locations: ['Islamabad location 1', 'Islamabad location 2'],
+            },
+            {
+                name: 'Karachi',
+                locations: ['Karachi location 1', 'Karachi location 2'],
+            },
+        ];
+    };
 
     useEffect(() => {
         if (visible) {
@@ -55,7 +69,7 @@ export function LocationModal({visible, onClose}: LocationModalProps) {
 
                             {/* Areas List */}
                             <FlatList
-                                data={areas}
+                                data={getAreasForList()}
                                 keyExtractor={(item) => item.name}
                                 renderItem={({item}) => {
                                     const isExpanded = selectedArea === item.name;
@@ -74,11 +88,24 @@ export function LocationModal({visible, onClose}: LocationModalProps) {
                                             {/* Locations (Dropdown) */}
                                             {isExpanded && (
                                                 <Animated.View style={styles.locationList}>
-                                                    {item.locations.map((location) => (
-                                                        <TouchableOpacity key={location} style={styles.locationButton}>
-                                                            <Text style={styles.locationText}>{location}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
+                                                    {item.locations.map((location) => {
+                                                        const isSelected = location === selectedLocation;
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={location}
+                                                                style={[
+                                                                    styles.locationButton,
+                                                                    isSelected && styles.selectedLocation, // Apply selected style
+                                                                ]}
+                                                                onPress={() => {
+                                                                    setSelectedLocation(location);
+                                                                    onLocationSelected();
+                                                                }}
+                                                            >
+                                                                <Text style={styles.locationText}>{location}</Text>
+                                                            </TouchableOpacity>
+                                                        );
+                                                    })}
                                                 </Animated.View>
                                             )}
                                         </View>
