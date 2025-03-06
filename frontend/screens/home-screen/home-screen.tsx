@@ -9,6 +9,7 @@ import {useLocationModal} from './components/location-modal/location-modal.types
 import {LocationModal} from './components/location-modal/location-modal.tsx';
 import {useSelectedLocation} from '../../context/SelectedLocationContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
+import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 
 const DEFAULT_AQI = 156;
 
@@ -20,25 +21,6 @@ const fetchAqiValue = async (location: string | undefined): Promise<number> => {
             resolve(DEFAULT_AQI); // Simulated AQI value
         }, 1000); // Simulated delay of 1 second
     });
-};
-
-const getAqiColor = (aqi: number) => {
-    if (aqi <= 50) {
-        return '#00E400';
-    }
-    if (aqi <= 100) {
-        return '#FFFF00';
-    }
-    if (aqi <= 150) {
-        return '#FF7E00';
-    }
-    if (aqi <= 200) {
-        return '#FF0000';
-    }
-    if (aqi <= 300) {
-        return '#8F3F97';
-    }
-    return '#7E0023';
 };
 
 const HomeScreen = () => {
