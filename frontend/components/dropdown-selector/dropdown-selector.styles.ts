@@ -19,19 +19,19 @@ export const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 6, // Shadow for Android
     },
-    locationLabel: {
+    label: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#FFD700', // Golden text
         flex: 1,
     },
-    selectedLocation: {
+    selectedItem: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'red',
     },
-    selectedLocationText: {
+    selectedItemText: {
         fontSize: 18,
         color: '#FFD700', // Golden text
         marginLeft: 5,

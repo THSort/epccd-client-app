@@ -3,14 +3,11 @@ import {View, Text, TouchableOpacity, Modal, FlatList, Animated, Easing, Touchab
 import Icon from 'react-native-vector-icons/FontAwesome';
 import type {Area, LocationModalProps} from './location-modal.types';
 import {styles} from './location-modal.styles';
-import {useSelectedLocation} from '../../../../context/SelectedLocationContext.tsx';
 
-export function LocationModal({visible, onClose, onLocationSelected}: LocationModalProps) {
+export function LocationModal({visible, onClose, onLocationSelected, ...props}: LocationModalProps) {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(400)).current;
-
-    const {selectedLocation, setSelectedLocation} = useSelectedLocation();
 
     const getAreasForList = (): Area[] => {
         return [
@@ -48,7 +45,9 @@ export function LocationModal({visible, onClose, onLocationSelected}: LocationMo
     };
 
     return (
-        <Modal visible={visible} transparent animationType="none">
+        <Modal onRequestClose={()=>{
+            onClose();
+        }} visible={visible} transparent animationType="none">
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={styles.container}>
                     <Animated.View style={[styles.overlay, {opacity: overlayOpacity}]}/>
@@ -89,7 +88,7 @@ export function LocationModal({visible, onClose, onLocationSelected}: LocationMo
                                             {isExpanded && (
                                                 <Animated.View style={styles.locationList}>
                                                     {item.locations.map((location) => {
-                                                        const isSelected = location === selectedLocation;
+                                                        const isSelected = location === props.selectedLocation;
                                                         return (
                                                             <TouchableOpacity
                                                                 key={location}
@@ -98,8 +97,7 @@ export function LocationModal({visible, onClose, onLocationSelected}: LocationMo
                                                                     isSelected && styles.selectedLocation, // Apply selected style
                                                                 ]}
                                                                 onPress={() => {
-                                                                    setSelectedLocation(location);
-                                                                    onLocationSelected();
+                                                                    onLocationSelected(location);
                                                                 }}
                                                             >
                                                                 <Text style={styles.locationText}>{location}</Text>

@@ -4,7 +4,8 @@ import { Location } from '../../../../App.types';
 export interface LocationModalProps {
     visible: boolean;
     onClose: () => void;
-    onLocationSelected(): void;
+    selectedLocation?: Location;
+    onLocationSelected(location: Location): void;
 }
 
 export type Area = {

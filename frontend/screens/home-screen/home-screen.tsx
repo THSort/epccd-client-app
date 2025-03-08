@@ -25,7 +25,7 @@ const fetchAqiValue = async (location: string | undefined): Promise<number> => {
 
 const HomeScreen = () => {
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
-    const {selectedLocation, isLoadingLocation} = useSelectedLocation();
+    const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {isLoadingLanguage} = useSelectedLanguage();
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
@@ -64,7 +64,11 @@ const HomeScreen = () => {
         <View style={styles.container}>
             {isModalOpen && (
                 <LocationModal
-                    onLocationSelected={() => closeLocationModal()}
+                    selectedLocation={selectedLocation}
+                    onLocationSelected={(location) => {
+                        setSelectedLocation(location);
+                        closeLocationModal();
+                    }}
                     visible={isModalOpen}
                     onClose={closeLocationModal}
                 />

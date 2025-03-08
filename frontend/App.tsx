@@ -5,6 +5,7 @@ import {styles} from './App.styles.ts';
 import {SelectedLocationProvider} from './context/SelectedLocationContext.tsx';
 import {SelectedLanguageProvider} from './context/SelectedLanguageContext.tsx';
 import {AirQualityDetailedReport} from './screens/air-quality-detailed-report/air-quality-detailed-report.tsx';
+import {AirQualityHistory} from './screens/air-quality-history/air-quality-history.tsx';
 
 function App(): React.JSX.Element {
     return (
@@ -12,7 +13,8 @@ function App(): React.JSX.Element {
             <SelectedLanguageProvider>
                 <View style={styles.container}>
                     {/*<HomeScreen/>*/}
-                    <AirQualityDetailedReport/>
+                    {/*<AirQualityDetailedReport/>*/}
+                    <AirQualityHistory/>
                 </View>
             </SelectedLanguageProvider>
         </SelectedLocationProvider>
