@@ -8,10 +8,22 @@ import {useLocationModal} from '../home-screen/components/location-modal/locatio
 import {LocationSelector} from '../home-screen/components/location-selector/location-selector.tsx';
 import {LocationModal} from '../home-screen/components/location-modal/location-modal.tsx';
 import {DropdownSelector} from '../../components/dropdown-selector/dropdown-selector.tsx';
+import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
+import {PollutantModal} from './pollutant-modal/pollutant-modal.tsx';
 
 export function AirQualityHistory({...props}: AirQualityHistoryProps): ReactElement {
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const [selectedLocation, setSelectedLocation] = useState(props.selectedLocation);
+    const [isPollutantModalOpen, setIsPollutantModalOpen] = useState(false);
+    const [selectedPollutant, setSelectedPollutant] = useState<Pollutant>(Pollutant.PM2_5);
+
+    const openPollutantModal = () => {
+        setIsPollutantModalOpen(true);
+    };
+
+    const closePollutantModal = () => {
+        setIsPollutantModalOpen(false);
+    };
 
     const getHeader = () => {
         return (
@@ -35,8 +47,8 @@ export function AirQualityHistory({...props}: AirQualityHistoryProps): ReactElem
             <View style={{marginTop: 12}}>
                 <DropdownSelector
                     label="Pollutant"
-                    text={'pm2.5'}
-                    onPress={()=>{}}
+                    text={selectedPollutant}
+                    onPress={openPollutantModal}
                     isFullWidth
                     showLabel
                 />
@@ -57,11 +69,21 @@ export function AirQualityHistory({...props}: AirQualityHistoryProps): ReactElem
                     onClose={closeLocationModal}
                 />
             )}
+            {isPollutantModalOpen && (
+                <PollutantModal
+                    visible={isPollutantModalOpen}
+                    onClose={closePollutantModal}
+                    selectedPollutant={selectedPollutant}
+                    onPollutantSelected={(pollutant) => {
+                        setSelectedPollutant(pollutant);
+                        closePollutantModal();
+                    }}
+                />
+            )}
             {getHeader()}
             <View style={styles.content}>
                 {getLocationSelector()}
                 {getPollutantSelector()}
-
             </View>
         </View>
     );
