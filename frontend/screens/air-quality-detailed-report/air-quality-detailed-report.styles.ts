@@ -16,9 +16,12 @@ export const styles = StyleSheet.create({
         color: 'yellow',
         marginLeft: 10,
     },
+    locationSelector: {
+        paddingHorizontal: 24,
+    },
     aqiContainer: {
         paddingHorizontal: 24,
-        paddingTop: 10,
+        paddingTop: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',

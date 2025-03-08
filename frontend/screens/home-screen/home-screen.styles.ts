@@ -5,6 +5,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: 'black',
     },
     locationDisplayContainer: {
         display: 'flex',

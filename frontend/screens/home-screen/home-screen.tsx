@@ -10,6 +10,8 @@ import {LocationModal} from './components/location-modal/location-modal.tsx';
 import {useSelectedLocation} from '../../context/SelectedLocationContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
+import {useNavigation} from '@react-navigation/native';
+import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 
 const DEFAULT_AQI = 156;
 
@@ -24,6 +26,7 @@ const fetchAqiValue = async (location: string | undefined): Promise<number> => {
 };
 
 const HomeScreen = () => {
+    const navigation = useNavigation<HomeScreenNavigationProps>();
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {isLoadingLanguage} = useSelectedLanguage();
@@ -96,7 +99,9 @@ const HomeScreen = () => {
             </View>
 
             <View style={[styles.viewDetailedReportButtonContainer, {marginTop: 70}]}>
-                <TouchableOpacity activeOpacity={0.7}>
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate('AirQualityDetailedReport');
+                }} activeOpacity={0.7}>
                     <View style={styles.viewDetailedReportButton}>
                         <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
                         <Text style={styles.viewDetailedReportButtonText}>View Detailed Report</Text>
