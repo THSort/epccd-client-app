@@ -3,8 +3,6 @@ import {fetchEpaMonitorsDataForLocation} from "../services/epaMonitorsData.servi
 import logger from "../utils/logger";
 
 export const getEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
-    console.log('++++ getEpaMonitorsDataForLocation ++++');
-
     try {
         const location = Number(req.params.location);
 
