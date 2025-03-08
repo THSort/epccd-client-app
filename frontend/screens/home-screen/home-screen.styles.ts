@@ -99,6 +99,19 @@ export const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#000', // Match your theme
+        backgroundColor: '#1E1E1E',
+    },
+    errorContainer: {
+        padding: 20,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+        marginHorizontal: 20,
+        alignItems: 'center',
+    },
+    errorText: {
+        color: '#FF0000',
+        fontSize: 16,
+        textAlign: 'center',
+        fontWeight: '500',
     },
 });

@@ -3,6 +3,7 @@ import {View, Text, TouchableOpacity, Modal, FlatList, Animated, Easing, Touchab
 import Icon from 'react-native-vector-icons/FontAwesome';
 import type {Area, LocationModalProps} from './location-modal.types';
 import {styles} from './location-modal.styles';
+import {Location} from '../../../../App.types';
 
 export function LocationModal({visible, onClose, onLocationSelected, ...props}: LocationModalProps) {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
@@ -13,15 +14,27 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
         return [
             {
                 name: 'Lahore',
-                locations: ['Lahore location 1', 'Lahore location 2', 'Lahore location 3', 'Lahore location 4'],
+                locations: [
+                    {locationCode: '1', locationCity: 'Lahore', locationName: 'Sagian Road, Lahore'},
+                    {locationCode: '2', locationCity: 'Lahore', locationName: 'Mahmood Booti, Lahore'},
+                    {locationCode: '3', locationCity: 'Lahore', locationName: 'WWF Ferozpur Road, Lahore'},
+                    {locationCode: '4', locationCity: 'Lahore', locationName: 'Egerton Road, Lahore'},
+                    {locationCode: '5', locationCity: 'Lahore', locationName: 'Hill Park, Lahore'},
+                ],
             },
             {
                 name: 'Islamabad',
-                locations: ['Islamabad location 1', 'Islamabad location 2'],
+                locations: [
+                    // { locationCode: 'ISB1', locationCity: 'Islamabad', locationName: 'Islamabad location 1' },
+                    // { locationCode: 'ISB2', locationCity: 'Islamabad', locationName: 'Islamabad location 2' },
+                ],
             },
             {
                 name: 'Karachi',
-                locations: ['Karachi location 1', 'Karachi location 2'],
+                locations: [
+                    // { locationCode: 'KHI1', locationCity: 'Karachi', locationName: 'Karachi location 1' },
+                    // { locationCode: 'KHI2', locationCity: 'Karachi', locationName: 'Karachi location 2' },
+                ],
             },
         ];
     };
@@ -38,14 +51,22 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                 Animated.timing(slideAnim, {toValue: 400, duration: 200, useNativeDriver: true}),
             ]).start();
         }
-    }, [visible]);
+    }, [visible, overlayOpacity, slideAnim]);
 
     const toggleDropdown = (area: string) => {
         setSelectedArea((prev) => (prev === area ? null : area));
     };
 
+    // Helper function to check if two locations are the same
+    const isSameLocation = (loc1: Location | undefined, loc2: Location): boolean => {
+        if (!loc1) {
+            return false;
+        }
+        return loc1.locationCode === loc2.locationCode;
+    };
+
     return (
-        <Modal onRequestClose={()=>{
+        <Modal onRequestClose={() => {
             onClose();
         }} visible={visible} transparent animationType="none">
             <TouchableWithoutFeedback onPress={onClose}>
@@ -88,10 +109,10 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                             {isExpanded && (
                                                 <Animated.View style={styles.locationList}>
                                                     {item.locations.map((location) => {
-                                                        const isSelected = location === props.selectedLocation;
+                                                        const isSelected = isSameLocation(props.selectedLocation, location);
                                                         return (
                                                             <TouchableOpacity
-                                                                key={location}
+                                                                key={location.locationCode}
                                                                 style={[
                                                                     styles.locationButton,
                                                                     isSelected && styles.selectedLocation, // Apply selected style
@@ -100,7 +121,7 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                                                     onLocationSelected(location);
                                                                 }}
                                                             >
-                                                                <Text style={styles.locationText}>{location}</Text>
+                                                                <Text style={styles.locationText}>{location.locationName}</Text>
                                                             </TouchableOpacity>
                                                         );
                                                     })}

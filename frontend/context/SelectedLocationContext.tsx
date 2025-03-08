@@ -23,7 +23,7 @@ export const SelectedLocationProvider: React.FC<{ children: React.ReactNode }> =
             try {
                 const storedLocation = await AsyncStorage.getItem('selected_location');
                 if (storedLocation) {
-                    setSelectedLocationState(storedLocation as Location);
+                    setSelectedLocationState(JSON.parse(storedLocation) as Location);
                 }
             } catch (error) {
                 console.error('Error loading location:', error);
@@ -38,7 +38,7 @@ export const SelectedLocationProvider: React.FC<{ children: React.ReactNode }> =
     // Function to update both context and AsyncStorage
     const setSelectedLocation = async (location: Location) => {
         setSelectedLocationState(location);
-        await AsyncStorage.setItem('selected_location', location);
+        await AsyncStorage.setItem('selected_location', JSON.stringify(location));
     };
 
     return (

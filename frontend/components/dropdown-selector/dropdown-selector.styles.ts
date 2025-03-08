@@ -29,13 +29,13 @@ export const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'red',
     },
     selectedItemText: {
         fontSize: 18,
         color: '#FFD700', // Golden text
         marginLeft: 5,
         marginRight: 10,
+        maxWidth: 200,
     },
     icon: {
         marginRight: 3,

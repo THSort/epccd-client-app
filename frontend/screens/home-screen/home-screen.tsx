@@ -10,20 +10,12 @@ import {LocationModal} from './components/location-modal/location-modal.tsx';
 import {useSelectedLocation} from '../../context/SelectedLocationContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
+import {getAqiDescription} from '../../utils/aqi-description.util.ts';
+import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 
-const DEFAULT_AQI = 156;
-
-// Simulated backend API call to fetch AQI
-const fetchAqiValue = async (location: string | undefined): Promise<number> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log(`Fetching AQI for location: ${location}`);
-            resolve(DEFAULT_AQI); // Simulated AQI value
-        }, 1000); // Simulated delay of 1 second
-    });
-};
+const DEFAULT_AQI = 0;
 
 const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigationProps>();
@@ -33,18 +25,26 @@ const HomeScreen = () => {
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const loadAqi = async () => {
             if (!selectedLocation) {
+                setIsFetchingAqi(false);
                 return;
             }
+
             setIsFetchingAqi(true);
+            setError(null);
+
             try {
-                const aqi = await fetchAqiValue(selectedLocation);
-                setAqiValue(aqi);
+                const data = await fetchEpaMonitorsData(selectedLocation);
+                setAqiValue(data.PM2_5_AQI);
             } catch (error) {
                 console.error('Error fetching AQI:', error);
+                setError('Failed to load air quality data. Please try again later.');
+                // Set a default value in case of error
+                setAqiValue(DEFAULT_AQI);
             } finally {
                 setIsFetchingAqi(false);
             }
@@ -54,6 +54,7 @@ const HomeScreen = () => {
     }, [selectedLocation]);
 
     const aqiColor = getAqiColor(aqiValue);
+    const aqiDescription = getAqiDescription(aqiValue);
 
     if (isFetchingAqi || isLoadingLanguage || isLoadingLocation) {
         return (
@@ -79,24 +80,34 @@ const HomeScreen = () => {
 
             <View style={[styles.locationDisplayContainer, {marginTop: '35%'}]}>
                 <Icon name="map-marker" size={20} color="yellow" style={styles.locationDisplayIcon}/>
-                <Text style={styles.locationDisplayText}>{selectedLocation || 'Select Location'}</Text>
-            </View>
-
-            <View style={[styles.aqiValueContainer, {marginTop: 30}]}>
-                <Text style={[styles.aqiValueText, {color: aqiColor}]}>{aqiValue}</Text>
-                <Text style={[styles.aqiText, {color: aqiColor}]}>AQI</Text>
-            </View>
-
-            <View style={[styles.aqiGradientMeter, {marginTop: 40}]}>
-                <AQISlider aqi={aqiValue}/>
-            </View>
-
-            <View style={[styles.aqiLevelInfoContainer, {marginTop: 30}]}>
-                <Text style={[styles.aqiLevelInfoText, {color: aqiColor}]}>Moderate</Text>
-                <Text style={[styles.aqiLevelInfoMessageText, {color: aqiColor}]}>
-                    Do not be outdoors for more than 2 hours today
+                <Text style={styles.locationDisplayText}>
+                    {selectedLocation ? selectedLocation.locationName : 'Select Location'}
                 </Text>
             </View>
+
+            {error ? (
+                <View style={[styles.errorContainer, {marginTop: 30}]}>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>
+            ) : (
+                <>
+                    <View style={[styles.aqiValueContainer, {marginTop: 30}]}>
+                        <Text style={[styles.aqiValueText, {color: aqiColor}]}>{aqiValue}</Text>
+                        <Text style={[styles.aqiText, {color: aqiColor}]}>AQI</Text>
+                    </View>
+
+                    <View style={[styles.aqiGradientMeter, {marginTop: 40}]}>
+                        <AQISlider aqi={aqiValue}/>
+                    </View>
+
+                    <View style={[styles.aqiLevelInfoContainer, {marginTop: 30}]}>
+                        <Text style={[styles.aqiLevelInfoText, {color: aqiColor}]}>{aqiDescription.level}</Text>
+                        <Text style={[styles.aqiLevelInfoMessageText, {color: aqiColor}]}>
+                            {aqiDescription.message}
+                        </Text>
+                    </View>
+                </>
+            )}
 
             <View style={[styles.viewDetailedReportButtonContainer, {marginTop: 70}]}>
                 <TouchableOpacity onPress={() => {

@@ -9,7 +9,7 @@ export function LocationSelector({selectedLocation, onOpenLocationModal, showLoc
     return (
         <DropdownSelector
             label="Location"
-            text={selectedLocation ?? DEFAULT_LOCATION}
+            text={selectedLocation ? selectedLocation.locationName : DEFAULT_LOCATION}
             iconName="map-marker"
             onPress={onOpenLocationModal}
             isFullWidth={isFullWidth}
