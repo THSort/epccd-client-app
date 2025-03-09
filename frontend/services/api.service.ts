@@ -21,3 +21,24 @@ export const fetchEpaMonitorsData = async (location: Location): Promise<EpaMonit
     throw error;
   }
 };
+
+/**
+ * Fetches historical EPA Monitors data for a specific location over the past year
+ * @param location - The location object to fetch historical data for
+ * @param date - Optional date parameter (defaults to current date)
+ * @returns Array of EPA Monitors data for the past year
+ */
+export const fetchHistoricalEpaMonitorsData = async (location: Location, date?: string): Promise<EpaMonitorsApiResponse[]> => {
+  try {
+    const url = `${API_BASE_URL}/epaMonitorsData/historical/${location.locationCode}`;
+    const params = date ? { date } : {};
+    
+    console.log(`Fetching historical data from: ${url}`, params);
+    
+    const response = await axios.get(url, { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching historical EPA Monitors data:', error);
+    throw error;
+  }
+};

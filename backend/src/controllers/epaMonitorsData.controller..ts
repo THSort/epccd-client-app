@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import {fetchCurrentEpaMonitorsDataForLocation} from "../services/epaMonitorsData.service";
+import {fetchCurrentEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataForLocation} from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
 
 export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
@@ -16,5 +16,23 @@ export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Re
             logger.error(`Unknown error while fetching EPA Monitors data for location ${req.query.location}`);
         }
         res.status(500).json({message: "Failed to fetch EPA Monitors data"});
+    }
+};
+
+export const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const location = Number(req.params.location);
+        const date = req.query.date as string || new Date().toISOString().split('T')[0]; // Default to current date if not provided
+        
+        const historicalData = await fetchHistoricalEpaMonitorsDataForLocation(location, date);
+        
+        res.json(historicalData);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error(`Error fetching historical EPA Monitors data for location ${req.params.location}: ${error.message}`);
+        } else {
+            logger.error(`Unknown error while fetching historical EPA Monitors data for location ${req.params.location}`);
+        }
+        res.status(500).json({message: "Failed to fetch historical EPA Monitors data"});
     }
 };

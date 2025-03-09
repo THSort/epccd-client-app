@@ -87,6 +87,39 @@ export const fetchCurrentEpaMonitorsDataForLocation = async (location: number): 
     }
 };
 
+// Fetch historical EPA Monitors Data for a location over the past year
+export const fetchHistoricalEpaMonitorsDataForLocation = async (location: number, currentDate: string): Promise<EpaMonitorsData[]> => {
+    try {
+        // Calculate the date one year ago from the current date
+        const currentDateObj = new Date(currentDate);
+        const oneYearAgo = new Date(currentDateObj);
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        
+        // Format the date to YYYY-MM-DD format
+        const oneYearAgoStr = oneYearAgo.toISOString().split('T')[0];
+        const currentDateStr = currentDateObj.toISOString().split('T')[0];
+        
+        logger.info(`Fetching historical EPA Monitors data for location ${location} from ${oneYearAgoStr} to ${currentDateStr}`);
+        
+        // Query MongoDB for historical data
+        const historicalData = await EpaMonitorsDataModel.find({
+            location: location,
+            // Use the datatime field which contains both date and time
+            datatime: {
+                $gte: `${oneYearAgoStr} 00:00:00`,
+                $lte: `${currentDateStr} 23:59:59`
+            }
+        }).sort({ datatime: 1 }).lean();
+        
+        logger.info(`Found ${historicalData.length} historical records for location ${location}`);
+        
+        return historicalData as EpaMonitorsData[];
+    } catch (error) {
+        logger.error(`Failed to fetch historical data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        throw new Error(`Database query failed for historical data for location ${location}`);
+    }
+};
+
 // 🟢 Store EPA Monitors Data in MongoDB
 const storeEpaMonitorsData = async (data: EpaMonitorsData) => {
     try {
