@@ -13,10 +13,11 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        top: 30,
     },
     locationDisplayText: {
         fontSize: 20,
-        lineHeight: 20,
+        lineHeight: 22,
         color: 'yellow',
         textAlign: 'center',
     },

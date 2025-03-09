@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {View, Text, TouchableOpacity, ActivityIndicator} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {styles} from './home-screen.styles';
@@ -25,33 +25,49 @@ const HomeScreen = () => {
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>('null');
+    const [error, setError] = useState<string | null>(null);
+    const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const loadAqi = useCallback(async () => {
+        if (!selectedLocation) {
+            setIsFetchingAqi(false);
+            return;
+        }
+
+        setIsFetchingAqi(true);
+        setError(null);
+
+        try {
+            const data = await fetchEpaMonitorsData(selectedLocation);
+            setAqiValue(data.PM2_5_AQI);
+            setError(null);
+        } catch (error) {
+            console.error('Error fetching AQI:', error);
+            setError('Failed to load air quality data. Please try again later.');
+            // Set a default value in case of error
+            setAqiValue(DEFAULT_AQI);
+        } finally {
+            setIsFetchingAqi(false);
+        }
+    }, [selectedLocation]);
 
     useEffect(() => {
-        const loadAqi = async () => {
-            if (!selectedLocation) {
-                setIsFetchingAqi(false);
-                return;
-            }
+        // Initial data load
+        loadAqi();
 
-            setIsFetchingAqi(true);
-            // setError(null);
+        // Set up polling every 5 minutes (300000 ms)
+        pollingIntervalRef.current = setInterval(() => {
+            console.log('Polling for updated AQI data...');
+            loadAqi();
+        }, 300000);
 
-            try {
-                const data = await fetchEpaMonitorsData(selectedLocation);
-                setAqiValue(data.PM2_5_AQI);
-            } catch (error) {
-                console.error('Error fetching AQI:', error);
-                setError('Failed to load air quality data. Please try again later.');
-                // Set a default value in case of error
-                setAqiValue(DEFAULT_AQI);
-            } finally {
-                setIsFetchingAqi(false);
+        // Clean up interval on component unmount
+        return () => {
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
             }
         };
-
-        loadAqi();
-    }, [selectedLocation]);
+    }, [loadAqi]);
 
     const aqiColor = getAqiColor(aqiValue);
     const aqiDescription = getAqiDescription(aqiValue);
@@ -63,6 +79,51 @@ const HomeScreen = () => {
             </View>
         );
     }
+
+    const getFooter = () => {
+        return (
+            <View style={styles.homeScreenFooter}>
+                <LocationSelector selectedLocation={selectedLocation} onOpenLocationModal={openLocationModal}/>
+                <LanguageToggle/>
+            </View>
+        );
+    };
+
+    const getSettingsButton = () => {
+        return (
+            <View style={styles.settingsIconContainer}>
+                <TouchableOpacity activeOpacity={0.7}>
+                    <Icon name="cog" size={40} color="#FFD700"/>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    const getViewDetailedReportButton = () => {
+        return (
+            <View style={styles.viewDetailedReportButtonContainer}>
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate('AirQualityDetailedReport');
+                }} activeOpacity={0.7}>
+                    <View style={styles.viewDetailedReportButton}>
+                        <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
+                        <Text style={styles.viewDetailedReportButtonText}>View Detailed Report</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    const getLocationDisplay = () => {
+        return (
+            <View style={[styles.locationDisplayContainer]}>
+                <Icon name="map-marker" size={20} color="yellow" style={styles.locationDisplayIcon}/>
+                <Text style={styles.locationDisplayText}>
+                    {selectedLocation ? selectedLocation.locationName : 'Select Location'}
+                </Text>
+            </View>
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -78,20 +139,15 @@ const HomeScreen = () => {
                 />
             )}
 
-            <View style={[styles.locationDisplayContainer, {marginTop: '35%'}]}>
-                <Icon name="map-marker" size={20} color="yellow" style={styles.locationDisplayIcon}/>
-                <Text style={styles.locationDisplayText}>
-                    {selectedLocation ? selectedLocation.locationName : 'Select Location'}
-                </Text>
-            </View>
+            {getLocationDisplay()}
 
             {error ? (
-                <View style={[styles.errorContainer, {marginTop: 30}]}>
+                <View style={[styles.errorContainer, {marginTop: '35%'}]}>
                     <Text style={styles.errorText}>{error}</Text>
                 </View>
             ) : (
                 <>
-                    <View style={[styles.aqiValueContainer, {marginTop: 30}]}>
+                    <View style={[styles.aqiValueContainer, {marginTop: '35%'}]}>
                         <Text style={[styles.aqiValueText, {color: aqiColor}]}>{aqiValue}</Text>
                         <Text style={[styles.aqiText, {color: aqiColor}]}>AQI</Text>
                     </View>
@@ -108,28 +164,9 @@ const HomeScreen = () => {
                     </View>
                 </>
             )}
-
-            <View style={styles.viewDetailedReportButtonContainer}>
-                <TouchableOpacity onPress={() => {
-                    navigation.navigate('AirQualityDetailedReport');
-                }} activeOpacity={0.7}>
-                    <View style={styles.viewDetailedReportButton}>
-                        <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
-                        <Text style={styles.viewDetailedReportButtonText}>View Detailed Report</Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.settingsIconContainer}>
-                <TouchableOpacity activeOpacity={0.7}>
-                    <Icon name="cog" size={40} color="#FFD700"/>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.homeScreenFooter}>
-                <LocationSelector selectedLocation={selectedLocation} onOpenLocationModal={openLocationModal}/>
-                <LanguageToggle/>
-            </View>
+            {getViewDetailedReportButton()}
+            {getSettingsButton()}
+            {getFooter()}
         </View>
     );
 };
