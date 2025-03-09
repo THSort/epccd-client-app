@@ -101,15 +101,15 @@ export const fetchHistoricalEpaMonitorsDataForLocation = async (location: number
         
         logger.info(`Fetching historical EPA Monitors data for location ${location} from ${oneYearAgoStr} to ${currentDateStr}`);
         
-        // Query MongoDB for historical data
+        // Query MongoDB for historical data using report_date instead of datatime
         const historicalData = await EpaMonitorsDataModel.find({
             location: location,
-            // Use the datatime field which contains both date and time
-            datatime: {
-                $gte: `${oneYearAgoStr} 00:00:00`,
-                $lte: `${currentDateStr} 23:59:59`
+            // Use report_date field instead of datatime
+            report_date: {
+                $gte: oneYearAgoStr,
+                $lte: currentDateStr
             }
-        }).sort({ datatime: 1 }).lean();
+        }).sort({ report_date: 1, report_time: 1 }).lean();
         
         logger.info(`Found ${historicalData.length} historical records for location ${location}`);
         

@@ -51,7 +51,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
         try {
             const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
-            console.log('Historical data fetched:', data.length, 'records');
+            console.log('Historical data fetched:', data.length, 'records', data);
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);

@@ -22,9 +22,9 @@ export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Re
 export const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
         const location = Number(req.params.location);
-        const date = req.query.date as string || new Date().toISOString().split('T')[0]; // Default to current date if not provided
+        const currentDate = new Date().toISOString().split('T')[0];
         
-        const historicalData = await fetchHistoricalEpaMonitorsDataForLocation(location, date);
+        const historicalData = await fetchHistoricalEpaMonitorsDataForLocation(location, currentDate);
         
         res.json(historicalData);
     } catch (error) {
