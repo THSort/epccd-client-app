@@ -1,8 +1,8 @@
 import express from "express";
-import { getEpaMonitorsDataForLocation } from "../controllers/epaMonitorsData.controller.";
+import { getCurrentEpaMonitorsDataForLocation } from "../controllers/epaMonitorsData.controller.";
 
 const router = express.Router();
 
-router.get("/epaMonitorsData/:location", getEpaMonitorsDataForLocation);
+router.get("/epaMonitorsData/:location", getCurrentEpaMonitorsDataForLocation);
 
 export default router;

@@ -1,12 +1,12 @@
 import {Request, Response} from "express";
-import {fetchEpaMonitorsDataForLocation} from "../services/epaMonitorsData.service";
+import {fetchCurrentEpaMonitorsDataForLocation} from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
 
-export const getEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
+export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
         const location = Number(req.params.location);
 
-        const aqmsData = await fetchEpaMonitorsDataForLocation(location);
+        const aqmsData = await fetchCurrentEpaMonitorsDataForLocation(location);
 
         res.json(aqmsData);
     } catch (error) {

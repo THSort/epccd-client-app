@@ -12,7 +12,7 @@ export const pollEpaMonitorsData = async () => {
         const locations = Array.from({length: 21}, (_, i) => i + 1);
 
         // Fetch data for all locations concurrently
-        const results = await Promise.allSettled(locations.map(fetchEpaMonitorsDataForLocation));
+        const results = await Promise.allSettled(locations.map(fetchCurrentEpaMonitorsDataForLocation));
 
         // Extract fulfilled results and filter out rejected ones
         const aqmsData = results
@@ -35,8 +35,8 @@ export const pollEpaMonitorsData = async () => {
     }
 };
 
-// Fetch EPA Monitors Data for a Single Location
-export const fetchEpaMonitorsDataForLocation = async (location: number): Promise<EpaMonitorsData> => {
+// Fetch latest EPA Monitors Data for a Single Location
+export const fetchCurrentEpaMonitorsDataForLocation = async (location: number): Promise<EpaMonitorsData> => {
     try {
         const API_URL = `${BASE_URL}?location=${location}&date=&time=`;
         const response = await axios.get(API_URL);
