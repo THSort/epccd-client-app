@@ -26,6 +26,7 @@ export const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 10,
+        minHeight: 60,
     },
     aqiDetails: {
         flexDirection: 'column',
@@ -57,6 +58,7 @@ export const styles = StyleSheet.create({
     },
     pollutantContainer: {
         paddingHorizontal: 25,
+        flex: 1,
     },
     pollutantHeader: {
         flexDirection: 'row',
@@ -76,5 +78,23 @@ export const styles = StyleSheet.create({
     pollutantListContent: {
         alignItems: 'center',
         gap: 10,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 200,
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 200,
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 16,
+        textAlign: 'center',
+        padding: 20,
     },
 });

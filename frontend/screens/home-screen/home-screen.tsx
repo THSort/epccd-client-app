@@ -25,7 +25,7 @@ const HomeScreen = () => {
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>('null');
 
     useEffect(() => {
         const loadAqi = async () => {
@@ -35,7 +35,7 @@ const HomeScreen = () => {
             }
 
             setIsFetchingAqi(true);
-            setError(null);
+            // setError(null);
 
             try {
                 const data = await fetchEpaMonitorsData(selectedLocation);
@@ -109,7 +109,7 @@ const HomeScreen = () => {
                 </>
             )}
 
-            <View style={[styles.viewDetailedReportButtonContainer, {marginTop: 70}]}>
+            <View style={styles.viewDetailedReportButtonContainer}>
                 <TouchableOpacity onPress={() => {
                     navigation.navigate('AirQualityDetailedReport');
                 }} activeOpacity={0.7}>
@@ -120,13 +120,13 @@ const HomeScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <View style={[styles.settingsIconContainer, {marginTop: 60}]}>
+            <View style={styles.settingsIconContainer}>
                 <TouchableOpacity activeOpacity={0.7}>
                     <Icon name="cog" size={40} color="#FFD700"/>
                 </TouchableOpacity>
             </View>
 
-            <View style={[styles.homeScreenFooter, {marginTop: 50}]}>
+            <View style={styles.homeScreenFooter}>
                 <LocationSelector selectedLocation={selectedLocation} onOpenLocationModal={openLocationModal}/>
                 <LanguageToggle/>
             </View>

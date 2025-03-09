@@ -32,13 +32,13 @@ const startServer = async () => {
         app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
         // Start polling EPA Monitors Data every 5 minutes
-        // const POLLING_INTERVAL_MS = 5 * 60 * 1000;
+        const POLLING_INTERVAL_MS = 5 * 60 * 1000;
         // setInterval(() => {
         //     console.log("📡 Polling EPA Monitors data...");
         //     void pollEpaMonitorsData();
         // }, POLLING_INTERVAL_MS);
-
-        // Run the function immediately on startup
+        //
+        // // Run the function immediately on startup
         // void pollEpaMonitorsData();
     } catch (error) {
         console.error("❌ Server startup failed:", error);

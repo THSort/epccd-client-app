@@ -9,10 +9,10 @@ interface AQISliderProps {
 
 export function AQISlider({ aqi }: AQISliderProps) {
     // Ensure AQI value stays within bounds
-    const normalizedAqi = Math.min(Math.max(aqi, 0), 800);
+    const normalizedAqi = Math.min(Math.max(aqi, 0), 170);
 
     // Calculate arrow position as a percentage of the track width
-    const arrowPosition = (normalizedAqi / 800) * 100;
+    const arrowPosition = (normalizedAqi / 170) * 100;
 
     return (
         <View style={styles.container}>

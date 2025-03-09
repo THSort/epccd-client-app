@@ -6,6 +6,7 @@ export const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: 'black',
+        position: 'relative',
     },
     locationDisplayContainer: {
         display: 'flex',
@@ -53,6 +54,7 @@ export const styles = StyleSheet.create({
         lineHeight: 42,
         color: 'orange',
         fontWeight: '600',
+        textAlign: 'center',
     },
     aqiLevelInfoMessageText: {
         fontSize: 24,
@@ -67,7 +69,11 @@ export const styles = StyleSheet.create({
     },
     viewDetailedReportButtonContainer: {
         alignItems: 'center',
-        marginTop: 20, // Adjust based on layout
+        position: 'absolute',
+        bottom: 250, // 70px + 30px (footer bottom margin) + some spacing
+        left: 0,
+        right: 0,
+        width: '100%',
     },
     viewDetailedReportButton: {
         flexDirection: 'row',
@@ -88,12 +94,22 @@ export const styles = StyleSheet.create({
     settingsIconContainer: {
         alignItems: 'center',
         justifyContent: 'center',
+        position: 'absolute',
+        bottom: 100, // Between detailed report and footer
+        left: 0,
+        right: 0,
+        width: '100%',
     },
     homeScreenFooter: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-evenly',
+        position: 'absolute',
+        bottom: 30,
+        left: 0,
+        right: 0,
+        width: '100%',
     },
     loaderContainer: {
         flex: 1,
