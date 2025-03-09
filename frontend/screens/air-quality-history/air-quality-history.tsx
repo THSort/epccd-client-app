@@ -8,9 +8,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {useLocationModal} from '../home-screen/components/location-modal/location-modal.types.ts';
 import {LocationSelector} from '../home-screen/components/location-selector/location-selector.tsx';
 import {LocationModal} from '../home-screen/components/location-modal/location-modal.tsx';
-import {DropdownSelector} from '../../components/dropdown-selector/dropdown-selector.tsx';
 import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
-import {PollutantModal} from './pollutant-modal/pollutant-modal.tsx';
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
 import {fetchHistoricalEpaMonitorsData} from '../../services/api.service.ts';
@@ -19,6 +17,7 @@ import {TimeRangeSelector} from './components/time-range-selector/time-range-sel
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
 import {ChartDisplayToggle} from './components/chart-display-toggle/chart-display-toggle.tsx';
 import {ChartDisplayMode} from './components/chart-display-toggle/chart-display-toggle.types.ts';
+import {PollutantSelector} from './components/pollutant-selector/pollutant-selector.tsx';
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -35,7 +34,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const {selectedLocation, selectedPollutant} = route.params;
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
 
-    const [isPollutantModalOpen, setIsPollutantModalOpen] = useState(false);
     const [pollutant, setPollutant] = useState<Pollutant>(selectedPollutant);
     const [historicalData, setHistoricalData] = useState<EpaMonitorsApiResponse[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -67,14 +65,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
         fetchHistoricalData();
     }, [fetchHistoricalData]);
 
-    const openPollutantModal = () => {
-        setIsPollutantModalOpen(true);
-    };
-
-    const closePollutantModal = () => {
-        setIsPollutantModalOpen(false);
-    };
-
     if (isLoading) {
         return (
             <View style={styles.loaderContainer}>
@@ -100,12 +90,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         selectedLocation={selectedLocation}
                         onOpenLocationModal={openLocationModal}
                     />
-                    <DropdownSelector
-                        label="Pollutant"
-                        text={pollutant}
-                        onPress={openPollutantModal}
-                        isFullWidth
-                        showLabel
+                    <PollutantSelector
+                        selectedPollutant={pollutant}
+                        onPollutantSelected={setPollutant}
                     />
 
                     {error ? (
@@ -145,18 +132,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     }}
                     visible={isModalOpen}
                     onClose={closeLocationModal}
-                />
-            )}
-
-            {isPollutantModalOpen && (
-                <PollutantModal
-                    visible={isPollutantModalOpen}
-                    onClose={closePollutantModal}
-                    selectedPollutant={pollutant}
-                    onPollutantSelected={(pollutantToSelect) => {
-                        setPollutant(pollutantToSelect);
-                        closePollutantModal();
-                    }}
                 />
             )}
         </View>

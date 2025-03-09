@@ -18,8 +18,8 @@ export const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
 }) => {
   return (
     <View style={styles.scrollContainer}>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.container}
       >
