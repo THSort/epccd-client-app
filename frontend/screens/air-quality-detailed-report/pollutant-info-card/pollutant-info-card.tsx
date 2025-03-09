@@ -20,15 +20,15 @@ const POLLUTANT_UNITS = {
 
 export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactElement {
     const navigation = useNavigation<AirQualityDetailedReportNavigationProps>();
-    
+
     // Get the appropriate unit for the pollutant
     const getUnit = (pollutantName: Pollutant) => {
         return POLLUTANT_UNITS[pollutantName] || 'µg/m³';
     };
-    
+
     const getPollutantDetails = (pollutantName: Pollutant, pollutantValue: number, pollutantDescription: string) => {
         const unit = getUnit(pollutantName);
-        
+
         return (
             <View>
                 <View style={styles.row}>
