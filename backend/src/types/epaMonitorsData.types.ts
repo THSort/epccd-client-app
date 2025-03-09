@@ -32,3 +32,12 @@ export interface EpaMonitorsData {
     O3_AQI: number; // `O3_AQI`
     CO_AQI: number; // `CO_AQI`
 }
+
+export interface HistoricalEpaMonitorsDataResponse {
+    oneDay: EpaMonitorsData[];
+    oneWeek: EpaMonitorsData[];
+    oneMonth: EpaMonitorsData[];
+    threeMonths: EpaMonitorsData[];
+    sixMonths: EpaMonitorsData[];
+    oneYear: EpaMonitorsData[];
+}

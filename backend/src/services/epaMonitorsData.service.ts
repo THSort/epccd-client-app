@@ -1,5 +1,5 @@
 import axios from "axios";
-import {EpaMonitorsData} from "../types/epaMonitorsData.types";
+import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse} from "../types/epaMonitorsData.types";
 import logger from "../utils/logger";
 import {shouldAlertUsersInLocation} from "./forecastingModelService";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
@@ -117,6 +117,98 @@ export const fetchHistoricalEpaMonitorsDataForLocation = async (location: number
     } catch (error) {
         logger.error(`Failed to fetch historical data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         throw new Error(`Database query failed for historical data for location ${location}`);
+    }
+};
+
+// Fetch historical EPA Monitors Data for a location organized by time periods
+export const fetchHistoricalEpaMonitorsDataByPeriods = async (location: number, currentDate: string): Promise<HistoricalEpaMonitorsDataResponse> => {
+    try {
+        const currentDateObj = new Date(currentDate);
+        
+        // Calculate dates for different time periods
+        const oneDayAgo = new Date(currentDateObj);
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        
+        const oneWeekAgo = new Date(currentDateObj);
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        
+        const oneMonthAgo = new Date(currentDateObj);
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        
+        const threeMonthsAgo = new Date(currentDateObj);
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        
+        const sixMonthsAgo = new Date(currentDateObj);
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        
+        const oneYearAgo = new Date(currentDateObj);
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        
+        // Format dates to YYYY-MM-DD format
+        const oneDayAgoStr = oneDayAgo.toISOString().split('T')[0];
+        const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+        const oneMonthAgoStr = oneMonthAgo.toISOString().split('T')[0];
+        const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+        const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0];
+        const oneYearAgoStr = oneYearAgo.toISOString().split('T')[0];
+        const currentDateStr = currentDateObj.toISOString().split('T')[0];
+        
+        logger.info(`Fetching historical EPA Monitors data for location ${location} for multiple time periods`);
+        
+        // Query MongoDB for all historical data within the past year
+        const allHistoricalData = await EpaMonitorsDataModel.find({
+            location: location,
+            report_date: {
+                $gte: oneYearAgoStr,
+                $lte: currentDateStr
+            }
+        }).sort({ report_date: 1, report_time: 1 }).lean() as EpaMonitorsData[];
+        
+        logger.info(`Found ${allHistoricalData.length} total historical records for location ${location}`);
+        
+        // Filter data for each time period
+        const oneDayData = allHistoricalData.filter(data => 
+            data.report_date >= oneDayAgoStr && data.report_date <= currentDateStr
+        );
+        
+        const oneWeekData = allHistoricalData.filter(data => 
+            data.report_date >= oneWeekAgoStr && data.report_date <= currentDateStr
+        );
+        
+        const oneMonthData = allHistoricalData.filter(data => 
+            data.report_date >= oneMonthAgoStr && data.report_date <= currentDateStr
+        );
+        
+        const threeMonthsData = allHistoricalData.filter(data => 
+            data.report_date >= threeMonthsAgoStr && data.report_date <= currentDateStr
+        );
+        
+        const sixMonthsData = allHistoricalData.filter(data => 
+            data.report_date >= sixMonthsAgoStr && data.report_date <= currentDateStr
+        );
+        
+        // One year data is the complete dataset
+        const oneYearData = allHistoricalData;
+        
+        logger.info(`Filtered historical data by time periods for location ${location}:`);
+        logger.info(`- One day: ${oneDayData.length} records`);
+        logger.info(`- One week: ${oneWeekData.length} records`);
+        logger.info(`- One month: ${oneMonthData.length} records`);
+        logger.info(`- Three months: ${threeMonthsData.length} records`);
+        logger.info(`- Six months: ${sixMonthsData.length} records`);
+        logger.info(`- One year: ${oneYearData.length} records`);
+        
+        return {
+            oneDay: oneDayData,
+            oneWeek: oneWeekData,
+            oneMonth: oneMonthData,
+            threeMonths: threeMonthsData,
+            sixMonths: sixMonthsData,
+            oneYear: oneYearData
+        };
+    } catch (error) {
+        logger.error(`Failed to fetch historical data by periods for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        throw new Error(`Database query failed for historical data by periods for location ${location}`);
     }
 };
 

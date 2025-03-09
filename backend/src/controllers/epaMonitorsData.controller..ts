@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import {fetchCurrentEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataForLocation} from "../services/epaMonitorsData.service";
+import {fetchCurrentEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataByPeriods} from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
 
 export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
@@ -24,7 +24,7 @@ export const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res:
         const location = Number(req.params.location);
         const currentDate = new Date().toISOString().split('T')[0];
         
-        const historicalData = await fetchHistoricalEpaMonitorsDataForLocation(location, currentDate);
+        const historicalData = await fetchHistoricalEpaMonitorsDataByPeriods(location, currentDate);
         
         res.json(historicalData);
     } catch (error) {

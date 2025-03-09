@@ -12,7 +12,7 @@ import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-rep
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
 import {fetchHistoricalEpaMonitorsData} from '../../services/api.service.ts';
-import {EpaMonitorsApiResponse} from '../../types/epaMonitorsApiResponse.types.ts';
+import {HistoricalEpaMonitorsDataResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {TimeRangeSelector} from './components/time-range-selector/time-range-selector.tsx';
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
 import {ChartDisplayToggle} from './components/chart-display-toggle/chart-display-toggle.tsx';
@@ -35,7 +35,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
 
     const [pollutant, setPollutant] = useState<Pollutant>(selectedPollutant);
-    const [historicalData, setHistoricalData] = useState<EpaMonitorsApiResponse[]>([]);
+    const [historicalData, setHistoricalData] = useState<HistoricalEpaMonitorsDataResponse | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
@@ -51,7 +51,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
         try {
             const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
-            console.log('Historical data fetched:', data.length, 'records', data);
+            console.log('Historical data fetched for different time periods');
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);
@@ -60,6 +60,28 @@ export function AirQualityHistory({route}: Props): ReactElement {
             setIsLoading(false);
         }
     }, [selectedLocation]);
+
+    // Get the appropriate data based on the selected time range
+    const getDataForTimeRange = useCallback(() => {
+        if (!historicalData) {return [];}
+
+        switch (timeRange) {
+            case '1d':
+                return historicalData.oneDay;
+            case '1w':
+                return historicalData.oneWeek;
+            case '1m':
+                return historicalData.oneMonth;
+            case '3m':
+                return historicalData.threeMonths;
+            case '6m':
+                return historicalData.sixMonths;
+            case '1y':
+                return historicalData.oneYear;
+            default:
+                return historicalData.oneMonth;
+        }
+    }, [historicalData, timeRange]);
 
     useEffect(() => {
         fetchHistoricalData();
@@ -109,9 +131,11 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                 onModeSelected={setDisplayMode}
                             />
 
-                            {historicalData.length > 0 ? (
+                            {historicalData ? (
                                 <View style={styles.noDataContainer}>
-                                    <Text style={styles.noDataText}>historical data here in chart</Text>
+                                    <Text style={styles.noDataText}>
+                                        {`Showing ${getDataForTimeRange().length} data points for ${timeRange} period`}
+                                    </Text>
                                 </View>
                             ) : (
                                 <View style={styles.noDataContainer}>
