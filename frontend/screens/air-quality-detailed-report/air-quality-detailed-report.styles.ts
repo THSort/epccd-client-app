@@ -71,7 +71,6 @@ export const styles = StyleSheet.create({
         color: 'yellow',
     },
     pollutantList: {
-        backgroundColor: 'red',
         height: 400,
     },
     pollutantListContent: {
