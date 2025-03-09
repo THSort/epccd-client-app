@@ -58,7 +58,6 @@ export const styles = StyleSheet.create({
     },
     pollutantContainer: {
         paddingHorizontal: 25,
-        flex: 1,
     },
     pollutantHeader: {
         flexDirection: 'row',
