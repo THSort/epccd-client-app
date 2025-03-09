@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { styles } from './time-range-selector.styles';
 import { TimeRange, TimeRangeSelectorProps } from './time-range-selector.types';
 
@@ -17,26 +17,32 @@ export const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
   onTimeRangeSelected,
 }) => {
   return (
-    <View style={styles.container}>
-      {timeRangeOptions.map((option) => (
-        <TouchableOpacity
-          key={option.value}
-          style={[
-            styles.optionButton,
-            selectedTimeRange === option.value && styles.selectedOption,
-          ]}
-          onPress={() => onTimeRangeSelected(option.value)}
-        >
-          <Text
+    <View style={styles.scrollContainer}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
+        {timeRangeOptions.map((option) => (
+          <TouchableOpacity
+            key={option.value}
             style={[
-              styles.optionText,
-              selectedTimeRange === option.value && styles.selectedOptionText,
+              styles.optionButton,
+              selectedTimeRange === option.value && styles.selectedOption,
             ]}
+            onPress={() => onTimeRangeSelected(option.value)}
           >
-            {option.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text
+              style={[
+                styles.optionText,
+                selectedTimeRange === option.value && styles.selectedOptionText,
+              ]}
+            >
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 };

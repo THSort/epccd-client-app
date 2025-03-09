@@ -1,10 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  scrollContainer: {
+    marginVertical: 15,
+  },
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 15,
     backgroundColor: '#222',
     borderRadius: 10,
     padding: 5,
@@ -13,6 +14,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
+    marginHorizontal: 3,
+    minWidth: 65,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   selectedOption: {
     backgroundColor: '#FFD700',
@@ -21,6 +26,7 @@ export const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+    textAlign: 'center',
   },
   selectedOptionText: {
     color: 'black',
