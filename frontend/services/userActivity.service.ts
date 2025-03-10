@@ -18,14 +18,14 @@ const getDeviceInfo = async () => {
     return {
       platform: Platform.OS,
       os_version: Platform.Version.toString(),
-      app_version: await DeviceInfo.getVersion()
+      app_version: await DeviceInfo.getVersion(),
     };
   } catch (error) {
     console.error('Error getting device info:', error);
     return {
       platform: Platform.OS,
       os_version: 'unknown',
-      app_version: 'unknown'
+      app_version: 'unknown',
     };
   }
 };
@@ -35,20 +35,20 @@ const getDeviceInfo = async () => {
  * @param userId - The user ID
  */
 const processQueue = async (userId: string) => {
-  if (isProcessingQueue || activityQueue.length === 0) return;
-  
+  if (isProcessingQueue || activityQueue.length === 0) {return;}
+
   isProcessingQueue = true;
-  
+
   try {
     // Process each item in the queue
     while (activityQueue.length > 0) {
       const activity = activityQueue[0];
-      
+
       await axios.post(API_BASE_URL, {
         ...activity,
-        user_id: userId
+        user_id: userId,
       });
-      
+
       // Remove the processed item
       activityQueue.shift();
     }
@@ -72,29 +72,29 @@ export const trackUserActivity = async (
 ) => {
   try {
     const deviceInfo = await getDeviceInfo();
-    
+
     const activityData = {
       user_id: userId,
       action_type: actionType,
       action_details: actionDetails,
-      device_info: deviceInfo
+      device_info: deviceInfo,
     };
-    
+
     // Try to send the activity to the server
     await axios.post(API_BASE_URL, activityData);
-    
+
     // If successful and we have queued items, process them
     if (activityQueue.length > 0) {
       processQueue(userId);
     }
   } catch (error) {
     console.error('Error tracking user activity:', error);
-    
+
     // If there was an error (likely offline), queue the activity
     activityQueue.push({
       action_type: actionType,
       action_details: actionDetails,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -112,7 +112,7 @@ export const trackScreenView = async (
 ) => {
   await trackUserActivity(userId, 'screen_view', {
     screen_name: screenName,
-    ...additionalDetails
+    ...additionalDetails,
   });
 };
 
@@ -132,7 +132,7 @@ export const trackButtonClick = async (
   await trackUserActivity(userId, 'button_click', {
     button_name: buttonName,
     screen_name: screenName,
-    ...additionalDetails
+    ...additionalDetails,
   });
 };
 
@@ -152,7 +152,7 @@ export const trackUserInput = async (
   await trackUserActivity(userId, 'user_input', {
     input_name: inputName,
     screen_name: screenName,
-    ...additionalDetails
+    ...additionalDetails,
   });
 };
 
@@ -166,7 +166,43 @@ export const trackAppStateChange = async (
   appState: string
 ) => {
   await trackUserActivity(userId, 'app_state_change', {
-    app_state: appState
+    app_state: appState,
+  });
+};
+
+/**
+ * Track app exit (when app goes to background or becomes inactive)
+ * @param userId - The user ID
+ * @param screenName - Name of the current screen when app was exited
+ * @param additionalDetails - Any additional details to track
+ */
+export const trackAppExit = async (
+  userId: string,
+  screenName: string,
+  additionalDetails: Record<string, any> = {}
+) => {
+  await trackUserActivity(userId, 'app_exit', {
+    screen_name: screenName,
+    timestamp: new Date().toISOString(),
+    ...additionalDetails,
+  });
+};
+
+/**
+ * Track app entry (when app comes to foreground)
+ * @param userId - The user ID
+ * @param screenName - Name of the current screen when app was entered
+ * @param additionalDetails - Any additional details to track
+ */
+export const trackAppEntry = async (
+  userId: string,
+  screenName: string,
+  additionalDetails: Record<string, any> = {}
+) => {
+  await trackUserActivity(userId, 'app_entry', {
+    screen_name: screenName,
+    timestamp: new Date().toISOString(),
+    ...additionalDetails,
   });
 };
 
@@ -180,6 +216,6 @@ export const trackBackButtonPress = async (
   screenName: string
 ) => {
   await trackUserActivity(userId, 'back_button_press', {
-    screen_name: screenName
+    screen_name: screenName,
   });
-}; 
+};

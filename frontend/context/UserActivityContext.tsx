@@ -6,6 +6,8 @@ import {
   trackUserInput,
   trackAppStateChange,
   trackBackButtonPress,
+  trackAppExit,
+  trackAppEntry,
 } from '../services/userActivity.service';
 
 // Define the context type
@@ -16,6 +18,8 @@ interface UserActivityContextType {
   trackInput: (inputName: string, screenName: string, additionalDetails?: Record<string, any>) => Promise<void>;
   trackAppState: (appState: string) => Promise<void>;
   trackBackButton: (screenName: string) => Promise<void>;
+  trackAppExit: (screenName: string, additionalDetails?: Record<string, any>) => Promise<void>;
+  trackAppEntry: (screenName: string, additionalDetails?: Record<string, any>) => Promise<void>;
 }
 
 // Create the context with default values
@@ -26,6 +30,8 @@ const UserActivityContext = createContext<UserActivityContextType>({
   trackInput: async () => {},
   trackAppState: async () => {},
   trackBackButton: async () => {},
+  trackAppExit: async () => {},
+  trackAppEntry: async () => {},
 });
 
 // Provider props type
@@ -83,6 +89,18 @@ export const UserActivityProvider: React.FC<UserActivityProviderProps> = ({ chil
     }
   };
 
+  const handleAppExit = async (screenName: string, additionalDetails: Record<string, any> = {}) => {
+    if (userId) {
+      await trackAppExit(userId, screenName, additionalDetails);
+    }
+  };
+
+  const handleAppEntry = async (screenName: string, additionalDetails: Record<string, any> = {}) => {
+    if (userId) {
+      await trackAppEntry(userId, screenName, additionalDetails);
+    }
+  };
+
   // Create the context value
   const contextValue: UserActivityContextType = {
     trackActivity,
@@ -91,6 +109,8 @@ export const UserActivityProvider: React.FC<UserActivityProviderProps> = ({ chil
     trackInput,
     trackAppState,
     trackBackButton,
+    trackAppExit: handleAppExit,
+    trackAppEntry: handleAppEntry,
   };
 
   return (

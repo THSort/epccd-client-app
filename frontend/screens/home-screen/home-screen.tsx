@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {View, Text, TouchableOpacity, ActivityIndicator} from 'react-native';
+import {View, Text, TouchableOpacity, ActivityIndicator, BackHandler} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {styles} from './home-screen.styles';
 import {LanguageToggle} from './components/language-toggle/language-toggle.tsx';
@@ -26,12 +26,25 @@ const HomeScreen = () => {
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {isLoadingLanguage} = useSelectedLanguage();
 
-    const { trackButton } = useUserActivity();
+    const { trackButton, trackBackButton } = useUserActivity();
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const handleBackButtonClick = useCallback(() => {
+        trackBackButton(currentScreen);
+        navigation.goBack();
+        return true; // Prevent default behavior since we're handling navigation
+    }, [trackBackButton, navigation]);
+
+    useEffect(() => {
+        const backEvent = BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+        return () => {
+            backEvent.remove();
+        };
+    }, [handleBackButtonClick]);
 
     const loadAqi = useCallback(async () => {
         if (!selectedLocation) {

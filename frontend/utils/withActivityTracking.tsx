@@ -17,7 +17,7 @@ export const withActivityTracking = (
     const userId = props.userId || '';
     
     // Use the activity tracking hook
-    const { trackButton, trackInput } = useActivityTracking(userId, screenName);
+    const { trackButton, trackInput, trackBackButton, trackAppExit, trackAppEntry } = useActivityTracking(userId, screenName);
     
     // Pass the tracking functions to the wrapped component
     return (
@@ -25,6 +25,9 @@ export const withActivityTracking = (
         {...props}
         trackButton={trackButton}
         trackInput={trackInput}
+        trackBackButton={trackBackButton}
+        trackAppExit={trackAppExit}
+        trackAppEntry={trackAppEntry}
       />
     );
   };

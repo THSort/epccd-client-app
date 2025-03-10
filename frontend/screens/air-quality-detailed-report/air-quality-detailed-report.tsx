@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import type { ReactElement } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import {ScrollView, Text, TouchableOpacity, View, ActivityIndicator, BackHandler} from 'react-native';
 import { styles } from './air-quality-detailed-report.styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { PollutantInfoCard } from './pollutant-info-card/pollutant-info-card';
@@ -35,13 +35,26 @@ export function AirQualityDetailedReport(): ReactElement {
     const {selectedLocation} = useSelectedLocation();
     const [location, setLocation] = useState<Location | undefined>(selectedLocation);
 
-    const { trackButton } = useUserActivity();
+    const { trackButton, trackBackButton } = useUserActivity();
 
     // State for API data
     const [aqiData, setAqiData] = useState<EpaMonitorsApiResponse | null>(null);
     const [isFetchingData, setIsFetchingData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+    const handleBackButtonClick = useCallback(() => {
+        trackBackButton(currentScreen);
+        navigation.goBack();
+        return true; // Prevent default behavior since we're handling navigation
+    }, [trackBackButton, navigation]);
+
+    useEffect(() => {
+        const backEvent = BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+        return () => {
+            backEvent.remove();
+        };
+    }, [handleBackButtonClick]);
 
     // Fetch data when location changes
     useEffect(() => {
@@ -58,21 +71,23 @@ export function AirQualityDetailedReport(): ReactElement {
                 const data = await fetchEpaMonitorsData(location);
                 setAqiData(data);
                 setLastUpdated(new Date());
+                setError(null);
             } catch (error) {
-                console.error('Error fetching EPA Monitors data:', error);
-                setError('Failed to load air quality data. Please try again later.');
-                setAqiData(null);
+                console.error('Error fetching AQI data:', error);
+                setError('Failed to load air quality data');
             } finally {
                 setIsFetchingData(false);
             }
         };
 
-        loadData();
+        void loadData();
     }, [location]);
 
     // Format the time since last update
     const getTimeSinceUpdate = (): string => {
-        if (!lastUpdated) {return 'N/A';}
+        if (!lastUpdated) {
+            return 'Not updated yet';
+        }
 
         const now = new Date();
         const diffMs = now.getTime() - lastUpdated.getTime();
@@ -87,6 +102,9 @@ export function AirQualityDetailedReport(): ReactElement {
         return (
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => {
+                    // Track back button press
+                    trackBackButton(currentScreen);
+                    // Navigate back
                     navigation.goBack();
                 }}>
                     <Icon name="chevron-left" size={25} color="yellow" />

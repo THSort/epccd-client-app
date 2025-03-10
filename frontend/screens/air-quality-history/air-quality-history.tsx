@@ -1,6 +1,6 @@
 import {ReactElement, useState, useEffect, useCallback} from 'react';
 import React from 'react';
-import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView} from 'react-native';
+import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {styles} from './air-quality-history.styles';
@@ -33,7 +33,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AirQualityHistory'>;
 
 export function AirQualityHistory({route}: Props): ReactElement {
     const navigation = useNavigation<AirQualityHistoryNavigationProps>();
-    const {trackButton} = useUserActivity();
+    const {trackButton, trackBackButton} = useUserActivity();
 
     const {selectedLocation, selectedPollutant} = route.params;
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
@@ -44,6 +44,19 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
+
+    const handleBackButtonClick = useCallback(() => {
+        trackBackButton(currentScreen);
+        navigation.goBack();
+        return true; // Prevent default behavior since we're handling navigation
+    }, [trackBackButton, navigation]);
+
+    useEffect(() => {
+        const backEvent = BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+        return () => {
+            backEvent.remove();
+        };
+    }, [handleBackButtonClick]);
 
     const fetchHistoricalData = useCallback(async () => {
         if (!selectedLocation) {
@@ -105,6 +118,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => {
+                    void trackBackButton(currentScreen);
                     navigation.goBack();
                 }}>
                     <Icon name="chevron-left" size={25} color="yellow"/>
