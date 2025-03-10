@@ -4,9 +4,10 @@ import { LocationModal } from '../home-screen/components/location-modal/location
 import { Location } from '../../App.types';
 import { registerUser, submitDemographicSurvey } from '../../services/user.service';
 import { storeUserId } from '../../utils/storage.util';
+import { useSelectedLocation } from '../../context/SelectedLocationContext';
 
 // Dummy FCM token for now
-const DUMMY_FCM_TOKEN = 'dummy_fcm_token_for_testing111';
+const DUMMY_FCM_TOKEN = 'dummy_fcm_token_for_testing11122';
 
 interface RegistrationScreenProps {
   onRegistrationComplete: () => void;
@@ -15,6 +16,9 @@ interface RegistrationScreenProps {
 export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegistrationComplete }) => {
   // Step tracking (1: location, 2: mobile, 3: asthma)
   const [currentStep, setCurrentStep] = useState<number>(1);
+
+  // Get the setSelectedLocation function from context
+  const { setSelectedLocation: setGlobalSelectedLocation } = useSelectedLocation();
 
   // Form data
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);
@@ -29,6 +33,8 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   // Handle location selection
   const handleLocationSelected = (location: Location) => {
     setSelectedLocation(location);
+    // Also set the location in the global context, which will save it to AsyncStorage
+    setGlobalSelectedLocation(location);
     setLocationModalVisible(false);
     // Move to next step after location is selected
     setCurrentStep(2);
@@ -58,6 +64,9 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
     setError(null);
 
     try {
+      // Ensure the selected location is saved in the global context
+      setGlobalSelectedLocation(selectedLocation);
+
       // Step 1: Register user
       const userData = await registerUser(
         DUMMY_FCM_TOKEN,

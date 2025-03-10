@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, ActivityIndicator} from 'react-native';
 import HomeScreen from './screens/home-screen/home-screen.tsx';
-import { styles } from './App.styles.ts';
-import { SelectedLocationProvider } from './context/SelectedLocationContext.tsx';
-import { SelectedLanguageProvider } from './context/SelectedLanguageContext.tsx';
-import { AirQualityDetailedReport } from './screens/air-quality-detailed-report/air-quality-detailed-report.tsx';
-import { AirQualityHistory } from './screens/air-quality-history/air-quality-history.tsx';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Location } from './App.types.ts';
-import { Pollutant } from './screens/air-quality-detailed-report/air-quality-detailed-report.types.ts';
-import { UserActivityProvider } from './context/UserActivityContext.tsx';
-import { RegistrationScreen } from './screens/registration-screen/registration-screen.tsx';
-import { getUserId } from './utils/storage.util.ts';
+import {styles} from './App.styles.ts';
+import {SelectedLocationProvider} from './context/SelectedLocationContext.tsx';
+import {SelectedLanguageProvider} from './context/SelectedLanguageContext.tsx';
+import {AirQualityDetailedReport} from './screens/air-quality-detailed-report/air-quality-detailed-report.tsx';
+import {AirQualityHistory} from './screens/air-quality-history/air-quality-history.tsx';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {Location} from './App.types.ts';
+import {Pollutant} from './screens/air-quality-detailed-report/air-quality-detailed-report.types.ts';
+import {UserActivityProvider} from './context/UserActivityContext.tsx';
+import {RegistrationScreen} from './screens/registration-screen/registration-screen.tsx';
+import {getUserId} from './utils/storage.util.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
@@ -43,7 +43,7 @@ function App(): React.JSX.Element {
             }
         };
 
-        void AsyncStorage.removeItem('user_id');
+        // void AsyncStorage.removeItem('user_id');
         loadUserId();
     }, []);
 
@@ -56,15 +56,19 @@ function App(): React.JSX.Element {
     // Show loading screen while checking for user ID
     if (isLoading) {
         return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color="#FFD700" />
+            <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
+                <ActivityIndicator size="large" color="#FFD700"/>
             </View>
         );
     }
 
     // Show registration screen if no user ID is found
     if (!userId) {
-        return <RegistrationScreen onRegistrationComplete={handleRegistrationComplete} />;
+        return (
+            <SelectedLocationProvider>
+                <RegistrationScreen onRegistrationComplete={handleRegistrationComplete}/>
+            </SelectedLocationProvider>
+        );
     }
 
     // Main app with user ID
@@ -75,9 +79,9 @@ function App(): React.JSX.Element {
                     <NavigationContainer>
                         <View style={styles.container}>
                             <Stack.Navigator>
-                                <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}} />
-                                <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}} />
-                                <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}} />
+                                <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
+                                <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
+                                <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
                             </Stack.Navigator>
                         </View>
                     </NavigationContainer>
