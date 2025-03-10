@@ -14,14 +14,20 @@ import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
+import {trackButtonClick} from '../../services/userActivity.service.ts';
+import {useUserActivity} from '../../context/UserActivityContext.tsx';
 
 const DEFAULT_AQI = 0;
+
+const currentScreen = 'HomeScreen';
 
 const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigationProps>();
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {isLoadingLanguage} = useSelectedLanguage();
+
+    const { trackButton, trackInput } = useUserActivity();
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
@@ -103,6 +109,9 @@ const HomeScreen = () => {
         return (
             <View style={styles.viewDetailedReportButtonContainer}>
                 <TouchableOpacity onPress={() => {
+                    void trackButton('view_detailed_report', currentScreen, {
+                        timestamp: new Date().toISOString(),
+                    });
                     navigation.navigate('AirQualityDetailedReport');
                 }} activeOpacity={0.7}>
                     <View style={styles.viewDetailedReportButton}>

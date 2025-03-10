@@ -9,6 +9,7 @@ import userRoutes from "./routes/user.routes";
 import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
 import {pollEpaMonitorsData} from "./services/epaMonitorsData.service";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
+import userActivityRoutes from "./routes/userActivity.routes";
 
 // Load environment variables first
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/users", userRoutes); // User-related routes
 app.use("/api/epa-monitors", epaMonitorsDataRoutes); // EPA Monitors data routes
 app.use("/api/examples", exampleRoutes); // Example routes
 app.use("/api/demographics", demographicSurveyRoutes); // Routes for demographic survey info
+app.use("/api/user-activity", userActivityRoutes); // User activity tracking routes
 
 const startServer = async () => {
     try {
