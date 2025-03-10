@@ -1,16 +1,19 @@
-import React from 'react';
-import {View} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import HomeScreen from './screens/home-screen/home-screen.tsx';
-import {styles} from './App.styles.ts';
-import {SelectedLocationProvider} from './context/SelectedLocationContext.tsx';
-import {SelectedLanguageProvider} from './context/SelectedLanguageContext.tsx';
-import {AirQualityDetailedReport} from './screens/air-quality-detailed-report/air-quality-detailed-report.tsx';
-import {AirQualityHistory} from './screens/air-quality-history/air-quality-history.tsx';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { styles } from './App.styles.ts';
+import { SelectedLocationProvider } from './context/SelectedLocationContext.tsx';
+import { SelectedLanguageProvider } from './context/SelectedLanguageContext.tsx';
+import { AirQualityDetailedReport } from './screens/air-quality-detailed-report/air-quality-detailed-report.tsx';
+import { AirQualityHistory } from './screens/air-quality-history/air-quality-history.tsx';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Location } from './App.types.ts';
-import {Pollutant} from './screens/air-quality-detailed-report/air-quality-detailed-report.types.ts';
+import { Pollutant } from './screens/air-quality-detailed-report/air-quality-detailed-report.types.ts';
 import { UserActivityProvider } from './context/UserActivityContext.tsx';
+import { RegistrationScreen } from './screens/registration-screen/registration-screen.tsx';
+import { getUserId } from './utils/storage.util.ts';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
     Home: undefined;
@@ -24,10 +27,47 @@ type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
-    // For demo purposes, we're using a fixed user ID
-    // In a real app, this would come from authentication
-    const userId = 'user123';
+    const [userId, setUserId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
+    // Load user ID from storage on app start
+    useEffect(() => {
+        const loadUserId = async () => {
+            try {
+                const storedUserId = await getUserId();
+                setUserId(storedUserId);
+            } catch (error) {
+                console.error('Error loading user ID:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        void AsyncStorage.removeItem('user_id');
+        loadUserId();
+    }, []);
+
+    // Handle registration completion
+    const handleRegistrationComplete = () => {
+        // Reload user ID from storage
+        getUserId().then(id => setUserId(id));
+    };
+
+    // Show loading screen while checking for user ID
+    if (isLoading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#FFD700" />
+            </View>
+        );
+    }
+
+    // Show registration screen if no user ID is found
+    if (!userId) {
+        return <RegistrationScreen onRegistrationComplete={handleRegistrationComplete} />;
+    }
+
+    // Main app with user ID
     return (
         <UserActivityProvider userId={userId}>
             <SelectedLocationProvider>

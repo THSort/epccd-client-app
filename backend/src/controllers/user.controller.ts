@@ -4,6 +4,8 @@ import {v4 as uuidv4} from "uuid"; // For generating unique user IDs
 
 // Register New User (First Time)
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
+    console.log('registerUser', req.body);
+
     try {
         const {fcmToken, location, mobile_number} = req.body;
 
@@ -17,6 +19,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
 
         // Create and save the user
         const newUser = new User({id_user, fcmToken, location, mobile_number});
+        console.log('new user created')
         await newUser.save();
 
         res.status(201).json({message: "User registered successfully", user: newUser});
