@@ -7,6 +7,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import {AirQualityDetailedReportNavigationProps} from '../../../types/navigation.types.ts';
 import {Pollutant} from '../air-quality-detailed-report.types.ts';
+import {useUserActivity} from '../../../context/UserActivityContext.tsx';
+
+const currentScreen = 'AirQualityReport';
 
 // Define units for each pollutant type
 const POLLUTANT_UNITS = {
@@ -20,6 +23,7 @@ const POLLUTANT_UNITS = {
 
 export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactElement {
     const navigation = useNavigation<AirQualityDetailedReportNavigationProps>();
+    const { trackButton } = useUserActivity();
 
     // Get the appropriate unit for the pollutant
     const getUnit = (pollutantName: Pollutant) => {
@@ -47,6 +51,10 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
         return (
             <TouchableOpacity onPress={() => {
                 // navigate to AirQualityHistory
+                void trackButton('view_pollutant_history', currentScreen, {
+                    timestamp: new Date().toISOString(),
+                    pollutant: props.pollutantName,
+                });
                 navigation.navigate('AirQualityHistory', {selectedLocation: props.selectedLocation, selectedPollutant: props.pollutantName});
             }} activeOpacity={0.8}>
                 <View style={styles.historyButton}>

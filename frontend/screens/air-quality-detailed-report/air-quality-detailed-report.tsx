@@ -15,6 +15,7 @@ import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {EpaMonitorsApiResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {getAqiDescription} from '../../utils/aqi-description.util.ts';
+import {useUserActivity} from '../../context/UserActivityContext.tsx';
 
 // Default pollutant descriptions
 const pollutantDescriptions = {
@@ -26,11 +27,15 @@ const pollutantDescriptions = {
     [Pollutant.CO]: 'Carbon Monoxide',
 };
 
+const currentScreen = 'AirQualityReport';
+
 export function AirQualityDetailedReport(): ReactElement {
     const navigation = useNavigation();
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation} = useSelectedLocation();
     const [location, setLocation] = useState<Location | undefined>(selectedLocation);
+
+    const { trackButton } = useUserActivity();
 
     // State for API data
     const [aqiData, setAqiData] = useState<EpaMonitorsApiResponse | null>(null);
@@ -132,7 +137,11 @@ export function AirQualityDetailedReport(): ReactElement {
                 <View style={styles.pollutantContainer}>
                     <View style={styles.pollutantHeader}>
                         <Text style={styles.pollutantTitle}>Pollutant Levels</Text>
-                        <TouchableOpacity>
+                        <TouchableOpacity activeOpacity={0.7} onPress={() => {
+                            void trackButton('learn_more', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                            });
+                        }}>
                             <Icon name="question-circle" size={30} color="yellow" />
                         </TouchableOpacity>
                     </View>
@@ -148,7 +157,11 @@ export function AirQualityDetailedReport(): ReactElement {
                 <View style={styles.pollutantContainer}>
                     <View style={styles.pollutantHeader}>
                         <Text style={styles.pollutantTitle}>Pollutant Levels</Text>
-                        <TouchableOpacity>
+                        <TouchableOpacity activeOpacity={0.7} onPress={() => {
+                            void trackButton('learn_more', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                            });
+                        }}>
                             <Icon name="question-circle" size={30} color="yellow" />
                         </TouchableOpacity>
                     </View>
@@ -197,7 +210,11 @@ export function AirQualityDetailedReport(): ReactElement {
             <View style={styles.pollutantContainer}>
                 <View style={styles.pollutantHeader}>
                     <Text style={styles.pollutantTitle}>Pollutant Levels</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity activeOpacity={0.7} onPress={() => {
+                        void trackButton('learn_more', currentScreen, {
+                            timestamp: new Date().toISOString(),
+                        });
+                    }}>
                         <Icon name="question-circle" size={30} color="yellow" />
                     </TouchableOpacity>
                 </View>

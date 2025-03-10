@@ -14,7 +14,6 @@ import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
-import {trackButtonClick} from '../../services/userActivity.service.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 
 const DEFAULT_AQI = 0;
@@ -27,7 +26,7 @@ const HomeScreen = () => {
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {isLoadingLanguage} = useSelectedLanguage();
 
-    const { trackButton, trackInput } = useUserActivity();
+    const { trackButton } = useUserActivity();
 
     const [aqiValue, setAqiValue] = useState<number>(DEFAULT_AQI);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
@@ -89,7 +88,12 @@ const HomeScreen = () => {
     const getFooter = () => {
         return (
             <View style={styles.homeScreenFooter}>
-                <LocationSelector selectedLocation={selectedLocation} onOpenLocationModal={openLocationModal}/>
+                <LocationSelector selectedLocation={selectedLocation} onOpenLocationModal={() => {
+                    openLocationModal();
+                    void trackButton('location_selector', currentScreen, {
+                        timestamp: new Date().toISOString(),
+                    });
+                }}/>
                 <LanguageToggle/>
             </View>
         );

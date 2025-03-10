@@ -18,6 +18,7 @@ import {TimeRange} from './components/time-range-selector/time-range-selector.ty
 import {ChartDisplayToggle} from './components/chart-display-toggle/chart-display-toggle.tsx';
 import {ChartDisplayMode} from './components/chart-display-toggle/chart-display-toggle.types.ts';
 import {PollutantSelector} from './components/pollutant-selector/pollutant-selector.tsx';
+import {useUserActivity} from '../../context/UserActivityContext.tsx';
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -26,10 +27,13 @@ type RootStackParamList = {
     };
 };
 
+const currentScreen = 'AirQualityHistory';
+
 type Props = NativeStackScreenProps<RootStackParamList, 'AirQualityHistory'>;
 
 export function AirQualityHistory({route}: Props): ReactElement {
     const navigation = useNavigation<AirQualityHistoryNavigationProps>();
+    const {trackButton} = useUserActivity();
 
     const {selectedLocation, selectedPollutant} = route.params;
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
@@ -63,7 +67,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     // Get the appropriate data based on the selected time range
     const getDataForTimeRange = useCallback(() => {
-        if (!historicalData) {return [];}
+        if (!historicalData) {
+            return [];
+        }
 
         switch (timeRange) {
             case '1d':
@@ -98,7 +104,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
+                <TouchableOpacity onPress={() => {
+                    navigation.goBack();
+                }}>
                     <Icon name="chevron-left" size={25} color="yellow"/>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Air Quality History</Text>
@@ -110,11 +118,23 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         isFullWidth
                         showLocationLabel
                         selectedLocation={selectedLocation}
-                        onOpenLocationModal={openLocationModal}
+                        onOpenLocationModal={() => {
+                            void trackButton('location_selector', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                            });
+
+                            openLocationModal();
+                        }}
                     />
                     <PollutantSelector
                         selectedPollutant={pollutant}
-                        onPollutantSelected={setPollutant}
+                        onPollutantSelected={(pollutantToSelect) => {
+                            setPollutant(pollutantToSelect);
+                            void trackButton('pollutant_toggle', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                                selectedPollutant: pollutantToSelect,
+                            });
+                        }}
                     />
 
                     {error ? (
@@ -123,12 +143,26 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         <>
                             <TimeRangeSelector
                                 selectedTimeRange={timeRange}
-                                onTimeRangeSelected={setTimeRange}
+                                onTimeRangeSelected={(timeRangeSelected) => {
+                                    setTimeRange(timeRangeSelected);
+
+                                    void trackButton('time_range_toggle', currentScreen, {
+                                        timestamp: new Date().toISOString(),
+                                        selectedTimeRange: timeRangeSelected,
+                                    });
+                                }}
                             />
 
                             <ChartDisplayToggle
                                 selectedMode={displayMode}
-                                onModeSelected={setDisplayMode}
+                                onModeSelected={(mode) => {
+                                    setDisplayMode(mode);
+
+                                    void trackButton('chart_display_mode_toggle', currentScreen, {
+                                        timestamp: new Date().toISOString(),
+                                        selectedMode: mode,
+                                    });
+                                }}
                             />
 
                             {historicalData ? (
