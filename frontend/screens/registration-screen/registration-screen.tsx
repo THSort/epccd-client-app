@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LocationModal } from '../home-screen/components/location-modal/location-modal';
 import { Location } from '../../App.types';
 import { registerUser, submitDemographicSurvey } from '../../services/user.service';
 import { storeUserId } from '../../utils/storage.util';
 import { useSelectedLocation } from '../../context/SelectedLocationContext';
+import { RegistrationScreenProps, RegistrationStep } from './registration-screen.types';
+import { styles } from './registration-screen.styles';
 
 // Dummy FCM token for now
-const DUMMY_FCM_TOKEN = 'dummy_fcm_token_for_testing11122';
-
-interface RegistrationScreenProps {
-  onRegistrationComplete: () => void;
-}
+const DUMMY_FCM_TOKEN = 'dummy_fcm_token1_for_testing113122';
 
 export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegistrationComplete }) => {
-  // Step tracking (1: location, 2: mobile, 3: asthma)
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  // Step tracking
+  const [currentStep, setCurrentStep] = useState<number>(RegistrationStep.Location);
 
   // Get the setSelectedLocation function from context
   const { setSelectedLocation: setGlobalSelectedLocation } = useSelectedLocation();
@@ -23,7 +21,6 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   // Form data
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);
   const [mobileNumber, setMobileNumber] = useState<string>('');
-  const [hasAsthma, setHasAsthma] = useState<boolean | null>(null);
 
   // UI states
   const [locationModalVisible, setLocationModalVisible] = useState<boolean>(false);
@@ -37,26 +34,50 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
     setGlobalSelectedLocation(location);
     setLocationModalVisible(false);
     // Move to next step after location is selected
-    setCurrentStep(2);
+    setCurrentStep(RegistrationStep.MobileNumber);
   };
 
   // Handle mobile number submission
   const handleMobileSubmit = () => {
     // Mobile is optional, so we can proceed regardless
-    setCurrentStep(3);
+    setCurrentStep(RegistrationStep.Asthma);
+  };
+
+  // Handle skip all button
+  const handleSkipAll = async () => {
+    if (!selectedLocation) {
+      setError('Please select a location first');
+      setCurrentStep(RegistrationStep.Location);
+      return;
+    }
+
+    // Skip to the end and complete registration with default values
+    setMobileNumber('');
+    await completeRegistration(false); // Default to "No" for asthma
   };
 
   // Handle asthma selection
   const handleAsthmaSelection = async (value: boolean) => {
-    setHasAsthma(value);
     await completeRegistration(value);
+  };
+
+  // Handle skip asthma question
+  const handleSkipAsthma = async () => {
+    if (!selectedLocation) {
+      setError('Please select a location first');
+      setCurrentStep(RegistrationStep.Location);
+      return;
+    }
+
+    // Skip asthma question and complete registration with default value
+    await completeRegistration(false); // Default to "No" for asthma
   };
 
   // Complete registration process
   const completeRegistration = async (asthmaValue: boolean) => {
     if (!selectedLocation) {
       setError('Please select a location first');
-      setCurrentStep(1);
+      setCurrentStep(RegistrationStep.Location);
       return;
     }
 
@@ -90,68 +111,126 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
     }
   };
 
+  // Render progress indicators
+  const renderProgressIndicators = () => {
+    // Use the number of steps from the enum
+    const totalSteps = Object.keys(RegistrationStep).length / 2; // Divide by 2 because enum creates both key->value and value->key mappings
+
+    return (
+      <View style={styles.progressContainer}>
+        {Array.from({ length: totalSteps }).map((_, index) => {
+          // Determine the style based on the step and current position
+          let indicatorStyle;
+          if (index === 0) {
+            // First indicator is always gold
+            indicatorStyle = styles.goldProgressIndicator;
+          } else if (index === 1 && currentStep >= RegistrationStep.MobileNumber) {
+            // Second indicator is yellow when on step 2 or higher
+            indicatorStyle = styles.activeProgressIndicator;
+          } else if (index === 2 && currentStep >= RegistrationStep.Asthma) {
+            // Third indicator is yellow when on step 3
+            indicatorStyle = styles.activeProgressIndicator;
+          } else {
+            // All other indicators are gray
+            indicatorStyle = {};
+          }
+
+          return (
+            <View
+              key={index}
+              style={[styles.progressIndicator, indicatorStyle]}
+            />
+          );
+        })}
+      </View>
+    );
+  };
+
   // Render current step
   const renderStep = () => {
     switch (currentStep) {
-      case 1:
+      case RegistrationStep.Location:
         return (
           <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>Select Your Location</Text>
-            <Text style={styles.stepDescription}>
-              Choose the location for which you want to receive air quality alerts
+            {renderProgressIndicators()}
+
+            <Text style={styles.stepTitle}>
+              Which area do you want to receive AQI alerts for?
             </Text>
+
             <TouchableOpacity
-              style={styles.locationButton}
+              style={styles.selectAreaButton}
               onPress={() => setLocationModalVisible(true)}
             >
-              <Text style={styles.locationButtonText}>
-                {selectedLocation ? selectedLocation.locationName : 'Select Location'}
+              <Text style={styles.selectAreaButtonText}>
+                {selectedLocation ? selectedLocation.locationName : 'Select Area'}
               </Text>
+              <Text style={styles.dropdownIcon}>▼</Text>
             </TouchableOpacity>
           </View>
         );
-      case 2:
+      case RegistrationStep.MobileNumber:
         return (
           <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>Mobile Number (Optional)</Text>
-            <Text style={styles.stepDescription}>
-              Provide your mobile number to receive SMS alerts
+            {renderProgressIndicators()}
+            <Text style={styles.stepTitle}>
+              Please enter your{'\n'}Mobile Number
             </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter mobile number"
-              value={mobileNumber}
-              onChangeText={setMobileNumber}
-              keyboardType="phone-pad"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleMobileSubmit}>
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
-          </View>
-        );
-      case 3:
-        return (
-          <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>Do you have asthma?</Text>
-            <Text style={styles.stepDescription}>
-              This information helps us provide more relevant alerts
-            </Text>
-            <View style={styles.optionsContainer}>
-              <TouchableOpacity
-                style={[styles.optionButton, hasAsthma === true && styles.selectedOption]}
-                onPress={() => handleAsthmaSelection(true)}
-                disabled={isLoading}
-              >
-                <Text style={styles.optionText}>Yes</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.optionButton, hasAsthma === false && styles.selectedOption]}
-                onPress={() => handleAsthmaSelection(false)}
-                disabled={isLoading}
-              >
-                <Text style={styles.optionText}>No</Text>
-              </TouchableOpacity>
+
+            <View style={styles.phoneInputContainer}>
+              <View style={styles.countryCodeContainer}>
+                <Text style={styles.countryCodeText}>+92</Text>
+              </View>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="3240152180"
+                placeholderTextColor="#666666"
+                value={mobileNumber}
+                onChangeText={setMobileNumber}
+                keyboardType="phone-pad"
+              />
             </View>
+
+            <TouchableOpacity style={styles.skipButton} onPress={handleMobileSubmit}>
+              <Text style={styles.skipIcon}>▶</Text>
+              <Text style={styles.skipButtonText}>Skip</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      case RegistrationStep.Asthma:
+        return (
+          <View style={styles.stepContainer}>
+            {renderProgressIndicators()}
+            <Text style={styles.stepTitle}>
+              Do you have a history of{'\n'}Asthma?
+            </Text>
+
+            <TouchableOpacity
+              style={styles.asthmaOptionButton}
+              onPress={() => handleAsthmaSelection(true)}
+              disabled={isLoading}
+            >
+              <View style={styles.asthmaOptionContent}>
+                <Text style={styles.checkIcon}>✓</Text>
+                <Text style={styles.asthmaOptionText}>Yes</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.asthmaOptionButtonNo}
+              onPress={() => handleAsthmaSelection(false)}
+              disabled={isLoading}
+            >
+              <View style={styles.asthmaOptionContent}>
+                <Text style={styles.xIcon}>✕</Text>
+                <Text style={styles.asthmaOptionTextNo}>No</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkipAsthma}>
+              <Text style={styles.skipIcon}>▶</Text>
+              <Text style={styles.skipButtonText}>Skip</Text>
+            </TouchableOpacity>
           </View>
         );
       default:
@@ -161,8 +240,6 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Welcome to Air Quality App</Text>
-
       {error && <Text style={styles.errorText}>{error}</Text>}
 
       {isLoading ? (
@@ -171,7 +248,15 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
           <Text style={styles.loadingText}>Setting up your account...</Text>
         </View>
       ) : (
-        renderStep()
+        <>
+        <View style={styles.skipAllContainer}>
+              <TouchableOpacity onPress={handleSkipAll} style={styles.skipAllButton}>
+                <Text style={styles.skipAllIcon}>▶▶</Text>
+                <Text style={styles.skipAllButtonText}>Skip All</Text>
+              </TouchableOpacity>
+            </View>
+          {renderStep()}
+        </>
       )}
 
       <LocationModal
@@ -183,96 +268,3 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#1E1E1E',
-    justifyContent: 'center',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  stepContainer: {
-    marginBottom: 20,
-  },
-  stepTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 10,
-  },
-  stepDescription: {
-    fontSize: 16,
-    color: '#CCCCCC',
-    marginBottom: 20,
-  },
-  locationButton: {
-    backgroundColor: '#333333',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  locationButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-  },
-  input: {
-    backgroundColor: '#333333',
-    color: '#FFFFFF',
-    padding: 15,
-    borderRadius: 8,
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#FFD700',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  optionButton: {
-    backgroundColor: '#333333',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 0.48,
-  },
-  selectedOption: {
-    backgroundColor: '#FFD700',
-  },
-  optionText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  errorText: {
-    color: '#FF6B6B',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    color: '#FFFFFF',
-    marginTop: 10,
-    fontSize: 16,
-  },
-});

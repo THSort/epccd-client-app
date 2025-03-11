@@ -11,7 +11,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {Location} from './App.types.ts';
 import {Pollutant} from './screens/air-quality-detailed-report/air-quality-detailed-report.types.ts';
 import {UserActivityProvider} from './context/UserActivityContext.tsx';
-import {RegistrationScreen} from './screens/registration-screen/registration-screen.tsx';
+import {RegistrationScreen} from './screens/registration-screen';
 import {getUserId} from './utils/storage.util.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -43,7 +43,7 @@ function App(): React.JSX.Element {
             }
         };
 
-        // void AsyncStorage.removeItem('user_id');
+        void AsyncStorage.removeItem('user_id');
         loadUserId();
     }, []);
 

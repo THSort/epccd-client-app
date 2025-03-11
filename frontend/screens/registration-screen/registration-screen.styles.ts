@@ -1,0 +1,225 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 60,
+  },
+  progressIndicator: {
+    width: 60,
+    height: 4,
+    backgroundColor: '#333333',
+    marginHorizontal: 5,
+    borderRadius: 2,
+  },
+  activeProgressIndicator: {
+    backgroundColor: '#FFD700',
+  },
+  goldProgressIndicator: {
+    backgroundColor: '#D4AF37', // Darker gold color
+  },
+  stepContainer: {
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  stepTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    textAlign: 'center',
+    marginBottom: 60,
+  },
+  stepDescription: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    marginBottom: 20,
+  },
+  selectAreaButton: {
+    backgroundColor: '#FFD700',
+    padding: 18,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectAreaButtonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  dropdownIcon: {
+    color: '#000000',
+    fontSize: 12,
+    marginLeft: 10,
+  },
+  skipAllContainer: {
+    position: 'absolute',
+    top: 30,
+    right: 30,
+    zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 20,
+  },
+  skipAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  skipAllButtonText: {
+    color: '#FFD700',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  skipAllIcon: {
+    color: '#FFD700',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#FFD700',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 60,
+  },
+  countryCodeContainer: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRightWidth: 1,
+    borderRightColor: '#FFD700',
+    justifyContent: 'center',
+  },
+  countryCodeText: {
+    color: '#FFD700',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  phoneInput: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  skipButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  skipIcon: {
+    color: '#FFD700',
+    fontSize: 18,
+    marginRight: 5,
+  },
+  skipButtonText: {
+    color: '#FFD700',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  input: {
+    backgroundColor: '#333333',
+    color: '#FFFFFF',
+    padding: 15,
+    borderRadius: 8,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#FFD700',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  optionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  optionButton: {
+    backgroundColor: '#333333',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    flex: 0.48,
+  },
+  selectedOption: {
+    backgroundColor: '#FFD700',
+  },
+  optionText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  asthmaOptionButton: {
+    backgroundColor: '#FFD700',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  asthmaOptionButtonNo: {
+    backgroundColor: 'transparent',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFD700',
+    marginBottom: 60,
+    alignItems: 'center',
+  },
+  asthmaOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  asthmaOptionText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  asthmaOptionTextNo: {
+    color: '#FFD700',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  checkIcon: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  xIcon: {
+    color: '#FFD700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 10,
+    fontSize: 16,
+  },
+}); 
