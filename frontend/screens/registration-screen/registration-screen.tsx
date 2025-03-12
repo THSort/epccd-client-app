@@ -18,7 +18,6 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
   // Get FCM token using the hook
   const { fcmToken, loading: fcmTokenLoading } = useNotification();
-  console.log('fcmTokenLoading', fcmTokenLoading);
 
   // Form data
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);

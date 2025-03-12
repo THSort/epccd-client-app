@@ -28,8 +28,6 @@ type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
-    useNotification();
-
     const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 

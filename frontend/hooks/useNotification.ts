@@ -81,10 +81,9 @@ export const useNotification = () => {
                 await requestUserPermission();
                 const token = await generateFcmToken();
                 setFcmToken(token);
+                setLoading(false);
             } catch (error) {
                 console.error('Error setting up notifications:', error);
-            } finally {
-                setLoading(false);
             }
         };
 
