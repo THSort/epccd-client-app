@@ -41,7 +41,7 @@ const startServer = async () => {
         // }, POLLING_INTERVAL_MS);
         //
         // // Run the function immediately on startup
-        // void pollEpaMonitorsData();
+        void pollEpaMonitorsData();
     } catch (error) {
         console.error("❌ Server startup failed:", error);
         process.exit(1); // Exit if DB connection fails

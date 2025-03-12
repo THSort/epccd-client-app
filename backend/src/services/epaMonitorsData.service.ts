@@ -1,7 +1,7 @@
 import axios from "axios";
 import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse} from "../types/epaMonitorsData.types";
 import logger from "../utils/logger";
-import {shouldAlertUsersInLocation} from "./forecastingModelService";
+import {shouldAlertUsersInLocation, alertUsersInLocations} from "./forecastingModelService";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 
 const BASE_URL = "http://34.132.171.41:8000/api/aqms_data/";
@@ -24,12 +24,18 @@ export const pollEpaMonitorsData = async () => {
         for (const data of aqmsData) {
             if (shouldAlertUsersInLocation(data.location, data)) {
                 alertedLocations.push(data.location);
+                
+                // Call alertUsersInLocations to send push notifications
+                await alertUsersInLocations(data);
             }
             // 🟢 Store Data in MongoDB
             await storeEpaMonitorsData(data);
         }
 
         logger.info(`Locations that require an alert: ${alertedLocations.join(", ")}`);
+        if (alertedLocations.length > 0) {
+            logger.info(`Push notifications sent to users in locations: ${alertedLocations.join(", ")}`);
+        }
     } catch (error) {
         logger.error(`Error polling EPA Monitors data: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     }

@@ -12,6 +12,25 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
+        // Check if a user with this FCM token already exists
+        const existingUser = await User.findOne({fcmToken});
+        
+        if (existingUser) {
+            // Update the existing user's location
+            existingUser.location = location;
+            if (mobile_number) {
+                existingUser.mobile_number = mobile_number;
+            }
+            
+            await existingUser.save();
+            
+            res.status(200).json({
+                message: "User with this device already exists. Location updated successfully.", 
+                user: existingUser
+            });
+            return;
+        }
+
         // Generate a new unique user ID
         const id_user = uuidv4();
 
