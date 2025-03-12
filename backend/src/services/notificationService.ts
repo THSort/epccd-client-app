@@ -17,13 +17,15 @@ try {
   logger.error(`Error initializing Firebase Admin: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
 }
 
-// Function to send notifications
+// Function to send notifications with improved error handling
 export const sendNotifications = async (tokens: string[], message: string) => {
   if (!tokens.length) {
     logger.info('No tokens provided for notifications');
     return;
   }
 
+  logger.info(`Attempting to send notifications to ${tokens.length} devices`);
+  
   const messages = tokens.map(token => ({
     notification: {
       title: 'Air Quality Alert',
@@ -32,11 +34,32 @@ export const sendNotifications = async (tokens: string[], message: string) => {
     token: token,
   }));
 
-  try {
-    const response = await Promise.all(messages.map(msg => fireBaseMessaging.send(msg)));
-    logger.info(`${response.length} messages were sent successfully`);
-  } catch (error) {
-    logger.error(`Error sending notifications: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+  // Track successful and failed notifications
+  const results = {
+    successful: 0,
+    failed: 0,
+    failedTokens: [] as string[],
+    errors: [] as string[]
+  };
+
+  // Send notifications individually to track which ones succeed and which fail
+  for (let i = 0; i < messages.length; i++) {
+    try {
+      await fireBaseMessaging.send(messages[i]);
+      results.successful++;
+    } catch (error) {
+      results.failed++;
+      results.failedTokens.push(messages[i].token);
+      results.errors.push(error instanceof Error ? error.message : JSON.stringify(error));
+      logger.error(`Failed to send notification to token ${messages[i].token}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+    }
+  }
+
+  // Log summary of results
+  logger.info(`Notification results: ${results.successful} successful, ${results.failed} failed`);
+  
+  if (results.failed > 0) {
+    logger.error(`Failed to send notifications to the following tokens: ${results.failedTokens.join(', ')}`);
   }
 };
 
@@ -81,8 +104,17 @@ export const alertUsersInLocations = async (locationsData: EpaMonitorsData[]) =>
     if (usersInAlertLocations.length > 0) {
       logger.info(`Found ${usersInAlertLocations.length} users in affected locations`);
       
-      // Extract FCM tokens from users in alert locations
-      const tokens = usersInAlertLocations.map(user => user.fcmToken).filter(Boolean);
+      // Extract FCM tokens from users in alert locations and filter out any null/undefined tokens
+      const tokens = usersInAlertLocations
+        .map(user => user.fcmToken)
+        .filter(token => token && token.trim() !== '');
+      
+      logger.info(`Found ${tokens.length} valid FCM tokens out of ${usersInAlertLocations.length} users`);
+      
+      if (tokens.length === 0) {
+        logger.warn('No valid FCM tokens found for users in alert locations');
+        return;
+      }
       
       // Create a detailed alert message
       let alertMessage = 'Air quality alert: Potential health risk detected in your area.';
@@ -111,6 +143,6 @@ export const alertUsersInLocations = async (locationsData: EpaMonitorsData[]) =>
       logger.info('No users found in alert locations');
     }
   } catch (error) {
-    logger.error(`Error sending notifications to users: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+    logger.error(`Error in alertUsersInLocations: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
   }
 }; 
