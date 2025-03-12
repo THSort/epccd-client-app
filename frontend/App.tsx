@@ -14,6 +14,7 @@ import {UserActivityProvider} from './context/UserActivityContext.tsx';
 import {RegistrationScreen} from './screens/registration-screen';
 import {getUserId} from './utils/storage.util.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNotification} from './hooks/useNotification.ts';
 
 type RootStackParamList = {
     Home: undefined;
@@ -27,6 +28,8 @@ type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
+    useNotification();
+
     const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -44,6 +47,7 @@ function App(): React.JSX.Element {
         };
 
         void AsyncStorage.removeItem('user_id');
+
         loadUserId();
     }, []);
 

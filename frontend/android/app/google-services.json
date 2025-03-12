@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "64508878853",
+    "project_id": "ccd-client-app",
+    "storage_bucket": "ccd-client-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64508878853:android:31955df46758cf64d9bc6c",
+        "android_client_info": {
+          "package_name": "com.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtxR7n_9ro3SldvyGLN3ehjV9W7_qWAKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

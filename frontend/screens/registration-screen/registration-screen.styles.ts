@@ -7,6 +7,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#000000',
     justifyContent: 'center',
   },
+  contentContainer: {
+    flex: 1,
+    position: 'relative',
+    justifyContent: 'center',
+  },
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -61,12 +66,11 @@ export const styles = StyleSheet.create({
   },
   skipAllContainer: {
     position: 'absolute',
-    top: 30,
-    right: 30,
+    top: 20,
+    right: 20,
     zIndex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20,
   },
   skipAllButton: {
     flexDirection: 'row',
@@ -211,7 +215,18 @@ export const styles = StyleSheet.create({
   errorText: {
     color: '#FF6B6B',
     textAlign: 'center',
-    marginBottom: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  errorContainer: {
+    marginTop: 10,
+    marginBottom: 30,
+    marginHorizontal: 20,
+    padding: 10,
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
   },
   loadingContainer: {
     alignItems: 'center',

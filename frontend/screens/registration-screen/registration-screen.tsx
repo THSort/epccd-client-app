@@ -7,16 +7,17 @@ import { storeUserId } from '../../utils/storage.util';
 import { useSelectedLocation } from '../../context/SelectedLocationContext';
 import { RegistrationScreenProps, RegistrationStep } from './registration-screen.types';
 import { styles } from './registration-screen.styles';
-
-// Dummy FCM token for now
-const DUMMY_FCM_TOKEN = 'dummy_fcm_token1_for_testing113122';
+import { useNotification } from '../../hooks/useNotification';
 
 export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegistrationComplete }) => {
   // Step tracking
-  const [currentStep, setCurrentStep] = useState<number>(RegistrationStep.Location);
+  const [currentStep, setCurrentStepState] = useState<number>(RegistrationStep.Location);
 
   // Get the setSelectedLocation function from context
   const { setSelectedLocation: setGlobalSelectedLocation } = useSelectedLocation();
+
+  // Get FCM token using the hook
+  const { fcmToken, loading: fcmTokenLoading } = useNotification();
 
   // Form data
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);
@@ -27,37 +28,70 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Wrapper for setCurrentStep to clear errors when changing steps
+  const setCurrentStep = (step: number) => {
+    // Clear any error messages when changing steps
+    setError(null);
+    setCurrentStepState(step);
+  };
+
   // Handle location selection
   const handleLocationSelected = (location: Location) => {
     setSelectedLocation(location);
     // Also set the location in the global context, which will save it to AsyncStorage
     setGlobalSelectedLocation(location);
     setLocationModalVisible(false);
+    // Clear any error messages
+    setError(null);
     // Move to next step after location is selected
     setCurrentStep(RegistrationStep.MobileNumber);
   };
 
   // Handle mobile number submission
   const handleMobileSubmit = () => {
+    // Clear any error messages
+    setError(null);
     // Mobile is optional, so we can proceed regardless
     setCurrentStep(RegistrationStep.Asthma);
   };
 
   // Handle skip all button
   const handleSkipAll = async () => {
+    // Double-check that we have a location selected
     if (!selectedLocation) {
       setError('Please select a location first');
       setCurrentStep(RegistrationStep.Location);
       return;
     }
 
-    // Skip to the end and complete registration with default values
-    setMobileNumber('');
-    await completeRegistration(false); // Default to "No" for asthma
+    // Clear any error messages
+    setError(null);
+
+    try {
+      // Show loading indicator
+      setIsLoading(true);
+
+      // Skip to the end and complete registration with default values
+      // If we're on the mobile number step, use the entered mobile number
+      // Otherwise, use an empty string
+      if (currentStep === RegistrationStep.MobileNumber && mobileNumber) {
+        // Keep the entered mobile number
+      } else {
+        setMobileNumber('');
+      }
+
+      await completeRegistration(false); // Default to "No" for asthma
+    } catch (error) {
+      console.error('Error in skip all flow:', error);
+      setError('Something went wrong. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   // Handle asthma selection
   const handleAsthmaSelection = async (value: boolean) => {
+    // Clear any error messages
+    setError(null);
     await completeRegistration(value);
   };
 
@@ -69,28 +103,45 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
       return;
     }
 
+    // Clear any error messages
+    setError(null);
     // Skip asthma question and complete registration with default value
     await completeRegistration(false); // Default to "No" for asthma
   };
 
   // Complete registration process
   const completeRegistration = async (asthmaValue: boolean) => {
+    // Validate required data
     if (!selectedLocation) {
       setError('Please select a location first');
       setCurrentStep(RegistrationStep.Location);
       return;
     }
 
-    setIsLoading(true);
+    if (fcmTokenLoading) {
+      setError('Still preparing notification settings. Please wait a moment and try again.');
+      return;
+    }
+
+    if (!fcmToken) {
+      setError('Unable to generate notification token. Please try again.');
+      return;
+    }
+
+    // Only set loading if it's not already set (to avoid flickering when called from handleSkipAll)
+    if (!isLoading) {
+      setIsLoading(true);
+    }
+
     setError(null);
 
     try {
       // Ensure the selected location is saved in the global context
       setGlobalSelectedLocation(selectedLocation);
 
-      // Step 1: Register user
+      // Step 1: Register user with the real FCM token
       const userData = await registerUser(
-        DUMMY_FCM_TOKEN,
+        fcmToken,
         selectedLocation.locationCode,
         mobileNumber || undefined
       );
@@ -106,9 +157,22 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
     } catch (err) {
       console.error('Registration error:', err);
       setError('Failed to complete registration. Please try again.');
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle opening the location modal
+  const handleOpenLocationModal = () => {
+    // Clear any error messages when opening the modal
+    setError(null);
+    setLocationModalVisible(true);
+  };
+
+  // Handle closing the location modal
+  const handleCloseLocationModal = () => {
+    // Clear any error messages when closing the modal
+    setError(null);
+    setLocationModalVisible(false);
   };
 
   // Render progress indicators
@@ -160,7 +224,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
             <TouchableOpacity
               style={styles.selectAreaButton}
-              onPress={() => setLocationModalVisible(true)}
+              onPress={handleOpenLocationModal}
             >
               <Text style={styles.selectAreaButtonText}>
                 {selectedLocation ? selectedLocation.locationName : 'Select Area'}
@@ -240,28 +304,36 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
   return (
     <View style={styles.container}>
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFD700" />
           <Text style={styles.loadingText}>Setting up your account...</Text>
         </View>
       ) : (
-        <>
-        <View style={styles.skipAllContainer}>
+        <View style={styles.contentContainer}>
+          {/* Only show Skip All button if we're past the location step */}
+          {currentStep > RegistrationStep.Location && (
+            <View style={styles.skipAllContainer}>
               <TouchableOpacity onPress={handleSkipAll} style={styles.skipAllButton}>
                 <Text style={styles.skipAllIcon}>▶▶</Text>
                 <Text style={styles.skipAllButtonText}>Skip All</Text>
               </TouchableOpacity>
             </View>
+          )}
+
           {renderStep()}
-        </>
+
+          {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+          )}
+        </View>
       )}
 
       <LocationModal
         visible={locationModalVisible}
-        onClose={() => setLocationModalVisible(false)}
+        onClose={handleCloseLocationModal}
         onLocationSelected={handleLocationSelected}
         selectedLocation={selectedLocation}
       />
