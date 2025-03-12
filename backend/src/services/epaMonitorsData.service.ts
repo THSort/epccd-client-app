@@ -1,8 +1,9 @@
 import axios from "axios";
 import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse} from "../types/epaMonitorsData.types";
 import logger from "../utils/logger";
-import {shouldAlertUsersInLocation, alertUsersInLocations} from "./forecastingModelService";
+import {shouldAlertUsersInLocation} from "./forecastingModelService";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
+import {alertUsersInLocations} from "./notificationService";
 
 const BASE_URL = "http://34.132.171.41:8000/api/aqms_data/";
 
@@ -19,22 +20,26 @@ export const pollEpaMonitorsData = async () => {
             .filter(result => result.status === "fulfilled")
             .map(result => (result as PromiseFulfilledResult<EpaMonitorsData>).value);
 
-        const alertedLocations: number[] = [];
+        // Collect locations that need alerts based on the forecasting model
+        const locationsNeedingAlerts: EpaMonitorsData[] = [];
 
-        for (const data of aqmsData) {
+        for (const data of aqmsData) { 
+            // Determine if this location needs an alert using the forecasting model
             if (shouldAlertUsersInLocation(data.location, data)) {
-                alertedLocations.push(data.location);
-                
-                // Call alertUsersInLocations to send push notifications
-                await alertUsersInLocations(data);
+                locationsNeedingAlerts.push(data);
             }
-            // 🟢 Store Data in MongoDB
+            // Store Data in MongoDB
             await storeEpaMonitorsData(data);
         }
 
-        logger.info(`Locations that require an alert: ${alertedLocations.join(", ")}`);
-        if (alertedLocations.length > 0) {
-            logger.info(`Push notifications sent to users in locations: ${alertedLocations.join(", ")}`);
+        // Log locations that require an alert
+        const alertLocationIds = locationsNeedingAlerts.map(data => data.location);
+        logger.info(`Locations that require an alert based on forecasting model: ${alertLocationIds.join(", ") || "None"}`);
+        
+        // Send notifications to users in alert locations (only once, after the loop)
+        if (locationsNeedingAlerts.length > 0) {
+            await alertUsersInLocations(locationsNeedingAlerts);
+            logger.info(`Push notifications sent to users in locations: ${alertLocationIds.join(", ")}`);
         }
     } catch (error) {
         logger.error(`Error polling EPA Monitors data: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
