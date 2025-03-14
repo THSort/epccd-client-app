@@ -69,10 +69,10 @@ export interface PollutantChartData {
 
 // Updated response type for the filtered historical data
 export interface FilteredHistoricalDataResponse {
-    oneDay: PollutantChartData[];
-    oneWeek: PollutantChartData[];
-    oneMonth: PollutantChartData[];
-    threeMonths: PollutantChartData[];
-    sixMonths: PollutantChartData[];
-    oneYear: PollutantChartData[];
+    oneDay: Record<string, PollutantChartData>;
+    oneWeek: Record<string, PollutantChartData>;
+    oneMonth: Record<string, PollutantChartData>;
+    threeMonths: Record<string, PollutantChartData>;
+    sixMonths: Record<string, PollutantChartData>;
+    oneYear: Record<string, PollutantChartData>;
 }

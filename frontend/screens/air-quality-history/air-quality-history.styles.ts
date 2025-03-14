@@ -53,10 +53,37 @@ export const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        height: 200,
+        minHeight: 200,
     },
     noDataText: {
         color: '#888',
         fontSize: 16,
+        marginBottom: 15,
+    },
+    timePointsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-around',
+        width: '100%',
+        marginTop: 10,
+    },
+    timePoint: {
+        backgroundColor: '#333',
+        padding: 10,
+        borderRadius: 8,
+        margin: 5,
+        width: '45%',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    timeLabel: {
+        color: 'yellow',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    valueLabel: {
+        color: 'white',
+        fontSize: 14,
     },
 });
