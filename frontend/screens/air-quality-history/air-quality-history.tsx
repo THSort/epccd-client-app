@@ -1,6 +1,6 @@
 import {ReactElement, useState, useEffect, useCallback} from 'react';
 import React from 'react';
-import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler} from 'react-native';
+import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, Dimensions} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {styles} from './air-quality-history.styles';
@@ -19,6 +19,13 @@ import {ChartDisplayToggle} from './components/chart-display-toggle/chart-displa
 import {ChartDisplayMode} from './components/chart-display-toggle/chart-display-toggle.types.ts';
 import {PollutantSelector} from './components/pollutant-selector/pollutant-selector.tsx';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
+// Import Chart Kit components
+import {
+    LineChart,
+} from 'react-native-chart-kit';
+
+// Get screen width for responsive charts
+const screenWidth = Dimensions.get('window').width;
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -95,27 +102,245 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 // Convert the oneDay object to an array for consistency
                 return Object.entries(historicalData.oneDay).map(([time, data]) => ({
                     ...data,
-                    time // Add the time as a property for easier access
+                    time, // Add the time as a property for easier access
                 }));
             case '1w':
-                // For oneWeek, we'll handle it directly in the UI
-                return [];
+                return Object.entries(historicalData.oneWeek).map(([day, data]) => ({
+                    ...data,
+                    time: day,
+                }));
             case '1m':
-                // For oneMonth, we'll handle it directly in the UI
-                return [];
+                return Object.entries(historicalData.oneMonth).map(([week, data]) => ({
+                    ...data,
+                    time: week,
+                }));
             case '3m':
-                // For threeMonths, we'll handle it directly in the UI
-                return [];
+                return Object.entries(historicalData.threeMonths).map(([month, data]) => ({
+                    ...data,
+                    time: month,
+                }));
             case '6m':
-                // For sixMonths, we'll handle it directly in the UI
-                return [];
+                return Object.entries(historicalData.sixMonths).map(([month, data]) => ({
+                    ...data,
+                    time: month,
+                }));
             case '1y':
-                // For oneYear, we'll handle it directly in the UI
-                return [];
+                return Object.entries(historicalData.oneYear).map(([quarter, data]) => ({
+                    ...data,
+                    time: quarter,
+                }));
             default:
                 return [];
         }
     }, [historicalData, timeRange]);
+
+    // Helper function to get the appropriate value based on pollutant and display mode
+    const getValueForPollutant = useCallback((dataPoint: Record<string, any>) => {
+        if (displayMode === 'concentration') {
+            switch (pollutant) {
+                case Pollutant.PM2_5:
+                    return dataPoint.pm2_5_ug_m3;
+                case Pollutant.PM10:
+                    return dataPoint.pm10_ug_m3;
+                case Pollutant.O3:
+                    return dataPoint.o3_ppb;
+                case Pollutant.NO2:
+                    return dataPoint.no2_ppb;
+                case Pollutant.SO2:
+                    return dataPoint.so2_ppb;
+                case Pollutant.CO:
+                    return dataPoint.co_ppm;
+                default:
+                    return 0;
+            }
+        } else {
+            switch (pollutant) {
+                case Pollutant.PM2_5:
+                    return dataPoint.PM2_5_AQI;
+                case Pollutant.PM10:
+                    return dataPoint.PM10_AQI;
+                case Pollutant.O3:
+                    return dataPoint.O3_AQI;
+                case Pollutant.NO2:
+                    return dataPoint.NO2_AQI;
+                case Pollutant.SO2:
+                    return dataPoint.SO2_AQI;
+                case Pollutant.CO:
+                    return dataPoint.CO_AQI;
+                default:
+                    return 0;
+            }
+        }
+    }, [pollutant, displayMode]);
+
+    // Helper function to get the appropriate unit based on pollutant and display mode
+    const getUnitForPollutant = useCallback(() => {
+        if (displayMode === 'concentration') {
+            switch (pollutant) {
+                case Pollutant.PM2_5:
+                case Pollutant.PM10:
+                    return 'μg/m³';
+                case Pollutant.CO:
+                    return 'ppm';
+                default:
+                    return 'ppb';
+            }
+        } else {
+            return 'AQI';
+        }
+    }, [pollutant, displayMode]);
+
+    // Sort data chronologically based on time range
+    const getSortedData = useCallback(() => {
+        const data = getDataForTimeRange();
+
+        if (timeRange === '1d') {
+            // Sort by time (12 AM, 4 AM, 8 AM, 12 PM, 4 PM, 8 PM)
+            const timeOrder: Record<string, number> = {
+                '12 AM': 0,
+                '4 AM': 1,
+                '8 AM': 2,
+                '12 PM': 3,
+                '4 PM': 4,
+                '8 PM': 5,
+            };
+            return [...data].sort((a, b) => (timeOrder[a.time] || 0) - (timeOrder[b.time] || 0));
+        } else if (timeRange === '1w') {
+            // Sort by day of week
+            const dayOrder: Record<string, number> = {
+                'Sunday': 0,
+                'Monday': 1,
+                'Tuesday': 2,
+                'Wednesday': 3,
+                'Thursday': 4,
+                'Friday': 5,
+                'Saturday': 6,
+            };
+            return [...data].sort((a, b) => (dayOrder[a.time] || 0) - (dayOrder[b.time] || 0));
+        } else if (timeRange === '1m') {
+            // Sort by week chronologically (assuming format "MM/DD - MM/DD")
+            return [...data].sort((a, b) => {
+                const getStartDate = (weekLabel: string) => {
+                    const startDateStr = weekLabel.split(' - ')[0];
+                    const [month, day] = startDateStr.split('/').map(Number);
+                    const date = new Date();
+                    date.setMonth(month - 1);
+                    date.setDate(day);
+                    return date;
+                };
+
+                const dateA = getStartDate(a.time);
+                const dateB = getStartDate(b.time);
+
+                return dateA.getTime() - dateB.getTime();
+            });
+        } else if (timeRange === '3m' || timeRange === '6m') {
+            // Sort months chronologically
+            return [...data].sort((a, b) => {
+                const getDate = (monthYear: string) => {
+                    const [month, year] = monthYear.split(' ');
+                    const monthIndex = [
+                        'January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December',
+                    ].indexOf(month);
+                    return new Date(parseInt(year), monthIndex, 1);
+                };
+
+                return getDate(a.time).getTime() - getDate(b.time).getTime();
+            });
+        } else if (timeRange === '1y') {
+            // Sort quarters chronologically
+            const quarterOrder: Record<string, number> = {
+                'January - March': 0,
+                'April - June': 1,
+                'July - September': 2,
+                'October - December': 3,
+            };
+
+            return [...data].sort((a, b) => (quarterOrder[a.time] ?? 0) - (quarterOrder[b.time] ?? 0));
+        }
+
+        return data;
+    }, [getDataForTimeRange, timeRange]);
+
+    // Prepare data for Chart Kit
+    const prepareChartData = useCallback(() => {
+        const sortedData = getSortedData();
+
+        return {
+            labels: sortedData.map(item => {
+                // Format based on time range
+                if (timeRange === '1d') {
+                    // Keep time labels as is (12 AM, 4 AM, etc.)
+                    return item.time;
+                } else if (timeRange === '1w') {
+                    // Truncate day names to three letters (Sun, Mon, Tue, etc.)
+                    const dayMap: Record<string, string> = {
+                        'Sunday': 'Sun',
+                        'Monday': 'Mon',
+                        'Tuesday': 'Tue',
+                        'Wednesday': 'Wed',
+                        'Thursday': 'Thu',
+                        'Friday': 'Fri',
+                        'Saturday': 'Sat',
+                    };
+                    return dayMap[item.time] || item.time;
+                } else if (timeRange === '1m') {
+                    // Format week ranges as dd/mm/yy for start date
+                    // Example: "5/15 - 5/21" becomes "15/05/23"
+                    try {
+                        const startDateStr = item.time.split(' - ')[0];
+                        const [month, day] = startDateStr.split('/').map(Number);
+                        const date = new Date();
+                        date.setMonth(month - 1);
+                        date.setDate(day);
+                        // Format as dd/mm/yy
+                        return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`;
+                    } catch (e) {
+                        return item.time;
+                    }
+                } else if (timeRange === '3m' || timeRange === '6m') {
+                    // Format month and year as mm/yy
+                    // Example: "January 2023" becomes "01/23"
+                    try {
+                        const [month, year] = item.time.split(' ');
+                        const monthIndex = [
+                            'January', 'February', 'March', 'April', 'May', 'June',
+                            'July', 'August', 'September', 'October', 'November', 'December',
+                        ].indexOf(month) + 1;
+                        return `${monthIndex.toString().padStart(2, '0')}/${year.slice(-2)}`;
+                    } catch (e) {
+                        return item.time;
+                    }
+                } else if (timeRange === '1y') {
+                    // For quarters, use the first month of the quarter in mm/yy format
+                    // Example: "January - March" becomes "01/23"
+                    try {
+                        const quarterStartMonths: Record<string, number> = {
+                            'January - March': 1,
+                            'April - June': 4,
+                            'July - September': 7,
+                            'October - December': 10,
+                        };
+                        const monthIndex = quarterStartMonths[item.time] || 1;
+                        const year = new Date().getFullYear();
+                        return `${monthIndex.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
+                    } catch (e) {
+                        return item.time;
+                    }
+                }
+                return item.time;
+            }),
+            datasets: [
+                {
+                    data: sortedData.map(item => getValueForPollutant(item)),
+                    color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`, // Yellow color
+                    strokeWidth: 2,
+                },
+            ],
+            legend: [`${pollutant} ${getUnitForPollutant()}`],
+        };
+    }, [getSortedData, getValueForPollutant, getUnitForPollutant, pollutant, timeRange]);
 
     useEffect(() => {
         fetchHistoricalData();
@@ -182,367 +407,80 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                 }}
                             />
 
-                            <ChartDisplayToggle
-                                selectedMode={displayMode}
-                                onModeSelected={(mode) => {
-                                    setDisplayMode(mode);
+                            {historicalData && getSortedData().length > 0 ? (
+                                <View style={{
+                                    marginTop: 20,
+                                    // padding: 15,
+                                    backgroundColor: '#222',
+                                    borderRadius: 10,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    minHeight: 200,
+                                }}>
+                                    {/* Concentration/AQI Toggle */}
+                                    <ChartDisplayToggle
+                                        selectedMode={displayMode}
+                                        onModeSelected={(mode) => {
+                                            setDisplayMode(mode);
 
-                                    void trackButton('chart_display_mode_toggle', currentScreen, {
-                                        timestamp: new Date().toISOString(),
-                                        selectedMode: mode,
-                                    });
-                                }}
-                            />
+                                            void trackButton('chart_display_mode_toggle', currentScreen, {
+                                                timestamp: new Date().toISOString(),
+                                                selectedMode: mode,
+                                            });
+                                        }}
+                                    />
 
-                            {historicalData ? (
-                                <View style={styles.noDataContainer}>
-                                    <Text style={styles.noDataText}>
-                                        {timeRange === '1d' 
-                                            ? `Showing ${Object.keys(historicalData.oneDay).length} time points for the day` 
-                                            : timeRange === '1w'
-                                                ? `Showing ${Object.keys(historicalData.oneWeek).length} days of the week`
-                                                : timeRange === '1m'
-                                                    ? `Showing ${Object.keys(historicalData.oneMonth).length} weeks of the month`
-                                                    : timeRange === '3m'
-                                                        ? `Showing ${Object.keys(historicalData.threeMonths).length} months (3-month period)`
-                                                        : timeRange === '6m'
-                                                            ? `Showing ${Object.keys(historicalData.sixMonths).length} months (6-month period)`
-                                                            : timeRange === '1y'
-                                                                ? `Showing ${Object.keys(historicalData.oneYear).length} quarters of the year`
-                                                                : `Showing ${getDataForTimeRange().length} data points for ${timeRange} period`}
-                                    </Text>
-                                    
-                                    {timeRange === '1d' && (
-                                        <View style={styles.timePointsContainer}>
-                                            {Object.entries(historicalData.oneDay)
-                                                .sort((a, b) => {
-                                                    // Sort by time (12 AM, 4 AM, 8 AM, 12 PM, 4 PM, 8 PM)
-                                                    const timeOrder: Record<string, number> = {
-                                                        '12 AM': 0,
-                                                        '4 AM': 1,
-                                                        '8 AM': 2,
-                                                        '12 PM': 3,
-                                                        '4 PM': 4,
-                                                        '8 PM': 5
-                                                    };
-                                                    return (timeOrder[a[0]] || 0) - (timeOrder[b[0]] || 0);
-                                                })
-                                                .map(([time, data]) => (
-                                                    <View key={time} style={styles.timePoint}>
-                                                        <Text style={styles.timeLabel}>{time}</Text>
-                                                        <Text style={styles.valueLabel}>
-                                                            {displayMode === 'concentration' 
-                                                                ? `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.pm2_5_ug_m3.toFixed(2) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.pm10_ug_m3.toFixed(2)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.o3_ppb.toFixed(2)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.no2_ppb.toFixed(2)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.so2_ppb.toFixed(2)
-                                                                                    : data.co_ppm.toFixed(2)
-                                                                    } ${pollutant === Pollutant.PM2_5 || pollutant === Pollutant.PM10 
-                                                                        ? 'μg/m³' 
-                                                                        : pollutant === Pollutant.CO 
-                                                                            ? 'ppm' 
-                                                                            : 'ppb'}`
-                                                                : `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.PM2_5_AQI.toFixed(0) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.PM10_AQI.toFixed(0)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.O3_AQI.toFixed(0)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.NO2_AQI.toFixed(0)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.SO2_AQI.toFixed(0)
-                                                                                    : data.CO_AQI.toFixed(0)
-                                                                    } AQI`}
-                                                        </Text>
-                                                    </View>
-                                                ))}
-                                        </View>
-                                    )}
-                                    
-                                    {timeRange === '1w' && (
-                                        <View style={styles.timePointsContainer}>
-                                            {Object.entries(historicalData.oneWeek)
-                                                .sort((a, b) => {
-                                                    // Sort by day of week (Sunday, Monday, Tuesday, etc.)
-                                                    const dayOrder: Record<string, number> = {
-                                                        'Sunday': 0,
-                                                        'Monday': 1,
-                                                        'Tuesday': 2,
-                                                        'Wednesday': 3,
-                                                        'Thursday': 4,
-                                                        'Friday': 5,
-                                                        'Saturday': 6
-                                                    };
-                                                    return (dayOrder[a[0]] || 0) - (dayOrder[b[0]] || 0);
-                                                })
-                                                .map(([day, data]) => (
-                                                    <View key={day} style={styles.timePoint}>
-                                                        <Text style={styles.timeLabel}>{day}</Text>
-                                                        <Text style={styles.valueLabel}>
-                                                            {displayMode === 'concentration' 
-                                                                ? `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.pm2_5_ug_m3.toFixed(2) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.pm10_ug_m3.toFixed(2)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.o3_ppb.toFixed(2)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.no2_ppb.toFixed(2)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.so2_ppb.toFixed(2)
-                                                                                    : data.co_ppm.toFixed(2)
-                                                                    } ${pollutant === Pollutant.PM2_5 || pollutant === Pollutant.PM10 
-                                                                        ? 'μg/m³' 
-                                                                        : pollutant === Pollutant.CO 
-                                                                            ? 'ppm' 
-                                                                            : 'ppb'}`
-                                                                : `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.PM2_5_AQI.toFixed(0) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.PM10_AQI.toFixed(0)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.O3_AQI.toFixed(0)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.NO2_AQI.toFixed(0)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.SO2_AQI.toFixed(0)
-                                                                                    : data.CO_AQI.toFixed(0)
-                                                                    } AQI`}
-                                                        </Text>
-                                                    </View>
-                                                ))}
-                                        </View>
-                                    )}
-                                    
-                                    {timeRange === '3m' && (
-                                        <View style={styles.timePointsContainer}>
-                                            {Object.entries(historicalData.threeMonths)
-                                                .sort((a, b) => {
-                                                    // Sort months chronologically
-                                                    const getDate = (monthYear: string) => {
-                                                        const [month, year] = monthYear.split(' ');
-                                                        const monthIndex = [
-                                                            'January', 'February', 'March', 'April', 'May', 'June',
-                                                            'July', 'August', 'September', 'October', 'November', 'December'
-                                                        ].indexOf(month);
-                                                        return new Date(parseInt(year), monthIndex, 1);
-                                                    };
-                                                    
-                                                    return getDate(a[0]).getTime() - getDate(b[0]).getTime();
-                                                })
-                                                .map(([monthYear, data]) => (
-                                                    <View key={monthYear} style={styles.timePoint}>
-                                                        <Text style={styles.timeLabel}>{monthYear}</Text>
-                                                        <Text style={styles.valueLabel}>
-                                                            {displayMode === 'concentration' 
-                                                                ? `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.pm2_5_ug_m3.toFixed(2) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.pm10_ug_m3.toFixed(2)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.o3_ppb.toFixed(2)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.no2_ppb.toFixed(2)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.so2_ppb.toFixed(2)
-                                                                                    : data.co_ppm.toFixed(2)
-                                                                    } ${pollutant === Pollutant.PM2_5 || pollutant === Pollutant.PM10 
-                                                                        ? 'μg/m³' 
-                                                                        : pollutant === Pollutant.CO 
-                                                                            ? 'ppm' 
-                                                                            : 'ppb'}`
-                                                                : `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.PM2_5_AQI.toFixed(0) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.PM10_AQI.toFixed(0)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.O3_AQI.toFixed(0)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.NO2_AQI.toFixed(0)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.SO2_AQI.toFixed(0)
-                                                                                    : data.CO_AQI.toFixed(0)
-                                                                    } AQI`}
-                                                        </Text>
-                                                    </View>
-                                                ))}
-                                        </View>
-                                    )}
-                                    
-                                    {timeRange === '6m' && (
-                                        <View style={styles.timePointsContainer}>
-                                            {Object.entries(historicalData.sixMonths)
-                                                .sort((a, b) => {
-                                                    // Sort months chronologically
-                                                    const getDate = (monthYear: string) => {
-                                                        const [month, year] = monthYear.split(' ');
-                                                        const monthIndex = [
-                                                            'January', 'February', 'March', 'April', 'May', 'June',
-                                                            'July', 'August', 'September', 'October', 'November', 'December'
-                                                        ].indexOf(month);
-                                                        return new Date(parseInt(year), monthIndex, 1);
-                                                    };
-                                                    
-                                                    return getDate(a[0]).getTime() - getDate(b[0]).getTime();
-                                                })
-                                                .map(([monthYear, data]) => (
-                                                    <View key={monthYear} style={styles.timePoint}>
-                                                        <Text style={styles.timeLabel}>{monthYear}</Text>
-                                                        <Text style={styles.valueLabel}>
-                                                            {displayMode === 'concentration' 
-                                                                ? `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.pm2_5_ug_m3.toFixed(2) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.pm10_ug_m3.toFixed(2)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.o3_ppb.toFixed(2)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.no2_ppb.toFixed(2)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.so2_ppb.toFixed(2)
-                                                                                    : data.co_ppm.toFixed(2)
-                                                                    } ${pollutant === Pollutant.PM2_5 || pollutant === Pollutant.PM10 
-                                                                        ? 'μg/m³' 
-                                                                        : pollutant === Pollutant.CO 
-                                                                            ? 'ppm' 
-                                                                            : 'ppb'}`
-                                                                : `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.PM2_5_AQI.toFixed(0) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.PM10_AQI.toFixed(0)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.O3_AQI.toFixed(0)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.NO2_AQI.toFixed(0)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.SO2_AQI.toFixed(0)
-                                                                                    : data.CO_AQI.toFixed(0)
-                                                                    } AQI`}
-                                                        </Text>
-                                                    </View>
-                                                ))}
-                                        </View>
-                                    )}
-                                    
-                                    {timeRange === '1m' && (
-                                        <View style={styles.timePointsContainer}>
-                                            {Object.entries(historicalData.oneMonth)
-                                                .sort((a, b) => {
-                                                    // Sort by week chronologically
-                                                    // Extract start dates from the format "MM/DD - MM/DD"
-                                                    const getStartDate = (weekLabel: string) => {
-                                                        const startDateStr = weekLabel.split(' - ')[0];
-                                                        const [month, day] = startDateStr.split('/').map(Number);
-                                                        // Create a date object (using current year)
-                                                        const date = new Date();
-                                                        date.setMonth(month - 1); // Months are 0-indexed
-                                                        date.setDate(day);
-                                                        return date;
-                                                    };
-                                                    
-                                                    const dateA = getStartDate(a[0]);
-                                                    const dateB = getStartDate(b[0]);
-                                                    
-                                                    return dateA.getTime() - dateB.getTime();
-                                                })
-                                                .map(([week, data]) => (
-                                                    <View key={week} style={styles.timePoint}>
-                                                        <Text style={styles.timeLabel}>{week}</Text>
-                                                        <Text style={styles.valueLabel}>
-                                                            {displayMode === 'concentration' 
-                                                                ? `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.pm2_5_ug_m3.toFixed(2) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.pm10_ug_m3.toFixed(2)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.o3_ppb.toFixed(2)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.no2_ppb.toFixed(2)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.so2_ppb.toFixed(2)
-                                                                                    : data.co_ppm.toFixed(2)
-                                                                    } ${pollutant === Pollutant.PM2_5 || pollutant === Pollutant.PM10 
-                                                                        ? 'μg/m³' 
-                                                                        : pollutant === Pollutant.CO 
-                                                                            ? 'ppm' 
-                                                                            : 'ppb'}`
-                                                                : `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.PM2_5_AQI.toFixed(0) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.PM10_AQI.toFixed(0)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.O3_AQI.toFixed(0)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.NO2_AQI.toFixed(0)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.SO2_AQI.toFixed(0)
-                                                                                    : data.CO_AQI.toFixed(0)
-                                                                    } AQI`}
-                                                        </Text>
-                                                    </View>
-                                                ))}
-                                        </View>
-                                    )}
-                                    
-                                    {timeRange === '1y' && (
-                                        <View style={styles.timePointsContainer}>
-                                            {Object.entries(historicalData.oneYear)
-                                                .sort((a, b) => {
-                                                    // Sort quarters chronologically based on standard quarters
-                                                    const quarterOrder: Record<string, number> = {
-                                                        'January - March': 0,
-                                                        'April - June': 1,
-                                                        'July - September': 2,
-                                                        'October - December': 3
-                                                    };
-                                                    
-                                                    return (quarterOrder[a[0]] ?? 0) - (quarterOrder[b[0]] ?? 0);
-                                                })
-                                                .map(([quarter, data]) => (
-                                                    <View key={quarter} style={styles.timePoint}>
-                                                        <Text style={styles.timeLabel}>{quarter}</Text>
-                                                        <Text style={styles.valueLabel}>
-                                                            {displayMode === 'concentration' 
-                                                                ? `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.pm2_5_ug_m3.toFixed(2) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.pm10_ug_m3.toFixed(2)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.o3_ppb.toFixed(2)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.no2_ppb.toFixed(2)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.so2_ppb.toFixed(2)
-                                                                                    : data.co_ppm.toFixed(2)
-                                                                    } ${pollutant === Pollutant.PM2_5 || pollutant === Pollutant.PM10 
-                                                                        ? 'μg/m³' 
-                                                                        : pollutant === Pollutant.CO 
-                                                                            ? 'ppm' 
-                                                                            : 'ppb'}`
-                                                                : `${pollutant === Pollutant.PM2_5 
-                                                                    ? data.PM2_5_AQI.toFixed(0) 
-                                                                    : pollutant === Pollutant.PM10 
-                                                                        ? data.PM10_AQI.toFixed(0)
-                                                                        : pollutant === Pollutant.O3
-                                                                            ? data.O3_AQI.toFixed(0)
-                                                                            : pollutant === Pollutant.NO2
-                                                                                ? data.NO2_AQI.toFixed(0)
-                                                                                : pollutant === Pollutant.SO2
-                                                                                    ? data.SO2_AQI.toFixed(0)
-                                                                                    : data.CO_AQI.toFixed(0)
-                                                                    } AQI`}
-                                                        </Text>
-                                                    </View>
-                                                ))}
-                                        </View>
-                                    )}
+                                    {/* Historical Data Chart */}
+                                    <View style={{
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '100%',
+                                        marginTop: 25,
+                                    }}>
+
+                                        <LineChart
+                                            data={prepareChartData()}
+                                            width={screenWidth - 80}
+                                            height={220}
+                                            chartConfig={{
+                                                backgroundColor: '#222',
+                                                backgroundGradientFrom: '#222',
+                                                backgroundGradientTo: '#333',
+                                                decimalPlaces: displayMode === 'concentration' ? 2 : 0,
+                                                color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`,
+                                                labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                                style: {
+                                                    borderRadius: 16,
+                                                },
+                                                propsForDots: {
+                                                    r: '6',
+                                                    strokeWidth: '2',
+                                                    stroke: '#ffd700',
+                                                },
+                                                horizontalLabelRotation: 45,
+                                                formatXLabel: (label) => label,
+                                                propsForLabels: {
+                                                    fontSize: 10,
+                                                },
+                                            }}
+                                            bezier
+                                            style={{
+                                                marginVertical: 8,
+                                                borderRadius: 16,
+                                                alignSelf: 'center',
+                                            }}
+                                            yAxisLabel=""
+                                            yAxisSuffix=""
+                                            fromZero={true}
+                                            withDots={true}
+                                            withShadow={false}
+                                            withInnerLines={true}
+                                            withOuterLines={false}
+                                            withHorizontalLabels={true}
+                                            withVerticalLabels={true}
+                                            segments={5}
+                                        />
+                                    </View>
                                 </View>
                             ) : (
                                 <View style={styles.noDataContainer}>
