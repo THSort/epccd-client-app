@@ -435,12 +435,12 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         width: '100%',
-                                        marginTop: 25,
+                                        // marginTop: 25,
                                     }}>
 
                                         <LineChart
                                             data={prepareChartData()}
-                                            width={screenWidth - 80}
+                                            width={screenWidth - 60}
                                             height={220}
                                             chartConfig={{
                                                 backgroundColor: '#222',

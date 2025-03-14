@@ -1,20 +1,8 @@
-import mongoose from 'mongoose';
 import EpaMonitorsDataModel from '../models/epaMonitorsData.model';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/epa_data');
-    console.log('MongoDB connected successfully');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
 
 // Generate random number within a range
 const getRandomNumber = (min: number, max: number): number => {

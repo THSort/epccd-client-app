@@ -13,7 +13,7 @@ export const PollutantSelector: React.FC<PollutantSelectorProps> = ({
   selectedPollutant,
   onPollutantSelected,
 }) => {
-  return (
+  return ( 
     <View>
       <View style={styles.scrollContainer}>
         <ScrollView

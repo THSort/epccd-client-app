@@ -45,6 +45,7 @@ export const styles = StyleSheet.create({
     },
     scrollContainer: {
         flex: 1,
+        marginTop: '10%'
     },
     noDataContainer: {
         marginTop: 20,
