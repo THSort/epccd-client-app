@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Location } from '../App.types';
-import {EpaMonitorsApiResponse, HistoricalEpaMonitorsDataResponse} from '../types/epaMonitorsApiResponse.types.ts';
+import { EpaMonitorsApiResponse, HistoricalEpaMonitorsDataResponse, FilteredHistoricalDataResponse } from '../types/epaMonitorsApiResponse.types';
 
 // Base URL for API requests
 const API_BASE_URL = 'http://10.0.2.2:5000/api/epa-monitors'; // Change this to your actual backend URL
@@ -25,9 +25,9 @@ export const fetchEpaMonitorsData = async (location: Location): Promise<EpaMonit
 /**
  * Fetches historical EPA Monitors data for a specific location over the past year
  * @param location - The location object to fetch historical data for
- * @returns Object containing EPA Monitors data for different time periods
+ * @returns Object containing filtered EPA Monitors data for different time periods with only pollutant data
  */
-export const fetchHistoricalEpaMonitorsData = async (location: Location): Promise<HistoricalEpaMonitorsDataResponse> => {
+export const fetchHistoricalEpaMonitorsData = async (location: Location): Promise<FilteredHistoricalDataResponse> => {
   try {
     const url = `${API_BASE_URL}/epaMonitorsData/historical/${location.locationCode}`;
 

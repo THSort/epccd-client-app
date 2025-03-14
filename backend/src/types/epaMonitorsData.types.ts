@@ -41,3 +41,37 @@ export interface HistoricalEpaMonitorsDataResponse {
     sixMonths: EpaMonitorsData[];
     oneYear: EpaMonitorsData[];
 }
+
+// Interface for filtered pollutant data for charts
+export interface PollutantChartData {
+    // Date and time fields
+    report_date: string;
+    report_time: string;
+    
+    // Pollutant concentration fields
+    o3_ppb: number;
+    co_ppm: number;
+    so2_ppb: number;
+    no_ppb: number;
+    no2_ppb: number;
+    nox_ppb: number;
+    pm10_ug_m3: number;
+    pm2_5_ug_m3: number;
+    
+    // AQI values
+    PM2_5_AQI: number;
+    PM10_AQI: number;
+    SO2_AQI: number;
+    NO2_AQI: number;
+    O3_AQI: number;
+    CO_AQI: number;
+}
+
+export interface FilteredHistoricalDataResponse {
+    oneDay: PollutantChartData[];
+    oneWeek: PollutantChartData[];
+    oneMonth: PollutantChartData[];
+    threeMonths: PollutantChartData[];
+    sixMonths: PollutantChartData[];
+    oneYear: PollutantChartData[];
+}
