@@ -10,6 +10,7 @@ import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
 import {pollEpaMonitorsData} from "./services/epaMonitorsData.service";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
 import userActivityRoutes from "./routes/userActivity.routes";
+import {generateHistoricalData} from "./scripts/generateDummyEpaData";
 
 // Load environment variables first
 dotenv.config();
