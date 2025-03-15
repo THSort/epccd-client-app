@@ -132,11 +132,13 @@ export const fetchHistoricalEpaMonitorsDataForLocation = async (location: number
 };
 
 // Fetch historical EPA Monitors Data for a location organized by time periods
-export const fetchHistoricalEpaMonitorsDataByPeriods = async (location: number, currentDate: string): Promise<HistoricalEpaMonitorsDataResponse> => {
+export const fetchHistoricalEpaMonitorsDataByPeriods = async (location: number): Promise<HistoricalEpaMonitorsDataResponse> => {
     try {
-        // Use the provided current date or default to now
-        const currentDateObj = currentDate ? new Date(currentDate) : new Date();
+        const currentDateObj = new Date();
         const currentDateStr = currentDateObj.toISOString().split('T')[0];
+        const currentHour = currentDateObj.getHours();
+        const currentMinute = currentDateObj.getMinutes();
+        const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
         
         // Calculate dates for different time periods
         const oneDayAgo = new Date(currentDateObj);
@@ -167,11 +169,6 @@ export const fetchHistoricalEpaMonitorsDataByPeriods = async (location: number, 
         const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
         const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0];
         const oneYearAgoStr = oneYearAgo.toISOString().split('T')[0];
-        
-        // Get current time for filtering by hour
-        const currentHour = currentDateObj.getHours();
-        const currentMinute = currentDateObj.getMinutes();
-        const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
         
         logger.info(`Fetching historical EPA Monitors data for location ${location} for multiple time periods up to ${currentDateStr} ${currentTimeStr}`);
         logger.info(`One week data will be from ${oneWeekAgoStr} (past 7 days) to ${currentDateStr}`);

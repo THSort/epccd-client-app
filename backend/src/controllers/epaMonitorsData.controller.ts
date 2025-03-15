@@ -23,9 +23,8 @@ export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Re
 export const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
         const location = Number(req.params.location);
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        const historicalData = await fetchHistoricalEpaMonitorsDataByPeriods(location, currentDate);
+
+        const historicalData = await fetchHistoricalEpaMonitorsDataByPeriods(location);
         
         // Filter the data to include only the required fields
         const filteredData: FilteredHistoricalDataResponse = {
