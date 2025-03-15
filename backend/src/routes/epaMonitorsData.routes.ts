@@ -1,5 +1,5 @@
 import express from "express";
-import { getCurrentEpaMonitorsDataForLocation, getHistoricalEpaMonitorsDataForLocation } from "../controllers/epaMonitorsData.controller.";
+import { getCurrentEpaMonitorsDataForLocation, getHistoricalEpaMonitorsDataForLocation } from "../controllers/epaMonitorsData.controller";
 
 const router = express.Router();
 
