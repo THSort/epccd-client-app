@@ -435,7 +435,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         width: '100%',
-                                        // marginTop: 25,
                                     }}>
 
                                         <LineChart
@@ -480,6 +479,97 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                             withVerticalLabels={true}
                                             segments={5}
                                         />
+                                    </View>
+
+                                    {/* Stats Cards */}
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        width: '100%',
+                                        marginTop: 20,
+                                        marginBottom: 10,
+                                        paddingHorizontal: 5,
+                                    }}>
+                                        {/* Current Value Card */}
+                                        <View style={{
+                                            backgroundColor: '#111',
+                                            borderRadius: 10,
+                                            padding: 10,
+                                            width: '31%',
+                                            alignItems: 'center',
+                                        }}>
+                                            <Text style={{
+                                                color: 'yellow',
+                                                fontSize: 12,
+                                                fontWeight: 'bold',
+                                                marginBottom: 5,
+                                                textAlign: 'center',
+                                            }}>
+                                                Current Value
+                                            </Text>
+                                            <Text style={{
+                                                color: 'white',
+                                                fontSize: 16,
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}>
+                                                45 μg/m³
+                                            </Text>
+                                        </View>
+
+                                        {/* 24h Average Card */}
+                                        <View style={{
+                                            backgroundColor: '#111',
+                                            borderRadius: 10,
+                                            padding: 10,
+                                            width: '31%',
+                                            alignItems: 'center',
+                                        }}>
+                                            <Text style={{
+                                                color: 'yellow',
+                                                fontSize: 12,
+                                                fontWeight: 'bold',
+                                                marginBottom: 5,
+                                                textAlign: 'center',
+                                            }}>
+                                                24h Average
+                                            </Text>
+                                            <Text style={{
+                                                color: 'white',
+                                                fontSize: 16,
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}>
+                                                31 μg/m³
+                                            </Text>
+                                        </View>
+
+                                        {/* Weekly Average Card */}
+                                        <View style={{
+                                            backgroundColor: '#111',
+                                            borderRadius: 10,
+                                            padding: 10,
+                                            width: '31%',
+                                            alignItems: 'center',
+                                        }}>
+                                            <Text style={{
+                                                color: 'yellow',
+                                                fontSize: 12,
+                                                fontWeight: 'bold',
+                                                marginBottom: 5,
+                                                textAlign: 'center',
+                                            }}>
+                                                Weekly Average
+                                            </Text>
+                                            <Text style={{
+                                                color: 'white',
+                                                fontSize: 16,
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}>
+                                                54 μg/m³
+                                            </Text>
+                                        </View>
                                     </View>
                                 </View>
                             ) : (
