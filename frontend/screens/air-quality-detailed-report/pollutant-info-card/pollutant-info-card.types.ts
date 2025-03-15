@@ -5,5 +5,8 @@ export interface PollutantInfoCardProps {
     pollutantName: Pollutant;
     pollutantValue: number;
     pollutantDescription: string;
-    selectedLocation?: Location
+    selectedLocation?: Location;
+    translatedName?: string;
+    pollutantUnit?: string;
+    viewHistoryText?: string;
 }

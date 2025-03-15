@@ -19,6 +19,8 @@ import {ChartDisplayToggle} from './components/chart-display-toggle/chart-displa
 import {ChartDisplayMode} from './components/chart-display-toggle/chart-display-toggle.types.ts';
 import {PollutantSelector} from './components/pollutant-selector/pollutant-selector.tsx';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
+import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
+import {getTranslation, Language} from '../../utils/translations';
 // Import Chart Kit components
 import {
     LineChart,
@@ -41,6 +43,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AirQualityHistory'>;
 export function AirQualityHistory({route}: Props): ReactElement {
     const navigation = useNavigation<AirQualityHistoryNavigationProps>();
     const {trackButton, trackBackButton} = useUserActivity();
+    const {selectedLanguage} = useSelectedLanguage();
+    const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
     const {selectedLocation, selectedPollutant} = route.params;
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
@@ -52,6 +56,38 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
+
+    // Map pollutant types to translation keys
+    const getPollutantTranslation = useCallback((pollutantType: Pollutant, type: 'name' | 'description' | 'unit'): string => {
+        switch (pollutantType) {
+            case Pollutant.PM2_5:
+                if (type === 'name') return getTranslation('pm25', currentLanguage);
+                if (type === 'description') return getTranslation('pm25Description', currentLanguage);
+                return getTranslation('ugm3', currentLanguage);
+            case Pollutant.PM10:
+                if (type === 'name') return getTranslation('pm10', currentLanguage);
+                if (type === 'description') return getTranslation('pm10Description', currentLanguage);
+                return getTranslation('ugm3', currentLanguage);
+            case Pollutant.O3:
+                if (type === 'name') return getTranslation('o3', currentLanguage);
+                if (type === 'description') return getTranslation('o3Description', currentLanguage);
+                return getTranslation('ppb', currentLanguage);
+            case Pollutant.SO2:
+                if (type === 'name') return getTranslation('so2', currentLanguage);
+                if (type === 'description') return getTranslation('so2Description', currentLanguage);
+                return getTranslation('ppb', currentLanguage);
+            case Pollutant.NO2:
+                if (type === 'name') return getTranslation('no2', currentLanguage);
+                if (type === 'description') return getTranslation('no2Description', currentLanguage);
+                return getTranslation('ppb', currentLanguage);
+            case Pollutant.CO:
+                if (type === 'name') return getTranslation('co', currentLanguage);
+                if (type === 'description') return getTranslation('coDescription', currentLanguage);
+                return getTranslation('ppm', currentLanguage);
+            default:
+                return '';
+        }
+    }, [currentLanguage]);
 
     const handleBackButtonClick = useCallback(() => {
         trackBackButton(currentScreen);
@@ -86,11 +122,11 @@ export function AirQualityHistory({route}: Props): ReactElement {
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);
-            setError('Failed to load historical air quality data. Please try again later.');
+            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
         } finally {
             setIsLoading(false);
         }
-    }, [selectedLocation]);
+    }, [selectedLocation, currentLanguage]);
 
     const fetchSummaryData = useCallback(async () => {
         if (!selectedLocation) {
@@ -195,16 +231,16 @@ export function AirQualityHistory({route}: Props): ReactElement {
             switch (pollutant) {
                 case Pollutant.PM2_5:
                 case Pollutant.PM10:
-                    return 'μg/m³';
+                    return getTranslation('ugm3', currentLanguage);
                 case Pollutant.CO:
-                    return 'ppm';
+                    return getTranslation('ppm', currentLanguage);
                 default:
-                    return 'ppb';
+                    return getTranslation('ppb', currentLanguage);
             }
         } else {
-            return 'AQI';
+            return getTranslation('aqi', currentLanguage);
         }
-    }, [pollutant, displayMode]);
+    }, [pollutant, displayMode, currentLanguage]);
 
     // Get the current value from summary data based on selected pollutant and display mode
     const getCurrentValue = useCallback(() => {
@@ -390,9 +426,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     strokeWidth: 2,
                 },
             ],
-            legend: [`${pollutant} ${getUnitForPollutant()}`],
+            legend: [`${getPollutantTranslation(pollutant, 'name')} ${getUnitForPollutant()}`],
         };
-    }, [getSortedData, getValueForPollutant, getUnitForPollutant, pollutant, timeRange]);
+    }, [getSortedData, getValueForPollutant, getUnitForPollutant, pollutant, timeRange, getPollutantTranslation]);
 
     useEffect(() => {
         fetchHistoricalData();
@@ -416,7 +452,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 }}>
                     <Icon name="chevron-left" size={25} color="yellow"/>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Air Quality History</Text>
+                <Text style={styles.headerTitle}>{getTranslation('airQualityHistory', currentLanguage)}</Text>
             </View>
 
             <ScrollView style={styles.scrollContainer}>
@@ -523,7 +559,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                         {/* Current Value Card */}
                                         <View style={styles.statCard}>
                                             <Text style={styles.statCardTitle}>
-                                                Current Value
+                                                {getTranslation('currentValue', currentLanguage)}
                                             </Text>
                                             <Text style={styles.statCardValue}>
                                                 {getCurrentValue().toFixed(1)} {getUnitForPollutant()}
@@ -533,7 +569,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                         {/* 24h Average Card */}
                                         <View style={styles.statCard}>
                                             <Text style={styles.statCardTitle}>
-                                                24h Average
+                                                {getTranslation('dailyAverage', currentLanguage)}
                                             </Text>
                                             <Text style={styles.statCardValue}>
                                                 {getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
@@ -543,7 +579,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                         {/* Weekly Average Card */}
                                         <View style={styles.statCard}>
                                             <Text style={styles.statCardTitle}>
-                                                Weekly Average
+                                                {getTranslation('weeklyAverage', currentLanguage)}
                                             </Text>
                                             <Text style={styles.statCardValue}>
                                                 {getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
@@ -553,7 +589,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                 </View>
                             ) : (
                                 <View style={styles.noDataContainer}>
-                                    <Text style={styles.noDataText}>No historical data available</Text>
+                                    <Text style={styles.noDataText}>{getTranslation('noHistoricalDataAvailable', currentLanguage)}</Text>
                                 </View>
                             )}
                         </>

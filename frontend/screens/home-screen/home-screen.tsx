@@ -15,6 +15,7 @@ import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
+import {getTranslation, Language, getTranslatedLocationName} from '../../utils/translations';
 
 const DEFAULT_AQI = 0;
 
@@ -24,7 +25,10 @@ const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigationProps>();
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
-    const {isLoadingLanguage} = useSelectedLanguage();
+    const {selectedLanguage, isLoadingLanguage} = useSelectedLanguage();
+    
+    // Default to English if no language is selected
+    const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
     const { trackButton, trackBackButton } = useUserActivity();
 
@@ -61,13 +65,13 @@ const HomeScreen = () => {
             setError(null);
         } catch (error) {
             console.error('Error fetching AQI:', error);
-            setError('Failed to load air quality data. Please try again later.');
+            setError(getTranslation('failedToLoadAirQuality', currentLanguage));
             // Set a default value in case of error
             setAqiValue(DEFAULT_AQI);
         } finally {
             setIsFetchingAqi(false);
         }
-    }, [selectedLocation]);
+    }, [selectedLocation, currentLanguage]);
 
     useEffect(() => {
         // Initial data load
@@ -88,12 +92,13 @@ const HomeScreen = () => {
     }, [loadAqi]);
 
     const aqiColor = getAqiColor(aqiValue);
-    const aqiDescription = getAqiDescription(aqiValue);
+    const aqiDescription = getAqiDescription(aqiValue, currentLanguage);
 
     if (isFetchingAqi || isLoadingLanguage || isLoadingLocation) {
         return (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#FFD700"/>
+                <Text style={styles.loadingText}>{getTranslation('loading', currentLanguage)}</Text>
             </View>
         );
     }
@@ -101,12 +106,15 @@ const HomeScreen = () => {
     const getFooter = () => {
         return (
             <View style={styles.homeScreenFooter}>
-                <LocationSelector selectedLocation={selectedLocation} onOpenLocationModal={() => {
-                    openLocationModal();
-                    void trackButton('location_selector', currentScreen, {
-                        timestamp: new Date().toISOString(),
-                    });
-                }}/>
+                <LocationSelector 
+                    selectedLocation={selectedLocation} 
+                    onOpenLocationModal={() => {
+                        openLocationModal();
+                        void trackButton('location_selector', currentScreen, {
+                            timestamp: new Date().toISOString(),
+                        });
+                    }}
+                />
                 <LanguageToggle/>
             </View>
         );
@@ -133,7 +141,9 @@ const HomeScreen = () => {
                 }} activeOpacity={0.7}>
                     <View style={styles.viewDetailedReportButton}>
                         <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
-                        <Text style={styles.viewDetailedReportButtonText}>View Detailed Report</Text>
+                        <Text style={styles.viewDetailedReportButtonText}>
+                            {getTranslation('viewDetailedReport', currentLanguage)}
+                        </Text>
                     </View>
                 </TouchableOpacity>
             </View>
@@ -141,11 +151,15 @@ const HomeScreen = () => {
     };
 
     const getLocationDisplay = () => {
+        const locationDisplayName = selectedLocation 
+            ? getTranslatedLocationName(selectedLocation.locationName, currentLanguage)
+            : getTranslation('selectLocation', currentLanguage);
+            
         return (
             <View style={[styles.locationDisplayContainer]}>
                 <Icon name="map-marker" size={20} color="yellow" style={styles.locationDisplayIcon}/>
                 <Text style={styles.locationDisplayText}>
-                    {selectedLocation ? selectedLocation.locationName : 'Select Location'}
+                    {locationDisplayName}
                 </Text>
             </View>
         );
@@ -175,7 +189,9 @@ const HomeScreen = () => {
                 <>
                     <View style={[styles.aqiValueContainer, {marginTop: '35%'}]}>
                         <Text style={[styles.aqiValueText, {color: aqiColor}]}>{aqiValue}</Text>
-                        <Text style={[styles.aqiText, {color: aqiColor}]}>AQI</Text>
+                        <Text style={[styles.aqiText, {color: aqiColor}]}>
+                            {getTranslation('airQualityIndex', currentLanguage)}
+                        </Text>
                     </View>
 
                     <View style={[styles.aqiGradientMeter, {marginTop: 40}]}>

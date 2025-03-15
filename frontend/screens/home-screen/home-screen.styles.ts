@@ -118,6 +118,12 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#1E1E1E',
     },
+    loadingText: {
+        color: '#FFD700',
+        fontSize: 16,
+        marginTop: 10,
+        fontWeight: '500',
+    },
     errorContainer: {
         padding: 20,
         borderRadius: 10,

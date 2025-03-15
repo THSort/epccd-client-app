@@ -11,7 +11,7 @@ import {useUserActivity} from '../../../context/UserActivityContext.tsx';
 
 const currentScreen = 'AirQualityReport';
 
-// Define units for each pollutant type
+// Define units for each pollutant type (fallback if not provided in props)
 const POLLUTANT_UNITS = {
     [Pollutant.PM2_5]: 'µg/m³',
     [Pollutant.PM10]: 'µg/m³',
@@ -36,12 +36,12 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
         return (
             <View>
                 <View style={styles.row}>
-                    <Text style={styles.pollutantName}>{pollutantName}</Text>
+                    <Text style={styles.pollutantName}>{props.translatedName || pollutantName}</Text>
                     <Text style={styles.pollutantValue}>{pollutantValue.toFixed(1)}</Text>
                 </View>
                 <View style={styles.row}>
                     <Text style={styles.pollutantDescription}>{pollutantDescription}</Text>
-                    <Text style={styles.pollutantUnits}>{unit}</Text>
+                    <Text style={styles.pollutantUnits}>{props.pollutantUnit || unit}</Text>
                 </View>
             </View>
         );
@@ -59,7 +59,7 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
             }} activeOpacity={0.8}>
                 <View style={styles.historyButton}>
                     <Icon name="line-chart" size={15} color="yellow" style={styles.historyIcon} />
-                    <Text style={styles.historyText}>View History</Text>
+                    <Text style={styles.historyText}>{props.viewHistoryText || 'View History'}</Text>
                 </View>
             </TouchableOpacity>
         );

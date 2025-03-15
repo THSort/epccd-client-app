@@ -4,11 +4,15 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import type {Area, LocationModalProps} from './location-modal.types';
 import {styles} from './location-modal.styles';
 import {Location} from '../../../../App.types';
+import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.tsx';
+import {getTranslation, Language, getTranslatedLocationName, getTranslatedCityName} from '../../../../utils/translations';
 
 export function LocationModal({visible, onClose, onLocationSelected, ...props}: LocationModalProps) {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(400)).current;
+    const {selectedLanguage} = useSelectedLanguage();
+    const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
     const getAreasForList = (): Area[] => {
         return [
@@ -79,7 +83,7 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                             {/* Header */}
                             <View style={styles.header}>
                                 <Icon name="map-marker" size={20} color="#FFD700"/>
-                                <Text style={styles.title}>Area</Text>
+                                <Text style={styles.title}>{getTranslation('selectLocation', currentLanguage)}</Text>
                                 <TouchableOpacity activeOpacity={0.7} onPress={onClose} style={styles.closeButton}>
                                     <Icon name="close" size={22} color="#FFD700"/>
                                 </TouchableOpacity>
@@ -93,6 +97,8 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                 keyExtractor={(item) => item.name}
                                 renderItem={({item}) => {
                                     const isExpanded = selectedArea === item.name;
+                                    const translatedCityName = getTranslatedCityName(item.name, currentLanguage);
+                                    
                                     return (
                                         <View>
                                             {/* Area Button */}
@@ -101,7 +107,7 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                                 onPress={() => toggleDropdown(item.name)}
                                                 style={styles.areaButton}
                                             >
-                                                <Text style={styles.areaText}>{item.name}</Text>
+                                                <Text style={styles.areaText}>{translatedCityName}</Text>
                                                 <Icon name={isExpanded ? 'chevron-up' : 'chevron-down'} size={18} color="#FFD700"/>
                                             </TouchableOpacity>
 
@@ -110,6 +116,8 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                                 <Animated.View style={styles.locationList}>
                                                     {item.locations.map((location) => {
                                                         const isSelected = isSameLocation(props.selectedLocation, location);
+                                                        const translatedLocationName = getTranslatedLocationName(location.locationName, currentLanguage);
+                                                        
                                                         return (
                                                             <TouchableOpacity
                                                                 key={location.locationCode}
@@ -121,7 +129,7 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                                                     onLocationSelected(location);
                                                                 }}
                                                             >
-                                                                <Text style={styles.locationText}>{location.locationName}</Text>
+                                                                <Text style={styles.locationText}>{translatedLocationName}</Text>
                                                             </TouchableOpacity>
                                                         );
                                                     })}

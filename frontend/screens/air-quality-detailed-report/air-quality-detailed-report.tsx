@@ -16,16 +16,8 @@ import {EpaMonitorsApiResponse} from '../../types/epaMonitorsApiResponse.types.t
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
-
-// Default pollutant descriptions
-const pollutantDescriptions = {
-    [Pollutant.PM2_5]: 'Fine Particles',
-    [Pollutant.PM10]: 'Coarse Particles',
-    [Pollutant.O3]: 'Ozone',
-    [Pollutant.SO2]: 'Sulfur Dioxide',
-    [Pollutant.NO2]: 'Nitrogen Dioxide',
-    [Pollutant.CO]: 'Carbon Monoxide',
-};
+import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
+import {getTranslation, Language, getTranslatedTimeSinceUpdate} from '../../utils/translations';
 
 const currentScreen = 'AirQualityReport';
 
@@ -34,6 +26,8 @@ export function AirQualityDetailedReport(): ReactElement {
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation} = useSelectedLocation();
     const [location, setLocation] = useState<Location | undefined>(selectedLocation);
+    const {selectedLanguage} = useSelectedLanguage();
+    const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
     const { trackButton, trackBackButton } = useUserActivity();
 
@@ -42,6 +36,38 @@ export function AirQualityDetailedReport(): ReactElement {
     const [isFetchingData, setIsFetchingData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+    // Map pollutant types to translation keys
+    const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
+        switch (pollutant) {
+            case Pollutant.PM2_5:
+                if (type === 'name') return getTranslation('pm25', currentLanguage);
+                if (type === 'description') return getTranslation('pm25Description', currentLanguage);
+                return getTranslation('ugm3', currentLanguage);
+            case Pollutant.PM10:
+                if (type === 'name') return getTranslation('pm10', currentLanguage);
+                if (type === 'description') return getTranslation('pm10Description', currentLanguage);
+                return getTranslation('ugm3', currentLanguage);
+            case Pollutant.O3:
+                if (type === 'name') return getTranslation('o3', currentLanguage);
+                if (type === 'description') return getTranslation('o3Description', currentLanguage);
+                return getTranslation('ppb', currentLanguage);
+            case Pollutant.SO2:
+                if (type === 'name') return getTranslation('so2', currentLanguage);
+                if (type === 'description') return getTranslation('so2Description', currentLanguage);
+                return getTranslation('ppb', currentLanguage);
+            case Pollutant.NO2:
+                if (type === 'name') return getTranslation('no2', currentLanguage);
+                if (type === 'description') return getTranslation('no2Description', currentLanguage);
+                return getTranslation('ppb', currentLanguage);
+            case Pollutant.CO:
+                if (type === 'name') return getTranslation('co', currentLanguage);
+                if (type === 'description') return getTranslation('coDescription', currentLanguage);
+                return getTranslation('ppm', currentLanguage);
+            default:
+                return '';
+        }
+    };
 
     const handleBackButtonClick = useCallback(() => {
         trackBackButton(currentScreen);
@@ -74,29 +100,14 @@ export function AirQualityDetailedReport(): ReactElement {
                 setError(null);
             } catch (error) {
                 console.error('Error fetching AQI data:', error);
-                setError('Failed to load air quality data');
+                setError(getTranslation('failedToLoadAirQuality', currentLanguage));
             } finally {
                 setIsFetchingData(false);
             }
         };
 
         void loadData();
-    }, [location]);
-
-    // Format the time since last update
-    const getTimeSinceUpdate = (): string => {
-        if (!lastUpdated) {
-            return 'Not updated yet';
-        }
-
-        const now = new Date();
-        const diffMs = now.getTime() - lastUpdated.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
-
-        if (diffMins < 1) {return 'Just now';}
-        if (diffMins === 1) {return '1 min ago';}
-        return `${diffMins} mins ago`;
-    };
+    }, [location, currentLanguage]);
 
     const getHeader = () => {
         return (
@@ -109,7 +120,7 @@ export function AirQualityDetailedReport(): ReactElement {
                 }}>
                     <Icon name="chevron-left" size={25} color="yellow" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Air Quality Report</Text>
+                <Text style={styles.headerTitle}>{getTranslation('airQualityReport', currentLanguage)}</Text>
             </View>
         );
     };
@@ -126,14 +137,14 @@ export function AirQualityDetailedReport(): ReactElement {
         if (error || !aqiData) {
             return (
                 <View style={styles.aqiContainer}>
-                    <Text style={styles.errorText}>{error || 'No data available'}</Text>
+                    <Text style={styles.errorText}>{error || getTranslation('noDataAvailable', currentLanguage)}</Text>
                 </View>
             );
         }
 
         const aqiValue = aqiData.PM2_5_AQI;
         const aqiColor = getAqiColor(aqiValue);
-        const aqiDescription = getAqiDescription(aqiValue);
+        const aqiDescription = getAqiDescription(aqiValue, currentLanguage);
 
         return (
             <View style={styles.aqiContainer}>
@@ -142,8 +153,8 @@ export function AirQualityDetailedReport(): ReactElement {
                     <Text style={[styles.aqiStatus, {color: aqiColor}]}>{aqiDescription.level}</Text>
                 </View>
                 <View>
-                    <Text style={styles.updateLabel}>Updated</Text>
-                    <Text style={styles.updateTime}>{getTimeSinceUpdate()}</Text>
+                    <Text style={styles.updateLabel}>{getTranslation('updated', currentLanguage)}</Text>
+                    <Text style={styles.updateTime}>{getTranslatedTimeSinceUpdate(lastUpdated, currentLanguage)}</Text>
                 </View>
             </View>
         );
@@ -154,7 +165,7 @@ export function AirQualityDetailedReport(): ReactElement {
             return (
                 <View style={styles.pollutantContainer}>
                     <View style={styles.pollutantHeader}>
-                        <Text style={styles.pollutantTitle}>Pollutant Levels</Text>
+                        <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
                         <TouchableOpacity activeOpacity={0.7} onPress={() => {
                             void trackButton('learn_more', currentScreen, {
                                 timestamp: new Date().toISOString(),
@@ -174,7 +185,7 @@ export function AirQualityDetailedReport(): ReactElement {
             return (
                 <View style={styles.pollutantContainer}>
                     <View style={styles.pollutantHeader}>
-                        <Text style={styles.pollutantTitle}>Pollutant Levels</Text>
+                        <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
                         <TouchableOpacity activeOpacity={0.7} onPress={() => {
                             void trackButton('learn_more', currentScreen, {
                                 timestamp: new Date().toISOString(),
@@ -184,50 +195,68 @@ export function AirQualityDetailedReport(): ReactElement {
                         </TouchableOpacity>
                     </View>
                     <View style={styles.errorContainer}>
-                        <Text style={styles.errorText}>{error || 'No data available'}</Text>
+                        <Text style={styles.errorText}>{error || getTranslation('noDataAvailable', currentLanguage)}</Text>
                     </View>
                 </View>
             );
         }
 
-        // Map API data to pollutant objects
+        // Map API data to pollutant objects with translations
         const pollutants = [
             {
                 pollutantName: Pollutant.PM2_5,
                 pollutantValue: aqiData.pm2_5_ug_m3,
-                pollutantDescription: pollutantDescriptions[Pollutant.PM2_5],
+                pollutantDescription: getPollutantTranslation(Pollutant.PM2_5, 'description'),
+                pollutantUnit: getPollutantTranslation(Pollutant.PM2_5, 'unit'),
+                translatedName: getPollutantTranslation(Pollutant.PM2_5, 'name'),
+                viewHistoryText: getTranslation('viewHistory', currentLanguage),
             },
             {
                 pollutantName: Pollutant.PM10,
                 pollutantValue: aqiData.pm10_ug_m3,
-                pollutantDescription: pollutantDescriptions[Pollutant.PM10],
+                pollutantDescription: getPollutantTranslation(Pollutant.PM10, 'description'),
+                pollutantUnit: getPollutantTranslation(Pollutant.PM10, 'unit'),
+                translatedName: getPollutantTranslation(Pollutant.PM10, 'name'),
+                viewHistoryText: getTranslation('viewHistory', currentLanguage),
             },
             {
                 pollutantName: Pollutant.O3,
                 pollutantValue: aqiData.o3_ppb,
-                pollutantDescription: pollutantDescriptions[Pollutant.O3],
+                pollutantDescription: getPollutantTranslation(Pollutant.O3, 'description'),
+                pollutantUnit: getPollutantTranslation(Pollutant.O3, 'unit'),
+                translatedName: getPollutantTranslation(Pollutant.O3, 'name'),
+                viewHistoryText: getTranslation('viewHistory', currentLanguage),
             },
             {
                 pollutantName: Pollutant.SO2,
                 pollutantValue: aqiData.so2_ppb,
-                pollutantDescription: pollutantDescriptions[Pollutant.SO2],
+                pollutantDescription: getPollutantTranslation(Pollutant.SO2, 'description'),
+                pollutantUnit: getPollutantTranslation(Pollutant.SO2, 'unit'),
+                translatedName: getPollutantTranslation(Pollutant.SO2, 'name'),
+                viewHistoryText: getTranslation('viewHistory', currentLanguage),
             },
             {
                 pollutantName: Pollutant.NO2,
                 pollutantValue: aqiData.no2_ppb,
-                pollutantDescription: pollutantDescriptions[Pollutant.NO2],
+                pollutantDescription: getPollutantTranslation(Pollutant.NO2, 'description'),
+                pollutantUnit: getPollutantTranslation(Pollutant.NO2, 'unit'),
+                translatedName: getPollutantTranslation(Pollutant.NO2, 'name'),
+                viewHistoryText: getTranslation('viewHistory', currentLanguage),
             },
             {
                 pollutantName: Pollutant.CO,
                 pollutantValue: aqiData.co_ppm,
-                pollutantDescription: pollutantDescriptions[Pollutant.CO],
+                pollutantDescription: getPollutantTranslation(Pollutant.CO, 'description'),
+                pollutantUnit: getPollutantTranslation(Pollutant.CO, 'unit'),
+                translatedName: getPollutantTranslation(Pollutant.CO, 'name'),
+                viewHistoryText: getTranslation('viewHistory', currentLanguage),
             },
         ];
 
         return (
             <View style={styles.pollutantContainer}>
                 <View style={styles.pollutantHeader}>
-                    <Text style={styles.pollutantTitle}>Pollutant Levels</Text>
+                    <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
                     <TouchableOpacity activeOpacity={0.7} onPress={() => {
                         void trackButton('learn_more', currentScreen, {
                             timestamp: new Date().toISOString(),

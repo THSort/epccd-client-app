@@ -1,12 +1,17 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { styles } from './chart-display-toggle.styles';
-import { ChartDisplayMode, ChartDisplayToggleProps } from './chart-display-toggle.types';
+import { ChartDisplayToggleProps } from './chart-display-toggle.types';
+import { useSelectedLanguage } from '../../../../context/SelectedLanguageContext';
+import { getTranslation, Language } from '../../../../utils/translations';
 
 export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
   selectedMode,
   onModeSelected,
 }) => {
+  const { selectedLanguage } = useSelectedLanguage();
+  const currentLanguage = (selectedLanguage || 'Eng') as Language;
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -23,7 +28,7 @@ export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
             selectedMode === 'concentration' && styles.selectedButtonText,
           ]}
         >
-          Concentration
+          {getTranslation('concentration', currentLanguage)}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -40,7 +45,7 @@ export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
             selectedMode === 'aqi' && styles.selectedButtonText,
           ]}
         >
-          AQI
+          {getTranslation('aqi', currentLanguage)}
         </Text>
       </TouchableOpacity>
     </View>
