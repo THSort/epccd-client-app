@@ -461,15 +461,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             />
 
                             {historicalData && getSortedData().length > 0 ? (
-                                <View style={{
-                                    marginTop: 20,
-                                    // padding: 15,
-                                    backgroundColor: '#222',
-                                    borderRadius: 10,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    minHeight: 200,
-                                }}>
+                                <View style={styles.chartContainer}>
                                     {/* Concentration/AQI Toggle */}
                                     <ChartDisplayToggle
                                         selectedMode={displayMode}
@@ -484,11 +476,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                     />
 
                                     {/* Historical Data Chart */}
-                                    <View style={{
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '100%',
-                                    }}>
+                                    <View style={styles.chartWrapper}>
 
                                         <LineChart
                                             data={prepareChartData()}
@@ -516,11 +504,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 },
                                             }}
                                             bezier
-                                            style={{
-                                                marginVertical: 8,
-                                                borderRadius: 16,
-                                                alignSelf: 'center',
-                                            }}
+                                            style={styles.chart}
                                             yAxisLabel=""
                                             yAxisSuffix=""
                                             fromZero={true}
@@ -535,91 +519,33 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                     </View>
 
                                     {/* Stats Cards */}
-                                    <View style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        width: '100%',
-                                        marginTop: 20,
-                                        marginBottom: 10,
-                                        paddingHorizontal: 5,
-                                    }}>
+                                    <View style={styles.statsCardsContainer}>
                                         {/* Current Value Card */}
-                                        <View style={{
-                                            backgroundColor: '#111',
-                                            borderRadius: 10,
-                                            padding: 10,
-                                            width: '31%',
-                                            alignItems: 'center',
-                                        }}>
-                                            <Text style={{
-                                                color: 'yellow',
-                                                fontSize: 12,
-                                                fontWeight: 'bold',
-                                                marginBottom: 5,
-                                                textAlign: 'center',
-                                            }}>
+                                        <View style={styles.statCard}>
+                                            <Text style={styles.statCardTitle}>
                                                 Current Value
                                             </Text>
-                                            <Text style={{
-                                                color: 'white',
-                                                fontSize: 16,
-                                                fontWeight: 'bold',
-                                                textAlign: 'center',
-                                            }}>
+                                            <Text style={styles.statCardValue}>
                                                 {getCurrentValue().toFixed(1)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
 
                                         {/* 24h Average Card */}
-                                        <View style={{
-                                            backgroundColor: '#111',
-                                            borderRadius: 10,
-                                            padding: 10,
-                                            width: '31%',
-                                            alignItems: 'center',
-                                        }}>
-                                            <Text style={{
-                                                color: 'yellow',
-                                                fontSize: 12,
-                                                fontWeight: 'bold',
-                                                marginBottom: 5,
-                                                textAlign: 'center',
-                                            }}>
+                                        <View style={styles.statCard}>
+                                            <Text style={styles.statCardTitle}>
                                                 24h Average
                                             </Text>
-                                            <Text style={{
-                                                color: 'white',
-                                                fontSize: 16,
-                                                fontWeight: 'bold',
-                                                textAlign: 'center',
-                                            }}>
+                                            <Text style={styles.statCardValue}>
                                                 {getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
 
                                         {/* Weekly Average Card */}
-                                        <View style={{
-                                            backgroundColor: '#111',
-                                            borderRadius: 10,
-                                            padding: 10,
-                                            width: '31%',
-                                            alignItems: 'center',
-                                        }}>
-                                            <Text style={{
-                                                color: 'yellow',
-                                                fontSize: 12,
-                                                fontWeight: 'bold',
-                                                marginBottom: 5,
-                                                textAlign: 'center',
-                                            }}>
+                                        <View style={styles.statCard}>
+                                            <Text style={styles.statCardTitle}>
                                                 Weekly Average
                                             </Text>
-                                            <Text style={{
-                                                color: 'white',
-                                                fontSize: 16,
-                                                fontWeight: 'bold',
-                                                textAlign: 'center',
-                                            }}>
+                                            <Text style={styles.statCardValue}>
                                                 {getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
