@@ -1,4 +1,4 @@
-import {ReactElement, useState, useEffect, useCallback} from 'react';
+import {ReactElement, useState, useEffect, useCallback, useMemo} from 'react';
 import React from 'react';
 import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, Dimensions} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -20,7 +20,7 @@ import {ChartDisplayMode} from './components/chart-display-toggle/chart-display-
 import {PollutantSelector} from './components/pollutant-selector/pollutant-selector.tsx';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
-import {getTranslation, Language} from '../../utils/translations';
+import {getTranslation, Language, getTranslatedNumber} from '../../utils/translations';
 // Import Chart Kit components
 import {
     LineChart,
@@ -382,8 +382,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         const date = new Date();
                         date.setMonth(month - 1);
                         date.setDate(day);
-                        // Format as dd/mm/yy
-                        return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`;
+                        // Format as dd/mm/yy with Urdu numerals
+                        const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`;
+                        return getTranslatedNumber(formattedDate, currentLanguage);
                     } catch (e) {
                         return item.time;
                     }
@@ -396,7 +397,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             'January', 'February', 'March', 'April', 'May', 'June',
                             'July', 'August', 'September', 'October', 'November', 'December',
                         ].indexOf(month) + 1;
-                        return `${monthIndex.toString().padStart(2, '0')}/${year.slice(-2)}`;
+                        const formattedDate = `${monthIndex.toString().padStart(2, '0')}/${year.slice(-2)}`;
+                        return getTranslatedNumber(formattedDate, currentLanguage);
                     } catch (e) {
                         return item.time;
                     }
@@ -412,11 +414,18 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         };
                         const monthIndex = quarterStartMonths[item.time] || 1;
                         const year = new Date().getFullYear();
-                        return `${monthIndex.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
+                        const formattedDate = `${monthIndex.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
+                        return getTranslatedNumber(formattedDate, currentLanguage);
                     } catch (e) {
                         return item.time;
                     }
                 }
+                
+                // If the time is already in a date format like "15/02/25", translate it directly
+                if (/^\d{2}\/\d{2}\/\d{2}$/.test(item.time)) {
+                    return getTranslatedNumber(item.time, currentLanguage);
+                }
+                
                 return item.time;
             }),
             datasets: [
@@ -428,7 +437,11 @@ export function AirQualityHistory({route}: Props): ReactElement {
             ],
             legend: [`${getPollutantTranslation(pollutant, 'name')} ${getUnitForPollutant()}`],
         };
-    }, [getSortedData, getValueForPollutant, getUnitForPollutant, pollutant, timeRange, getPollutantTranslation]);
+    }, [getSortedData, getValueForPollutant, getUnitForPollutant, pollutant, timeRange, getPollutantTranslation, currentLanguage]);
+
+    const chartData = useMemo(() => {
+        return prepareChartData();
+    }, [prepareChartData]);
 
     useEffect(() => {
         fetchHistoricalData();
@@ -515,7 +528,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                     <View style={styles.chartWrapper}>
 
                                         <LineChart
-                                            data={prepareChartData()}
+                                            data={chartData}
                                             width={screenWidth - 60}
                                             height={220}
                                             chartConfig={{
@@ -534,7 +547,30 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                     stroke: '#ffd700',
                                                 },
                                                 horizontalLabelRotation: 45,
-                                                formatXLabel: (label) => label,
+                                                formatYLabel: (label) => getTranslatedNumber(label, currentLanguage),
+                                                formatXLabel: (label) => {
+                                                    // Check if the label is a date in format dd/mm/yy
+                                                    if (/^\d{2}\/\d{2}\/\d{2}$/.test(label)) {
+                                                        return getTranslatedNumber(label, currentLanguage);
+                                                    }
+                                                    
+                                                    // Check if the label is already translated (contains Urdu numerals)
+                                                    if (/[\u0660-\u0669\u06F0-\u06F9]/.test(label)) {
+                                                        return label;
+                                                    }
+                                                    
+                                                    // For time labels like "12 AM", "3 PM", etc.
+                                                    if (timeRange === '1d' && /\d+\s+(AM|PM)/.test(label)) {
+                                                        return label.replace(/\d+/, (match) => getTranslatedNumber(match, currentLanguage));
+                                                    }
+                                                    
+                                                    // For day labels in 1w view (Today, Yesterday, Mon, Tue, etc.)
+                                                    if (timeRange === '1w') {
+                                                        return label; // Keep as is since these are text labels
+                                                    }
+                                                    
+                                                    return label;
+                                                },
                                                 propsForLabels: {
                                                     fontSize: 10,
                                                 },
@@ -562,7 +598,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 {getTranslation('currentValue', currentLanguage)}
                                             </Text>
                                             <Text style={styles.statCardValue}>
-                                                {getCurrentValue().toFixed(1)} {getUnitForPollutant()}
+                                                {getTranslatedNumber(getCurrentValue().toFixed(1), currentLanguage)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
 
@@ -572,7 +608,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 {getTranslation('dailyAverage', currentLanguage)}
                                             </Text>
                                             <Text style={styles.statCardValue}>
-                                                {getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
+                                                {getTranslatedNumber(getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
 
@@ -582,7 +618,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 {getTranslation('weeklyAverage', currentLanguage)}
                                             </Text>
                                             <Text style={styles.statCardValue}>
-                                                {getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
+                                                {getTranslatedNumber(getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
                                     </View>

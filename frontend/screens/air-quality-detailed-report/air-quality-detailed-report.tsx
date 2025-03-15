@@ -17,7 +17,7 @@ import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
-import {getTranslation, Language, getTranslatedTimeSinceUpdate} from '../../utils/translations';
+import {getTranslation, Language, getTranslatedTimeSinceUpdate, getTranslatedNumber} from '../../utils/translations';
 
 const currentScreen = 'AirQualityReport';
 
@@ -149,7 +149,7 @@ export function AirQualityDetailedReport(): ReactElement {
         return (
             <View style={styles.aqiContainer}>
                 <View style={styles.aqiDetails}>
-                    <Text style={[styles.aqiValue, {color: aqiColor}]}>{aqiValue} AQI</Text>
+                    <Text style={[styles.aqiValue, {color: aqiColor}]}>{getTranslatedNumber(aqiValue, currentLanguage)} {getTranslation('aqi', currentLanguage)}</Text>
                     <Text style={[styles.aqiStatus, {color: aqiColor}]}>{aqiDescription.level}</Text>
                 </View>
                 <View>

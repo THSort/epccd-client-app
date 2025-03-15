@@ -8,6 +8,8 @@ import {useNavigation} from '@react-navigation/native';
 import {AirQualityDetailedReportNavigationProps} from '../../../types/navigation.types.ts';
 import {Pollutant} from '../air-quality-detailed-report.types.ts';
 import {useUserActivity} from '../../../context/UserActivityContext.tsx';
+import {useSelectedLanguage} from '../../../context/SelectedLanguageContext.tsx';
+import {Language, getTranslatedNumber} from '../../../utils/translations';
 
 const currentScreen = 'AirQualityReport';
 
@@ -24,6 +26,8 @@ const POLLUTANT_UNITS = {
 export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactElement {
     const navigation = useNavigation<AirQualityDetailedReportNavigationProps>();
     const { trackButton } = useUserActivity();
+    const { selectedLanguage } = useSelectedLanguage();
+    const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
     // Get the appropriate unit for the pollutant
     const getUnit = (pollutantName: Pollutant) => {
@@ -37,7 +41,7 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
             <View>
                 <View style={styles.row}>
                     <Text style={styles.pollutantName}>{props.translatedName || pollutantName}</Text>
-                    <Text style={styles.pollutantValue}>{pollutantValue.toFixed(1)}</Text>
+                    <Text style={styles.pollutantValue}>{getTranslatedNumber(pollutantValue.toFixed(1), currentLanguage)}</Text>
                 </View>
                 <View style={styles.row}>
                     <Text style={styles.pollutantDescription}>{pollutantDescription}</Text>

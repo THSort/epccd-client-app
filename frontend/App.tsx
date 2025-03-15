@@ -68,7 +68,9 @@ function App(): React.JSX.Element {
     if (!userId) {
         return (
             <SelectedLocationProvider>
-                <RegistrationScreen onRegistrationComplete={handleRegistrationComplete}/>
+                <SelectedLanguageProvider>
+                    <RegistrationScreen onRegistrationComplete={handleRegistrationComplete}/>
+                </SelectedLanguageProvider>
             </SelectedLocationProvider>
         );
     }

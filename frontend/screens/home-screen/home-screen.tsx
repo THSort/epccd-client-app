@@ -15,7 +15,7 @@ import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
-import {getTranslation, Language, getTranslatedLocationName} from '../../utils/translations';
+import {getTranslation, Language, getTranslatedLocationName, getTranslatedNumber} from '../../utils/translations';
 
 const DEFAULT_AQI = 0;
 
@@ -188,7 +188,7 @@ const HomeScreen = () => {
             ) : (
                 <>
                     <View style={[styles.aqiValueContainer, {marginTop: '35%'}]}>
-                        <Text style={[styles.aqiValueText, {color: aqiColor}]}>{aqiValue}</Text>
+                        <Text style={[styles.aqiValueText, {color: aqiColor}]}>{getTranslatedNumber(aqiValue, currentLanguage)}</Text>
                         <Text style={[styles.aqiText, {color: aqiColor}]}>
                             {getTranslation('airQualityIndex', currentLanguage)}
                         </Text>

@@ -82,6 +82,19 @@ export interface TranslationStrings {
   wwfFerozpurRoadLahore: string;
   egertonRoadLahore: string;
   hillParkLahore: string;
+  
+  // Digits
+  digit0: string;
+  digit1: string;
+  digit2: string;
+  digit3: string;
+  digit4: string;
+  digit5: string;
+  digit6: string;
+  digit7: string;
+  digit8: string;
+  digit9: string;
+  decimalPoint: string;
 }
 
 // Define translations for each language
@@ -166,6 +179,19 @@ const translations: Record<Language, TranslationStrings> = {
     wwfFerozpurRoadLahore: 'WWF Ferozpur Road, Lahore',
     egertonRoadLahore: 'Egerton Road, Lahore',
     hillParkLahore: 'Hill Park, Lahore',
+    
+    // Digits - English uses standard Arabic numerals
+    digit0: '0',
+    digit1: '1',
+    digit2: '2',
+    digit3: '3',
+    digit4: '4',
+    digit5: '5',
+    digit6: '6',
+    digit7: '7',
+    digit8: '8',
+    digit9: '9',
+    decimalPoint: '.',
   },
   'اردو': {
     // Home screen
@@ -247,6 +273,19 @@ const translations: Record<Language, TranslationStrings> = {
     wwfFerozpurRoadLahore: 'ڈبلیو ڈبلیو ایف فیروزپور روڈ، لاہور',
     egertonRoadLahore: 'ایجرٹن روڈ، لاہور',
     hillParkLahore: 'ہل پارک، لاہور',
+    
+    // Digits - Urdu/Eastern Arabic numerals
+    digit0: '۰',
+    digit1: '۱',
+    digit2: '۲',
+    digit3: '۳',
+    digit4: '۴',
+    digit5: '۵',
+    digit6: '۶',
+    digit7: '۷',
+    digit8: '۸',
+    digit9: '۹',
+    decimalPoint: '٫',
   }
 };
 
@@ -320,5 +359,29 @@ export const getTranslatedTimeSinceUpdate = (lastUpdated: Date | null, language:
   if (diffMins === 1) {
     return getTranslation('minAgo', language);
   }
-  return getTranslation('minsAgo', language).replace('{mins}', diffMins.toString());
+  return getTranslation('minsAgo', language).replace('{mins}', getTranslatedNumber(diffMins.toString(), language));
+};
+
+// Helper function to translate numbers to the selected language
+export const getTranslatedNumber = (number: string | number, language: Language): string => {
+  // Convert the number to a string if it's not already
+  const numStr = number.toString();
+  
+  // Replace each digit with its translated version
+  let translatedNumber = '';
+  for (let i = 0; i < numStr.length; i++) {
+    const char = numStr[i];
+    if (char === '.') {
+      translatedNumber += getTranslation('decimalPoint', language);
+    } else if (/\d/.test(char)) {
+      // If the character is a digit (0-9), translate it
+      const digitKey = `digit${char}` as keyof TranslationStrings;
+      translatedNumber += getTranslation(digitKey, language);
+    } else {
+      // For any other character (like commas, spaces, etc.), keep it as is
+      translatedNumber += char;
+    }
+  }
+  
+  return translatedNumber;
 }; 
