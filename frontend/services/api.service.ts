@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Location } from '../App.types';
-import { EpaMonitorsApiResponse, HistoricalEpaMonitorsDataResponse, FilteredHistoricalDataResponse } from '../types/epaMonitorsApiResponse.types';
+import { EpaMonitorsApiResponse, HistoricalEpaMonitorsDataResponse, FilteredHistoricalDataResponse, PollutantSummaryResponse } from '../types/epaMonitorsApiResponse.types';
 
 // Base URL for API requests
 const API_BASE_URL = 'http://10.0.2.2:5000/api/epa-monitors'; // Change this to your actual backend URL
@@ -37,6 +37,25 @@ export const fetchHistoricalEpaMonitorsData = async (location: Location): Promis
     return response.data;
   } catch (error) {
     console.error('Error fetching historical EPA Monitors data:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches pollutant summary data (current, 24h avg, weekly avg) for a specific location
+ * @param location - The location object to fetch summary data for
+ * @returns Object containing current values, 24-hour averages, and weekly averages for all pollutants
+ */
+export const fetchPollutantSummary = async (location: Location): Promise<PollutantSummaryResponse> => {
+  try {
+    const url = `${API_BASE_URL}/epaMonitorsData/summary/${location.locationCode}`;
+
+    console.log(`Fetching pollutant summary data from: ${url}`);
+
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pollutant summary data:', error);
     throw error;
   }
 };

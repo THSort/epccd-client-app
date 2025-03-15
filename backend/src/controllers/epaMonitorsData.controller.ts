@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
-import {fetchCurrentEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataByPeriods} from "../services/epaMonitorsData.service";
+import {fetchCurrentEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataByPeriods, fetchPollutantSummaryForLocation} from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
-import {EpaMonitorsData, PollutantChartData, FilteredHistoricalDataResponse} from "../types/epaMonitorsData.types";
+import {EpaMonitorsData, PollutantChartData, FilteredHistoricalDataResponse, PollutantSummaryData} from "../types/epaMonitorsData.types";
 
 export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -54,6 +54,23 @@ export const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res:
     }
 };
 
+export const getPollutantSummaryForLocation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const location = Number(req.params.location);
+
+        const summaryData = await fetchPollutantSummaryForLocation(location);
+
+        res.json(summaryData);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error(`Error fetching pollutant summary data for location ${req.params.location}: ${error.message}`);
+        } else {
+            logger.error(`Unknown error while fetching pollutant summary data for location ${req.params.location}`);
+        }
+        res.status(500).json({message: "Failed to fetch pollutant summary data"});
+    }
+};
+
 // Helper function to filter only the required fields for the chart
 const filterPollutantData = (data: EpaMonitorsData[]): PollutantChartData[] => {
     return data.map(item => ({
@@ -83,15 +100,23 @@ const filterPollutantData = (data: EpaMonitorsData[]): PollutantChartData[] => {
 
 // Process oneDay data into 6 time-based data points with averaged values
 const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantChartData> => {
-    // Define the 6 time slots (4-hour intervals)
+    // Define the 8 time slots (3-hour intervals)
     const timeSlots = [
         { label: '12 AM', hour: 0 },
-        { label: '4 AM', hour: 4 },
-        { label: '8 AM', hour: 8 },
+        { label: '3 AM', hour: 3 },
+        { label: '6 AM', hour: 6 },
+        { label: '9 AM', hour: 9 },
         { label: '12 PM', hour: 12 },
-        { label: '4 PM', hour: 16 },
-        { label: '8 PM', hour: 20 }
+        { label: '3 PM', hour: 15 },
+        { label: '6 PM', hour: 18 },
+        { label: '9 PM', hour: 21 }
     ];
+    
+    // Get current hour to filter out future time slots
+    const currentHour = new Date().getHours();
+    
+    // Filter time slots to only include those up to the current time
+    const availableTimeSlots = timeSlots.filter(slot => slot.hour <= currentHour);
     
     // Initialize result object with empty data for each time slot
     const result: Record<string, PollutantChartData> = {};
@@ -115,8 +140,8 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
         CO_AQI: number
     }> = {};
     
-    // Initialize slot data
-    timeSlots.forEach(slot => {
+    // Initialize slot data for available time slots
+    availableTimeSlots.forEach(slot => {
         slotData[slot.label] = {
             count: 0,
             o3_ppb: 0,
@@ -142,15 +167,20 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
         const timeParts = item.report_time.split(':');
         const hour = parseInt(timeParts[0], 10);
         
+        // Skip if the hour is in the future (should not happen with historical data, but just in case)
+        if (hour > currentHour) {
+            return;
+        }
+        
         // Determine which time slot this hour belongs to
         let slotLabel = '';
-        for (let i = 0; i < timeSlots.length; i++) {
-            const currentSlot = timeSlots[i];
-            const nextSlot = timeSlots[(i + 1) % timeSlots.length];
+        for (let i = 0; i < availableTimeSlots.length; i++) {
+            const currentSlot = availableTimeSlots[i];
+            const nextSlot = availableTimeSlots[i + 1];
             
-            // Handle the case where we wrap around from 8 PM to 12 AM
-            if (nextSlot.hour < currentSlot.hour) {
-                if (hour >= currentSlot.hour || hour < nextSlot.hour) {
+            if (!nextSlot) {
+                // This is the last slot, so it includes all hours from its start until the current hour
+                if (hour >= currentSlot.hour) {
                     slotLabel = currentSlot.label;
                     break;
                 }
@@ -160,9 +190,9 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
             }
         }
         
-        // If we couldn't determine a slot, use the last one (8 PM)
-        if (!slotLabel) {
-            slotLabel = timeSlots[timeSlots.length - 1].label;
+        // If we couldn't determine a slot, skip this data point
+        if (!slotLabel || !slotData[slotLabel]) {
+            return;
         }
         
         // Add data to the slot
@@ -186,11 +216,11 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
     // Get the current date from the data or use today's date
     const currentDate = data.length > 0 ? data[0].report_date : new Date().toISOString().split('T')[0];
     
-    // Create entries for all time slots, even if they have no data
-    timeSlots.forEach(slot => {
+    // Create entries for all available time slots
+    availableTimeSlots.forEach(slot => {
         const slotInfo = slotData[slot.label];
         
-        if (slotInfo.count > 0) {
+        if (slotInfo && slotInfo.count > 0) {
             // Calculate averages for slots that have data
             result[slot.label] = {
                 report_date: currentDate,
@@ -210,7 +240,7 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
                 O3_AQI: slotInfo.O3_AQI / slotInfo.count,
                 CO_AQI: slotInfo.CO_AQI / slotInfo.count
             };
-        } else {
+        } else if (slotInfo) {
             // For slots with no data, use zero values
             result[slot.label] = {
                 report_date: currentDate,
@@ -238,16 +268,34 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
 
 // Process oneWeek data into 7 day-based data points with averaged values
 const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantChartData> => {
-    // Define the 7 days of the week
-    const daysOfWeek = [
-        { label: 'Sunday', dayIndex: 0 },
-        { label: 'Monday', dayIndex: 1 },
-        { label: 'Tuesday', dayIndex: 2 },
-        { label: 'Wednesday', dayIndex: 3 },
-        { label: 'Thursday', dayIndex: 4 },
-        { label: 'Friday', dayIndex: 5 },
-        { label: 'Saturday', dayIndex: 6 }
-    ];
+    // Get current date
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+    
+    // Create an array of dates for the past 7 days (including today)
+    const dates: { date: Date, label: string }[] = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    // Add the past 7 days to the dates array (including today)
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(currentDate);
+        date.setDate(date.getDate() - i);
+        
+        // Determine the label for this day
+        let label = '';
+        if (i === 0) {
+            // Today
+            label = 'Today';
+        } else if (i === 1) {
+            // Yesterday
+            label = 'Yesterday';
+        } else {
+            // Other days - use day name
+            label = dayNames[date.getDay()];
+        }
+        
+        dates.push({ date, label });
+    }
     
     // Initialize result object with empty data for each day
     const result: Record<string, PollutantChartData> = {};
@@ -271,9 +319,9 @@ const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantCh
         CO_AQI: number
     }> = {};
     
-    // Initialize day data
-    daysOfWeek.forEach(day => {
-        dayData[day.label] = {
+    // Initialize day data for each date
+    dates.forEach(({ label }) => {
+        dayData[label] = {
             count: 0,
             o3_ppb: 0,
             co_ppm: 0,
@@ -294,40 +342,51 @@ const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantCh
     
     // Process each data point and add to the appropriate day
     data.forEach(item => {
-        // Extract day of week from report_date (assuming format like "YYYY-MM-DD")
+        // Extract date from report_date (assuming format like "YYYY-MM-DD")
         const date = new Date(item.report_date);
-        const dayOfWeek = daysOfWeek[date.getDay()].label;
+        
+        // Find the matching date in our dates array
+        const matchingDate = dates.find(d => d.date.toDateString() === date.toDateString());
+        
+        // Skip if no matching date (data is outside our range)
+        if (!matchingDate) {
+            return;
+        }
+        
+        const dayLabel = matchingDate.label;
+        
+        // Skip if we couldn't determine a label or if the label doesn't exist in dayData
+        if (!dayLabel || !dayData[dayLabel]) {
+            return;
+        }
         
         // Add data to the day
-        dayData[dayOfWeek].count++;
-        dayData[dayOfWeek].o3_ppb += item.o3_ppb || 0;
-        dayData[dayOfWeek].co_ppm += item.co_ppm || 0;
-        dayData[dayOfWeek].so2_ppb += item.so2_ppb || 0;
-        dayData[dayOfWeek].no_ppb += item.no_ppb || 0;
-        dayData[dayOfWeek].no2_ppb += item.no2_ppb || 0;
-        dayData[dayOfWeek].nox_ppb += item.nox_ppb || 0;
-        dayData[dayOfWeek].pm10_ug_m3 += item.pm10_ug_m3 || 0;
-        dayData[dayOfWeek].pm2_5_ug_m3 += item.pm2_5_ug_m3 || 0;
-        dayData[dayOfWeek].PM2_5_AQI += item.PM2_5_AQI || 0;
-        dayData[dayOfWeek].PM10_AQI += item.PM10_AQI || 0;
-        dayData[dayOfWeek].SO2_AQI += item.SO2_AQI || 0;
-        dayData[dayOfWeek].NO2_AQI += item.NO2_AQI || 0;
-        dayData[dayOfWeek].O3_AQI += item.O3_AQI || 0;
-        dayData[dayOfWeek].CO_AQI += item.CO_AQI || 0;
+        dayData[dayLabel].count++;
+        dayData[dayLabel].o3_ppb += item.o3_ppb || 0;
+        dayData[dayLabel].co_ppm += item.co_ppm || 0;
+        dayData[dayLabel].so2_ppb += item.so2_ppb || 0;
+        dayData[dayLabel].no_ppb += item.no_ppb || 0;
+        dayData[dayLabel].no2_ppb += item.no2_ppb || 0;
+        dayData[dayLabel].nox_ppb += item.nox_ppb || 0;
+        dayData[dayLabel].pm10_ug_m3 += item.pm10_ug_m3 || 0;
+        dayData[dayLabel].pm2_5_ug_m3 += item.pm2_5_ug_m3 || 0;
+        dayData[dayLabel].PM2_5_AQI += item.PM2_5_AQI || 0;
+        dayData[dayLabel].PM10_AQI += item.PM10_AQI || 0;
+        dayData[dayLabel].SO2_AQI += item.SO2_AQI || 0;
+        dayData[dayLabel].NO2_AQI += item.NO2_AQI || 0;
+        dayData[dayLabel].O3_AQI += item.O3_AQI || 0;
+        dayData[dayLabel].CO_AQI += item.CO_AQI || 0;
     });
     
-    // Get the current date from the data or use today's date
-    const currentDate = data.length > 0 ? data[0].report_date : new Date().toISOString().split('T')[0];
-    
     // Create entries for all days, even if they have no data
-    daysOfWeek.forEach(day => {
-        const dayInfo = dayData[day.label];
+    dates.forEach(({ label }) => {
+        const dayInfo = dayData[label];
         
-        if (dayInfo.count > 0) {
+        if (dayInfo && dayInfo.count > 0) {
             // Calculate averages for days that have data
-            result[day.label] = {
-                report_date: currentDate,
-                report_time: day.label, // Using report_time field to store the day name
+            result[label] = {
+                report_date: currentDateStr,
+                report_time: label, // Using report_time field to store the day name
                 o3_ppb: dayInfo.o3_ppb / dayInfo.count,
                 co_ppm: dayInfo.co_ppm / dayInfo.count,
                 so2_ppb: dayInfo.so2_ppb / dayInfo.count,
@@ -343,11 +402,11 @@ const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantCh
                 O3_AQI: dayInfo.O3_AQI / dayInfo.count,
                 CO_AQI: dayInfo.CO_AQI / dayInfo.count
             };
-        } else {
+        } else if (dayInfo) {
             // For days with no data, use zero values
-            result[day.label] = {
-                report_date: currentDate,
-                report_time: day.label, // Using report_time field to store the day name
+            result[label] = {
+                report_date: currentDateStr,
+                report_time: label, // Using report_time field to store the day name
                 o3_ppb: 0,
                 co_ppm: 0,
                 so2_ppb: 0,

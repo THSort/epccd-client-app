@@ -76,3 +76,72 @@ export interface FilteredHistoricalDataResponse {
     sixMonths: Record<string, PollutantChartData>;
     oneYear: Record<string, PollutantChartData>;
 }
+
+// Interface for pollutant summary data containing current value, 24h avg, and weekly avg
+export interface PollutantSummaryResponse {
+    // Current values
+    current: {
+        // Pollutant concentration fields
+        o3_ppb: number;
+        co_ppm: number;
+        so2_ppb: number;
+        no_ppb: number;
+        no2_ppb: number;
+        nox_ppb: number;
+        pm10_ug_m3: number;
+        pm2_5_ug_m3: number;
+        
+        // AQI values
+        PM2_5_AQI: number;
+        PM10_AQI: number;
+        SO2_AQI: number;
+        NO2_AQI: number;
+        O3_AQI: number;
+        CO_AQI: number;
+        
+        // Timestamp
+        timestamp: string;
+    };
+    
+    // 24-hour average values
+    daily_avg: {
+        // Pollutant concentration fields
+        o3_ppb: number;
+        co_ppm: number;
+        so2_ppb: number;
+        no_ppb: number;
+        no2_ppb: number;
+        nox_ppb: number;
+        pm10_ug_m3: number;
+        pm2_5_ug_m3: number;
+        
+        // AQI values
+        PM2_5_AQI: number;
+        PM10_AQI: number;
+        SO2_AQI: number;
+        NO2_AQI: number;
+        O3_AQI: number;
+        CO_AQI: number;
+    };
+    
+    // Weekly average values
+    weekly_avg: {
+        // Pollutant concentration fields
+        o3_ppb: number;
+        co_ppm: number;
+        so2_ppb: number;
+        no_ppb: number;
+        no2_ppb: number;
+        nox_ppb: number;
+        pm10_ug_m3: number;
+        pm2_5_ug_m3: number;
+        
+        // AQI values
+        PM2_5_AQI: number;
+        PM10_AQI: number;
+        SO2_AQI: number;
+        NO2_AQI: number;
+        O3_AQI: number;
+        CO_AQI: number;
+    };
+}

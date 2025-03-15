@@ -11,8 +11,8 @@ import {LocationModal} from '../home-screen/components/location-modal/location-m
 import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
-import {fetchHistoricalEpaMonitorsData} from '../../services/api.service.ts';
-import {FilteredHistoricalDataResponse} from '../../types/epaMonitorsApiResponse.types.ts';
+import {fetchHistoricalEpaMonitorsData, fetchPollutantSummary} from '../../services/api.service.ts';
+import {FilteredHistoricalDataResponse, PollutantSummaryResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {TimeRangeSelector} from './components/time-range-selector/time-range-selector.tsx';
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
 import {ChartDisplayToggle} from './components/chart-display-toggle/chart-display-toggle.tsx';
@@ -47,6 +47,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     const [pollutant, setPollutant] = useState<Pollutant>(selectedPollutant);
     const [historicalData, setHistoricalData] = useState<FilteredHistoricalDataResponse | null>(null);
+    const [summaryData, setSummaryData] = useState<PollutantSummaryResponse | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
@@ -88,6 +89,21 @@ export function AirQualityHistory({route}: Props): ReactElement {
             setError('Failed to load historical air quality data. Please try again later.');
         } finally {
             setIsLoading(false);
+        }
+    }, [selectedLocation]);
+
+    const fetchSummaryData = useCallback(async () => {
+        if (!selectedLocation) {
+            return;
+        }
+
+        try {
+            const data = await fetchPollutantSummary(selectedLocation);
+            console.log('Summary data fetched:', data);
+            setSummaryData(data);
+        } catch (error) {
+            console.error('Error fetching summary data:', error);
+            // Don't set error state here to avoid blocking the UI if only summary data fails
         }
     }, [selectedLocation]);
 
@@ -190,33 +206,78 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     }, [pollutant, displayMode]);
 
+    // Get the current value from summary data based on selected pollutant and display mode
+    const getCurrentValue = useCallback(() => {
+        if (!summaryData) return 0;
+        
+        return getValueForPollutant(summaryData.current);
+    }, [summaryData, getValueForPollutant]);
+
+    // Get the 24h average value from summary data based on selected pollutant and display mode
+    const getDailyAvgValue = useCallback(() => {
+        if (!summaryData) return 0;
+        
+        return getValueForPollutant(summaryData.daily_avg);
+    }, [summaryData, getValueForPollutant]);
+
+    // Get the weekly average value from summary data based on selected pollutant and display mode
+    const getWeeklyAvgValue = useCallback(() => {
+        if (!summaryData) return 0;
+        
+        return getValueForPollutant(summaryData.weekly_avg);
+    }, [summaryData, getValueForPollutant]);
+
     // Sort data chronologically based on time range
     const getSortedData = useCallback(() => {
         const data = getDataForTimeRange();
 
         if (timeRange === '1d') {
-            // Sort by time (12 AM, 4 AM, 8 AM, 12 PM, 4 PM, 8 PM)
+            // Define the expected order of time slots (now with 3-hour intervals)
             const timeOrder: Record<string, number> = {
                 '12 AM': 0,
-                '4 AM': 1,
-                '8 AM': 2,
-                '12 PM': 3,
-                '4 PM': 4,
-                '8 PM': 5,
+                '3 AM': 1,
+                '6 AM': 2,
+                '9 AM': 3,
+                '12 PM': 4,
+                '3 PM': 5,
+                '6 PM': 6,
+                '9 PM': 7,
             };
-            return [...data].sort((a, b) => (timeOrder[a.time] || 0) - (timeOrder[b.time] || 0));
+            
+            // Sort by time, but only include time slots that exist in the data
+            // This handles the case where future time slots are filtered out by the backend
+            return [...data].sort((a, b) => {
+                const orderA = timeOrder[a.time] !== undefined ? timeOrder[a.time] : Number.MAX_SAFE_INTEGER;
+                const orderB = timeOrder[b.time] !== undefined ? timeOrder[b.time] : Number.MAX_SAFE_INTEGER;
+                return orderA - orderB;
+            });
         } else if (timeRange === '1w') {
-            // Sort by day of week
-            const dayOrder: Record<string, number> = {
-                'Sunday': 0,
-                'Monday': 1,
-                'Tuesday': 2,
-                'Wednesday': 3,
-                'Thursday': 4,
-                'Friday': 5,
-                'Saturday': 6,
+            // For the 1-week view, we want to sort chronologically from oldest to newest
+            // The backend now sends data for the past 7 days with "Today" and "Yesterday" labels
+            // and the rest as day names (e.g., "Mon", "Tue", etc.)
+            
+            // Create a mapping to determine the order
+            // We'll use numbers to represent days ago (0 = today, 1 = yesterday, etc.)
+            const today = new Date();
+            const dayMapping: Record<string, number> = {
+                'Today': 0,
+                'Yesterday': 1
             };
-            return [...data].sort((a, b) => (dayOrder[a.time] || 0) - (dayOrder[b.time] || 0));
+            
+            // For the other days, calculate how many days ago they were
+            for (let i = 2; i < 7; i++) {
+                const pastDate = new Date(today);
+                pastDate.setDate(pastDate.getDate() - i);
+                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][pastDate.getDay()];
+                dayMapping[dayName] = i;
+            }
+            
+            // Sort the data by days ago (oldest first)
+            return [...data].sort((a, b) => {
+                const daysAgoA = dayMapping[a.time] !== undefined ? dayMapping[a.time] : Number.MAX_SAFE_INTEGER;
+                const daysAgoB = dayMapping[b.time] !== undefined ? dayMapping[b.time] : Number.MAX_SAFE_INTEGER;
+                return daysAgoB - daysAgoA; // Reverse order (oldest first)
+            });
         } else if (timeRange === '1m') {
             // Sort by week chronologically (assuming format "MM/DD - MM/DD")
             return [...data].sort((a, b) => {
@@ -274,17 +335,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     // Keep time labels as is (12 AM, 4 AM, etc.)
                     return item.time;
                 } else if (timeRange === '1w') {
-                    // Truncate day names to three letters (Sun, Mon, Tue, etc.)
-                    const dayMap: Record<string, string> = {
-                        'Sunday': 'Sun',
-                        'Monday': 'Mon',
-                        'Tuesday': 'Tue',
-                        'Wednesday': 'Wed',
-                        'Thursday': 'Thu',
-                        'Friday': 'Fri',
-                        'Saturday': 'Sat',
-                    };
-                    return dayMap[item.time] || item.time;
+                    // Use the custom labels (Today, Yesterday, Sun, Mon, etc.)
+                    return item.time;
                 } else if (timeRange === '1m') {
                     // Format week ranges as dd/mm/yy for start date
                     // Example: "5/15 - 5/21" becomes "15/05/23"
@@ -344,7 +396,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     useEffect(() => {
         fetchHistoricalData();
-    }, [fetchHistoricalData]);
+        fetchSummaryData();
+    }, [fetchHistoricalData, fetchSummaryData]);
 
     if (isLoading) {
         return (
@@ -513,7 +566,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 fontWeight: 'bold',
                                                 textAlign: 'center',
                                             }}>
-                                                45 μg/m³
+                                                {getCurrentValue().toFixed(1)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
 
@@ -540,7 +593,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 fontWeight: 'bold',
                                                 textAlign: 'center',
                                             }}>
-                                                31 μg/m³
+                                                {getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
 
@@ -567,7 +620,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 fontWeight: 'bold',
                                                 textAlign: 'center',
                                             }}>
-                                                54 μg/m³
+                                                {getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0)} {getUnitForPollutant()}
                                             </Text>
                                         </View>
                                     </View>
