@@ -4,8 +4,7 @@ const epaMonitorsSchema = new mongoose.Schema({
     id: {type: Number, required: true},
     location: {type: Number, required: true, index: true},
     datatime: {type: String, required: true, index: true},
-    report_date: {type: String, required: true},
-    report_time: {type: String, required: true},
+    report_date_time: {type: Date, required: true},
 
     // Air Quality Fields
     o3_ppb: {type: Number, required: true},

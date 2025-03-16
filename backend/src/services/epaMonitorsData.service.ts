@@ -57,13 +57,18 @@ export const fetchCurrentEpaMonitorsDataForLocation = async (location: number): 
         }
 
         const aqms = response.data.aqms;
+        
+        // Create a Date object from report_date and report_time
+        const reportDate = aqms["report_date"];
+        const reportTime = aqms["report_time"];
+        const reportDateTimeStr = `${reportDate}T${reportTime}`;
+        const reportDateTime = new Date(reportDateTimeStr);
 
         return {
             id: aqms["id"],
             location: aqms["mn"],
             datatime: aqms["datatime"],
-            report_date: aqms["report_date"],
-            report_time: aqms["report_time"],
+            report_date_time: reportDateTime,
 
             // Air Quality
             o3_ppb: parseFloat(aqms["o3_ppb_field"]),
@@ -103,15 +108,14 @@ const storeEpaMonitorsData = async (data: EpaMonitorsData) => {
     try {
         const existingRecord = await EpaMonitorsDataModel.findOne({
             location: data.location,
-            report_date: data.report_date,
-            report_time: data.report_time,
+            report_date_time: data.report_date_time,
         });
 
         if (!existingRecord) {
             await EpaMonitorsDataModel.create(data);
-            logger.info(`✅ Stored EPA Monitors data for location ${data.location} at ${data.report_date} and ${data.report_time}`);
+            logger.info(`✅ Stored EPA Monitors data for location ${data.location} at ${data.report_date_time}`);
         } else {
-            logger.info(`⚠️ Duplicate data skipped for location ${data.location} at ${data.report_date} and ${data.report_time}`);
+            logger.info(`⚠️ Duplicate data skipped for location ${data.location} at ${data.report_date_time}`);
         }
     } catch (error) {
         logger.error(`Error storing EPA Monitors data: ${error instanceof Error ? error.message : JSON.stringify(error)}`);

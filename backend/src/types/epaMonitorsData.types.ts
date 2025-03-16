@@ -2,8 +2,7 @@ export interface EpaMonitorsData {
     id: number;
     location: number; // `mn`
     datatime: string; // `datatime`
-    report_date: string; // `report_date`
-    report_time: string; // `report_time`
+    report_date_time: Date; // ISO 8601 timestamp
 
     // Air Quality Fields
     o3_ppb: number; // `o3_ppb_field`
@@ -44,9 +43,8 @@ export interface HistoricalEpaMonitorsDataResponse {
 
 // Interface for filtered pollutant data for charts
 export interface PollutantChartData {
-    // Date and time fields
-    report_date: string;
-    report_time: string;
+    // Date and time field
+    report_date_time: Date;
     
     // Pollutant concentration fields
     o3_ppb: number;
