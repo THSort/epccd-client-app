@@ -61,28 +61,28 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const getPollutantTranslation = useCallback((pollutantType: Pollutant, type: 'name' | 'description' | 'unit'): string => {
         switch (pollutantType) {
             case Pollutant.PM2_5:
-                if (type === 'name') return getTranslation('pm25', currentLanguage);
-                if (type === 'description') return getTranslation('pm25Description', currentLanguage);
+                if (type === 'name') {return getTranslation('pm25', currentLanguage);}
+                if (type === 'description') {return getTranslation('pm25Description', currentLanguage);}
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.PM10:
-                if (type === 'name') return getTranslation('pm10', currentLanguage);
-                if (type === 'description') return getTranslation('pm10Description', currentLanguage);
+                if (type === 'name') {return getTranslation('pm10', currentLanguage);}
+                if (type === 'description') {return getTranslation('pm10Description', currentLanguage);}
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.O3:
-                if (type === 'name') return getTranslation('o3', currentLanguage);
-                if (type === 'description') return getTranslation('o3Description', currentLanguage);
+                if (type === 'name') {return getTranslation('o3', currentLanguage);}
+                if (type === 'description') {return getTranslation('o3Description', currentLanguage);}
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.SO2:
-                if (type === 'name') return getTranslation('so2', currentLanguage);
-                if (type === 'description') return getTranslation('so2Description', currentLanguage);
+                if (type === 'name') {return getTranslation('so2', currentLanguage);}
+                if (type === 'description') {return getTranslation('so2Description', currentLanguage);}
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.NO2:
-                if (type === 'name') return getTranslation('no2', currentLanguage);
-                if (type === 'description') return getTranslation('no2Description', currentLanguage);
+                if (type === 'name') {return getTranslation('no2', currentLanguage);}
+                if (type === 'description') {return getTranslation('no2Description', currentLanguage);}
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.CO:
-                if (type === 'name') return getTranslation('co', currentLanguage);
-                if (type === 'description') return getTranslation('coDescription', currentLanguage);
+                if (type === 'name') {return getTranslation('co', currentLanguage);}
+                if (type === 'description') {return getTranslation('coDescription', currentLanguage);}
                 return getTranslation('ppm', currentLanguage);
             default:
                 return '';
@@ -244,22 +244,22 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     // Get the current value from summary data based on selected pollutant and display mode
     const getCurrentValue = useCallback(() => {
-        if (!summaryData) return 0;
-        
+        if (!summaryData) {return 0;}
+
         return getValueForPollutant(summaryData.current);
     }, [summaryData, getValueForPollutant]);
 
     // Get the 24h average value from summary data based on selected pollutant and display mode
     const getDailyAvgValue = useCallback(() => {
-        if (!summaryData) return 0;
-        
+        if (!summaryData) {return 0;}
+
         return getValueForPollutant(summaryData.daily_avg);
     }, [summaryData, getValueForPollutant]);
 
     // Get the weekly average value from summary data based on selected pollutant and display mode
     const getWeeklyAvgValue = useCallback(() => {
-        if (!summaryData) return 0;
-        
+        if (!summaryData) {return 0;}
+
         return getValueForPollutant(summaryData.weekly_avg);
     }, [summaryData, getValueForPollutant]);
 
@@ -268,7 +268,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
         const data = getDataForTimeRange();
 
         if (timeRange === '1d') {
-            // Define the expected order of time slots (now with 3-hour intervals)
+            // Define the expected order of time slots (3-hour intervals)
             const timeOrder: Record<string, number> = {
                 '12 AM': 0,
                 '3 AM': 1,
@@ -279,9 +279,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 '6 PM': 6,
                 '9 PM': 7,
             };
-            
+
             // Sort by time, but only include time slots that exist in the data
-            // This handles the case where future time slots are filtered out by the backend
             return [...data].sort((a, b) => {
                 const orderA = timeOrder[a.time] !== undefined ? timeOrder[a.time] : Number.MAX_SAFE_INTEGER;
                 const orderB = timeOrder[b.time] !== undefined ? timeOrder[b.time] : Number.MAX_SAFE_INTEGER;
@@ -289,30 +288,52 @@ export function AirQualityHistory({route}: Props): ReactElement {
             });
         } else if (timeRange === '1w') {
             // For the 1-week view, we want to sort chronologically from oldest to newest
-            // The backend now sends data for the past 7 days with "Today" and "Yesterday" labels
+            // The backend sends data for the past 7 days with "Today" and "Yesterday" labels
             // and the rest as day names (e.g., "Mon", "Tue", etc.)
-            
+
             // Create a mapping to determine the order
-            // We'll use numbers to represent days ago (0 = today, 1 = yesterday, etc.)
-            const today = new Date();
-            const dayMapping: Record<string, number> = {
-                'Today': 0,
-                'Yesterday': 1
+            const dayOrder: Record<string, number> = {
+                'Today': 6,
+                'Yesterday': 5,
+                'Sun': 4,
+                'Mon': 3,
+                'Tue': 2,
+                'Wed': 1,
+                'Thu': 0,
+                'Fri': -1,
+                'Sat': -2
             };
-            
-            // For the other days, calculate how many days ago they were
-            for (let i = 2; i < 7; i++) {
-                const pastDate = new Date(today);
-                pastDate.setDate(pastDate.getDate() - i);
-                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][pastDate.getDay()];
-                dayMapping[dayName] = i;
-            }
-            
-            // Sort the data by days ago (oldest first)
+
+            // Sort the data by days (oldest first)
             return [...data].sort((a, b) => {
-                const daysAgoA = dayMapping[a.time] !== undefined ? dayMapping[a.time] : Number.MAX_SAFE_INTEGER;
-                const daysAgoB = dayMapping[b.time] !== undefined ? dayMapping[b.time] : Number.MAX_SAFE_INTEGER;
-                return daysAgoB - daysAgoA; // Reverse order (oldest first)
+                // Adjust the day order based on the current day of the week
+                const currentDayOfWeek = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+                
+                let orderA = dayOrder[a.time] !== undefined ? dayOrder[a.time] : -100;
+                let orderB = dayOrder[b.time] !== undefined ? dayOrder[b.time] : -100;
+                
+                // Adjust the order based on the current day of the week
+                if (a.time !== 'Today' && a.time !== 'Yesterday') {
+                    const dayIndexA = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(a.time);
+                    if (dayIndexA !== -1) {
+                        // Calculate days ago
+                        let daysAgo = currentDayOfWeek - dayIndexA;
+                        if (daysAgo < 0) daysAgo += 7; // Wrap around for days earlier in the week
+                        orderA = 4 - daysAgo; // Adjust to fit between Yesterday (5) and the oldest day
+                    }
+                }
+                
+                if (b.time !== 'Today' && b.time !== 'Yesterday') {
+                    const dayIndexB = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(b.time);
+                    if (dayIndexB !== -1) {
+                        // Calculate days ago
+                        let daysAgo = currentDayOfWeek - dayIndexB;
+                        if (daysAgo < 0) daysAgo += 7; // Wrap around for days earlier in the week
+                        orderB = 4 - daysAgo; // Adjust to fit between Yesterday (5) and the oldest day
+                    }
+                }
+                
+                return orderA - orderB; // Oldest first
             });
         } else if (timeRange === '1m') {
             // Sort by week chronologically (assuming format "MM/DD - MM/DD")
@@ -333,28 +354,47 @@ export function AirQualityHistory({route}: Props): ReactElement {
             });
         } else if (timeRange === '3m' || timeRange === '6m') {
             // Sort months chronologically
-            return [...data].sort((a, b) => {
-                const getDate = (monthYear: string) => {
-                    const [month, year] = monthYear.split(' ');
-                    const monthIndex = [
-                        'January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December',
-                    ].indexOf(month);
-                    return new Date(parseInt(year), monthIndex, 1);
-                };
+            const monthOrder: Record<string, number> = {
+                'January': 0,
+                'February': 1,
+                'March': 2,
+                'April': 3,
+                'May': 4,
+                'June': 5,
+                'July': 6,
+                'August': 7,
+                'September': 8,
+                'October': 9,
+                'November': 10,
+                'December': 11
+            };
 
-                return getDate(a.time).getTime() - getDate(b.time).getTime();
+            return [...data].sort((a, b) => {
+                return monthOrder[a.time] - monthOrder[b.time];
             });
         } else if (timeRange === '1y') {
             // Sort quarters chronologically
-            const quarterOrder: Record<string, number> = {
-                'January - March': 0,
-                'April - June': 1,
-                'July - September': 2,
-                'October - December': 3,
-            };
-
-            return [...data].sort((a, b) => (quarterOrder[a.time] ?? 0) - (quarterOrder[b.time] ?? 0));
+            const quarterOrder: Record<string, number> = {};
+            
+            // Extract the year and quarter from the label (e.g., "January - March 2023")
+            data.forEach(item => {
+                const parts = item.time.split(' ');
+                const year = parseInt(parts[parts.length - 1]);
+                const quarterLabel = item.time.substring(0, item.time.lastIndexOf(' ')).trim();
+                
+                let quarterIndex = 0;
+                if (quarterLabel === 'January - March') quarterIndex = 0;
+                else if (quarterLabel === 'April - June') quarterIndex = 1;
+                else if (quarterLabel === 'July - September') quarterIndex = 2;
+                else if (quarterLabel === 'October - December') quarterIndex = 3;
+                
+                // Create a sortable value (year * 10 + quarter)
+                quarterOrder[item.time] = year * 10 + quarterIndex;
+            });
+            
+            return [...data].sort((a, b) => {
+                return quarterOrder[a.time] - quarterOrder[b.time];
+            });
         }
 
         return data;
@@ -368,64 +408,37 @@ export function AirQualityHistory({route}: Props): ReactElement {
             labels: sortedData.map(item => {
                 // Format based on time range
                 if (timeRange === '1d') {
-                    // Keep time labels as is (12 AM, 4 AM, etc.)
+                    // Keep time labels as is (12 AM, 3 AM, etc.)
                     return item.time;
                 } else if (timeRange === '1w') {
                     // Use the custom labels (Today, Yesterday, Sun, Mon, etc.)
                     return item.time;
                 } else if (timeRange === '1m') {
-                    // Format week ranges as dd/mm/yy for start date
-                    // Example: "5/15 - 5/21" becomes "15/05/23"
+                    // Format week ranges as dd/mm for start date
                     try {
                         const startDateStr = item.time.split(' - ')[0];
                         const [month, day] = startDateStr.split('/').map(Number);
-                        const date = new Date();
-                        date.setMonth(month - 1);
-                        date.setDate(day);
-                        // Format as dd/mm/yy with Urdu numerals
-                        const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`;
+                        // Format as dd/mm
+                        const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
                         return getTranslatedNumber(formattedDate, currentLanguage);
                     } catch (e) {
                         return item.time;
                     }
                 } else if (timeRange === '3m' || timeRange === '6m') {
-                    // Format month and year as mm/yy
-                    // Example: "January 2023" becomes "01/23"
-                    try {
-                        const [month, year] = item.time.split(' ');
-                        const monthIndex = [
-                            'January', 'February', 'March', 'April', 'May', 'June',
-                            'July', 'August', 'September', 'October', 'November', 'December',
-                        ].indexOf(month) + 1;
-                        const formattedDate = `${monthIndex.toString().padStart(2, '0')}/${year.slice(-2)}`;
-                        return getTranslatedNumber(formattedDate, currentLanguage);
-                    } catch (e) {
-                        return item.time;
-                    }
+                    // Just use the month name
+                    return item.time;
                 } else if (timeRange === '1y') {
-                    // For quarters, use the first month of the quarter in mm/yy format
-                    // Example: "January - March" becomes "01/23"
+                    // For quarters, extract the first month of the quarter
                     try {
-                        const quarterStartMonths: Record<string, number> = {
-                            'January - March': 1,
-                            'April - June': 4,
-                            'July - September': 7,
-                            'October - December': 10,
-                        };
-                        const monthIndex = quarterStartMonths[item.time] || 1;
-                        const year = new Date().getFullYear();
-                        const formattedDate = `${monthIndex.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
-                        return getTranslatedNumber(formattedDate, currentLanguage);
+                        const quarterParts = item.time.split(' ');
+                        const firstMonth = quarterParts[0]; // e.g., "January" from "January - March 2023"
+                        const year = quarterParts[quarterParts.length - 1].slice(-2); // Last 2 digits of year
+                        return `${firstMonth} '${year}`;
                     } catch (e) {
                         return item.time;
                     }
                 }
-                
-                // If the time is already in a date format like "15/02/25", translate it directly
-                if (/^\d{2}\/\d{2}\/\d{2}$/.test(item.time)) {
-                    return getTranslatedNumber(item.time, currentLanguage);
-                }
-                
+
                 return item.time;
             }),
             datasets: [
@@ -549,16 +562,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                 horizontalLabelRotation: 45,
                                                 formatYLabel: (label) => getTranslatedNumber(label, currentLanguage),
                                                 formatXLabel: (label) => {
-                                                    // Check if the label is a date in format dd/mm/yy
-                                                    if (/^\d{2}\/\d{2}\/\d{2}$/.test(label)) {
-                                                        return getTranslatedNumber(label, currentLanguage);
-                                                    }
-                                                    
-                                                    // Check if the label is already translated (contains Urdu numerals)
-                                                    if (/[\u0660-\u0669\u06F0-\u06F9]/.test(label)) {
-                                                        return label;
-                                                    }
-                                                    
                                                     // For time labels like "12 AM", "3 PM", etc.
                                                     if (timeRange === '1d' && /\d+\s+(AM|PM)/.test(label)) {
                                                         return label.replace(/\d+/, (match) => getTranslatedNumber(match, currentLanguage));
@@ -566,7 +569,32 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                     
                                                     // For day labels in 1w view (Today, Yesterday, Mon, Tue, etc.)
                                                     if (timeRange === '1w') {
-                                                        return label; // Keep as is since these are text labels
+                                                        if (label === 'Today') {
+                                                            return getTranslation('today', currentLanguage);
+                                                        } else if (label === 'Yesterday') {
+                                                            return getTranslation('yesterday', currentLanguage);
+                                                        }
+                                                        // For day names, translate if needed
+                                                        return label;
+                                                    }
+                                                    
+                                                    // For month names in 3m and 6m views
+                                                    if ((timeRange === '3m' || timeRange === '6m') && 
+                                                        ['January', 'February', 'March', 'April', 'May', 'June', 
+                                                         'July', 'August', 'September', 'October', 'November', 'December'].includes(label)) {
+                                                        // Translate month names if needed
+                                                        return label;
+                                                    }
+                                                    
+                                                    // For quarter labels in 1y view (e.g., "January '23")
+                                                    if (timeRange === '1y' && label.includes("'")) {
+                                                        const [month, year] = label.split("'");
+                                                        return `${month}'${getTranslatedNumber(year.trim(), currentLanguage)}`;
+                                                    }
+                                                    
+                                                    // For date formats like dd/mm
+                                                    if (/^\d{2}\/\d{2}$/.test(label)) {
+                                                        return getTranslatedNumber(label, currentLanguage);
                                                     }
                                                     
                                                     return label;

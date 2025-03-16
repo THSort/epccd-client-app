@@ -43,6 +43,8 @@ export interface TranslationStrings {
   currentValue: string;
   dailyAverage: string;
   weeklyAverage: string;
+  today: string;
+  yesterday: string;
   
   // Time ranges
   day: string;
@@ -140,6 +142,8 @@ const translations: Record<Language, TranslationStrings> = {
     currentValue: 'Current Value',
     dailyAverage: '24h Average',
     weeklyAverage: 'Weekly Average',
+    today: 'Today',
+    yesterday: 'Yesterday',
     
     // Time ranges
     day: '1 Day',
@@ -234,6 +238,8 @@ const translations: Record<Language, TranslationStrings> = {
     currentValue: 'موجودہ قیمت',
     dailyAverage: '24 گھنٹے کا اوسط',
     weeklyAverage: 'ہفتہ وار اوسط',
+    today: 'آج',
+    yesterday: 'گذشتہ دن',
     
     // Time ranges
     day: '1 دن',

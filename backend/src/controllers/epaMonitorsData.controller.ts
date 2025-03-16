@@ -1,9 +1,10 @@
 import {Request, Response} from "express";
-import {fetchCurrentEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataForLocation, fetchHistoricalEpaMonitorsDataByPeriods, fetchPollutantSummaryForLocation} from "../services/epaMonitorsData.service";
+import {fetchCurrentEpaMonitorsDataForLocation, fetchPollutantSummaryForLocation} from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
 import {EpaMonitorsData, PollutantChartData, FilteredHistoricalDataResponse, PollutantSummaryData} from "../types/epaMonitorsData.types";
+import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 
-export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
+const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
         const location = Number(req.params.location);
 
@@ -20,40 +21,7 @@ export const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Re
     }
 };
 
-export const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const location = Number(req.params.location);
-
-        const historicalData = await fetchHistoricalEpaMonitorsDataByPeriods(location);
-        
-        // Filter the data to include only the required fields
-        const filteredData: FilteredHistoricalDataResponse = {
-            // Process oneDay data into 6 time-based data points with averaged values
-            oneDay: processOneDayData(historicalData.oneDay),
-            // Process oneWeek data into 7 day-based data points with averaged values
-            oneWeek: processOneWeekData(historicalData.oneWeek),
-            // Process oneMonth data into 4 weekly data points with averaged values
-            oneMonth: processOneMonthData(historicalData.oneMonth),
-            // Process threeMonths data into month-based data points
-            threeMonths: processMonthlyData(historicalData.threeMonths, 3),
-            // Process sixMonths data into month-based data points
-            sixMonths: processMonthlyData(historicalData.sixMonths, 6),
-            // Process oneYear data into quarterly data points
-            oneYear: processQuarterlyData(historicalData.oneYear)
-        };
-        
-        res.json(filteredData);
-    } catch (error) {
-        if (error instanceof Error) {
-            logger.error(`Error fetching historical EPA Monitors data for location ${req.params.location}: ${error.message}`);
-        } else {
-            logger.error(`Unknown error while fetching historical EPA Monitors data for location ${req.params.location}`);
-        }
-        res.status(500).json({message: "Failed to fetch historical EPA Monitors data"});
-    }
-};
-
-export const getPollutantSummaryForLocation = async (req: Request, res: Response): Promise<void> => {
+const getPollutantSummaryForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
         const location = Number(req.params.location);
 
@@ -97,7 +65,7 @@ const filterPollutantData = (data: EpaMonitorsData[]): PollutantChartData[] => {
     }));
 };
 
-// Process oneDay data into 6 time-based data points with averaged values
+// Process oneDay data into 8 time-based data points with averaged values
 const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantChartData> => {
     // Define the 8 time slots (3-hour intervals)
     const timeSlots = [
@@ -112,10 +80,30 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
     ];
     
     // Get current hour to filter out future time slots
-    const currentHour = new Date().getHours();
+    const currentDate = new Date();
+    const currentHour = currentDate.getHours();
     
-    // Filter time slots to only include those up to the current time
-    const availableTimeSlots = timeSlots.filter(slot => slot.hour <= currentHour);
+    // Find the current time slot
+    let currentTimeSlot = '9 PM'; // Default to last slot
+    for (let i = 0; i < timeSlots.length; i++) {
+        const nextSlotIndex = i + 1;
+        
+        if (nextSlotIndex < timeSlots.length) {
+            if (currentHour >= timeSlots[i].hour && currentHour < timeSlots[nextSlotIndex].hour) {
+                currentTimeSlot = timeSlots[i].label;
+                break;
+            }
+        } else if (currentHour >= timeSlots[i].hour) {
+            currentTimeSlot = timeSlots[i].label;
+        }
+    }
+    
+    // Filter time slots to only include those up to the current time slot
+    const availableTimeSlots = timeSlots.filter(slot => {
+        const slotIndex = timeSlots.findIndex(s => s.label === slot.label);
+        const currentSlotIndex = timeSlots.findIndex(s => s.label === currentTimeSlot);
+        return slotIndex <= currentSlotIndex;
+    });
     
     // Initialize result object with empty data for each time slot
     const result: Record<string, PollutantChartData> = {};
@@ -166,26 +154,19 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
         const timeParts = item.report_time.split(':');
         const hour = parseInt(timeParts[0], 10);
         
-        // Skip if the hour is in the future (should not happen with historical data, but just in case)
-        if (hour > currentHour) {
-            return;
-        }
-        
         // Determine which time slot this hour belongs to
         let slotLabel = '';
         for (let i = 0; i < availableTimeSlots.length; i++) {
             const currentSlot = availableTimeSlots[i];
-            const nextSlot = availableTimeSlots[i + 1];
+            const nextSlotIndex = i + 1;
             
-            if (!nextSlot) {
-                // This is the last slot, so it includes all hours from its start until the current hour
-                if (hour >= currentSlot.hour) {
+            if (nextSlotIndex < availableTimeSlots.length) {
+                if (hour >= currentSlot.hour && hour < availableTimeSlots[nextSlotIndex].hour) {
                     slotLabel = currentSlot.label;
                     break;
                 }
-            } else if (hour >= currentSlot.hour && hour < nextSlot.hour) {
+            } else if (hour >= currentSlot.hour) {
                 slotLabel = currentSlot.label;
-                break;
             }
         }
         
@@ -213,7 +194,7 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
     });
     
     // Get the current date from the data or use today's date
-    const currentDate = data.length > 0 ? data[0].report_date : new Date().toISOString().split('T')[0];
+    const currentDateStr = new Date().toISOString().split('T')[0];
     
     // Create entries for all available time slots
     availableTimeSlots.forEach(slot => {
@@ -222,7 +203,7 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
         if (slotInfo && slotInfo.count > 0) {
             // Calculate averages for slots that have data
             result[slot.label] = {
-                report_date: currentDate,
+                report_date: currentDateStr,
                 report_time: slot.label,
                 o3_ppb: slotInfo.o3_ppb / slotInfo.count,
                 co_ppm: slotInfo.co_ppm / slotInfo.count,
@@ -242,7 +223,7 @@ const processOneDayData = (data: EpaMonitorsData[]): Record<string, PollutantCha
         } else if (slotInfo) {
             // For slots with no data, use zero values
             result[slot.label] = {
-                report_date: currentDate,
+                report_date: currentDateStr,
                 report_time: slot.label,
                 o3_ppb: 0,
                 co_ppm: 0,
@@ -275,24 +256,18 @@ const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantCh
     const dates: { date: Date, label: string }[] = [];
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     
-    // Add the past 7 days to the dates array (including today)
-    for (let i = 6; i >= 0; i--) {
+    // Add today and yesterday with special labels
+    dates.push({ date: new Date(currentDate), label: 'Today' });
+    
+    const yesterday = new Date(currentDate);
+    yesterday.setDate(yesterday.getDate() - 1);
+    dates.push({ date: yesterday, label: 'Yesterday' });
+    
+    // Add the remaining 5 days with day names
+    for (let i = 2; i < 7; i++) {
         const date = new Date(currentDate);
         date.setDate(date.getDate() - i);
-        
-        // Determine the label for this day
-        let label = '';
-        if (i === 0) {
-            // Today
-            label = 'Today';
-        } else if (i === 1) {
-            // Yesterday
-            label = 'Yesterday';
-        } else {
-            // Other days - use day name
-            label = dayNames[date.getDay()];
-        }
-        
+        const label = dayNames[date.getDay()];
         dates.push({ date, label });
     }
     
@@ -342,17 +317,21 @@ const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantCh
     // Process each data point and add to the appropriate day
     data.forEach(item => {
         // Extract date from report_date (assuming format like "YYYY-MM-DD")
-        const date = new Date(item.report_date);
+        const itemDate = new Date(item.report_date);
         
         // Find the matching date in our dates array
-        const matchingDate = dates.find(d => d.date.toDateString() === date.toDateString());
+        const matchingDateObj = dates.find(d => 
+            d.date.getFullYear() === itemDate.getFullYear() && 
+            d.date.getMonth() === itemDate.getMonth() && 
+            d.date.getDate() === itemDate.getDate()
+        );
         
         // Skip if no matching date (data is outside our range)
-        if (!matchingDate) {
+        if (!matchingDateObj) {
             return;
         }
         
-        const dayLabel = matchingDate.label;
+        const dayLabel = matchingDateObj.label;
         
         // Skip if we couldn't determine a label or if the label doesn't exist in dayData
         if (!dayLabel || !dayData[dayLabel]) {
@@ -429,34 +408,81 @@ const processOneWeekData = (data: EpaMonitorsData[]): Record<string, PollutantCh
 
 // Process oneMonth data into 4 weekly data points with averaged values
 const processOneMonthData = (data: EpaMonitorsData[]): Record<string, PollutantChartData> => {
-    // Sort data by date to ensure chronological order
-    const sortedData = [...data].sort((a, b) => {
-        return new Date(a.report_date).getTime() - new Date(b.report_date).getTime();
+    // Get current date
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+    
+    // Create 4 week periods going backwards from current date
+    const weeks: { startDate: Date, endDate: Date, label: string }[] = [];
+    
+    // Week 1 (current week)
+    const currentDayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const daysFromSunday = currentDayOfWeek; // Days since the start of the week
+    
+    const week1Start = new Date(currentDate);
+    week1Start.setDate(currentDate.getDate() - daysFromSunday); // Go back to Sunday
+    
+    const week1End = new Date(currentDate);
+    
+    // Week 2
+    const week2End = new Date(week1Start);
+    week2End.setDate(week2End.getDate() - 1); // Day before week 1 start
+    
+    const week2Start = new Date(week2End);
+    week2Start.setDate(week2Start.getDate() - 6); // Go back 7 days (inclusive of end date)
+    
+    // Week 3
+    const week3End = new Date(week2Start);
+    week3End.setDate(week3End.getDate() - 1); // Day before week 2 start
+    
+    const week3Start = new Date(week3End);
+    week3Start.setDate(week3Start.getDate() - 6); // Go back 7 days (inclusive of end date)
+    
+    // Week 4
+    const week4End = new Date(week3Start);
+    week4End.setDate(week4End.getDate() - 1); // Day before week 3 start
+    
+    const week4Start = new Date(week4End);
+    week4Start.setDate(week4Start.getDate() - 6); // Go back 7 days (inclusive of end date)
+    
+    // Format date as MM/DD
+    const formatDate = (date: Date): string => {
+        const month = date.getMonth() + 1; // getMonth() returns 0-11
+        const day = date.getDate();
+        return `${month}/${day}`;
+    };
+    
+    // Add weeks to array with formatted labels
+    weeks.push({
+        startDate: week1Start,
+        endDate: week1End,
+        label: `${formatDate(week1Start)} - ${formatDate(week1End)}`
     });
     
-    // If no data, return empty object
-    if (sortedData.length === 0) {
-        return {};
-    }
+    weeks.push({
+        startDate: week2Start,
+        endDate: week2End,
+        label: `${formatDate(week2Start)} - ${formatDate(week2End)}`
+    });
     
-    // Get the date range
-    const startDate = new Date(sortedData[0].report_date);
-    const endDate = new Date(sortedData[sortedData.length - 1].report_date);
+    weeks.push({
+        startDate: week3Start,
+        endDate: week3End,
+        label: `${formatDate(week3Start)} - ${formatDate(week3End)}`
+    });
     
-    // Calculate the total number of days in the range
-    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Calculate the number of days per week (divide total days by 4)
-    const daysPerWeek = Math.ceil(totalDays / 4);
+    weeks.push({
+        startDate: week4Start,
+        endDate: week4End,
+        label: `${formatDate(week4Start)} - ${formatDate(week4End)}`
+    });
     
     // Initialize result object
     const result: Record<string, PollutantChartData> = {};
     
     // Initialize accumulators for each week
-    const weekData: Record<number, { 
+    const weekData: Record<string, { 
         count: number,
-        startDate: Date,
-        endDate: Date,
         o3_ppb: number,
         co_ppm: number,
         so2_ppb: number,
@@ -473,23 +499,10 @@ const processOneMonthData = (data: EpaMonitorsData[]): Record<string, PollutantC
         CO_AQI: number
     }> = {};
     
-    // Initialize week data for 4 weeks
-    for (let i = 0; i < 4; i++) {
-        const weekStartDate = new Date(startDate);
-        weekStartDate.setDate(startDate.getDate() + i * daysPerWeek);
-        
-        const weekEndDate = new Date(weekStartDate);
-        weekEndDate.setDate(weekStartDate.getDate() + daysPerWeek - 1);
-        
-        // Ensure the last week doesn't go beyond the end date
-        if (i === 3) {
-            weekEndDate.setTime(endDate.getTime());
-        }
-        
-        weekData[i] = {
+    // Initialize week data for each week
+    weeks.forEach(week => {
+        weekData[week.label] = {
             count: 0,
-            startDate: weekStartDate,
-            endDate: weekEndDate,
             o3_ppb: 0,
             co_ppm: 0,
             so2_ppb: 0,
@@ -505,62 +518,51 @@ const processOneMonthData = (data: EpaMonitorsData[]): Record<string, PollutantC
             O3_AQI: 0,
             CO_AQI: 0
         };
-    }
+    });
     
     // Process each data point and add to the appropriate week
-    sortedData.forEach(item => {
+    data.forEach(item => {
         const itemDate = new Date(item.report_date);
         
-        // Determine which week this data point belongs to
-        let weekIndex = -1;
-        for (let i = 0; i < 4; i++) {
-            const weekInfo = weekData[i];
-            if (itemDate >= weekInfo.startDate && itemDate <= weekInfo.endDate) {
-                weekIndex = i;
-                break;
-            }
-        }
+        // Find the matching week
+        const matchingWeek = weeks.find(week => 
+            itemDate >= week.startDate && itemDate <= week.endDate
+        );
         
-        // If we couldn't determine a week, skip this data point
-        if (weekIndex === -1) {
+        // Skip if no matching week
+        if (!matchingWeek) {
             return;
         }
         
+        const weekLabel = matchingWeek.label;
+        
         // Add data to the week
-        weekData[weekIndex].count++;
-        weekData[weekIndex].o3_ppb += item.o3_ppb || 0;
-        weekData[weekIndex].co_ppm += item.co_ppm || 0;
-        weekData[weekIndex].so2_ppb += item.so2_ppb || 0;
-        weekData[weekIndex].no_ppb += item.no_ppb || 0;
-        weekData[weekIndex].no2_ppb += item.no2_ppb || 0;
-        weekData[weekIndex].nox_ppb += item.nox_ppb || 0;
-        weekData[weekIndex].pm10_ug_m3 += item.pm10_ug_m3 || 0;
-        weekData[weekIndex].pm2_5_ug_m3 += item.pm2_5_ug_m3 || 0;
-        weekData[weekIndex].PM2_5_AQI += item.PM2_5_AQI || 0;
-        weekData[weekIndex].PM10_AQI += item.PM10_AQI || 0;
-        weekData[weekIndex].SO2_AQI += item.SO2_AQI || 0;
-        weekData[weekIndex].NO2_AQI += item.NO2_AQI || 0;
-        weekData[weekIndex].O3_AQI += item.O3_AQI || 0;
-        weekData[weekIndex].CO_AQI += item.CO_AQI || 0;
+        weekData[weekLabel].count++;
+        weekData[weekLabel].o3_ppb += item.o3_ppb || 0;
+        weekData[weekLabel].co_ppm += item.co_ppm || 0;
+        weekData[weekLabel].so2_ppb += item.so2_ppb || 0;
+        weekData[weekLabel].no_ppb += item.no_ppb || 0;
+        weekData[weekLabel].no2_ppb += item.no2_ppb || 0;
+        weekData[weekLabel].nox_ppb += item.nox_ppb || 0;
+        weekData[weekLabel].pm10_ug_m3 += item.pm10_ug_m3 || 0;
+        weekData[weekLabel].pm2_5_ug_m3 += item.pm2_5_ug_m3 || 0;
+        weekData[weekLabel].PM2_5_AQI += item.PM2_5_AQI || 0;
+        weekData[weekLabel].PM10_AQI += item.PM10_AQI || 0;
+        weekData[weekLabel].SO2_AQI += item.SO2_AQI || 0;
+        weekData[weekLabel].NO2_AQI += item.NO2_AQI || 0;
+        weekData[weekLabel].O3_AQI += item.O3_AQI || 0;
+        weekData[weekLabel].CO_AQI += item.CO_AQI || 0;
     });
     
-    // Format date as MM/DD
-    const formatDate = (date: Date): string => {
-        const month = date.getMonth() + 1; // getMonth() returns 0-11
-        const day = date.getDate();
-        return `${month}/${day}`;
-    };
-    
     // Create entries for all weeks
-    for (let i = 0; i < 4; i++) {
-        const weekInfo = weekData[i];
-        const weekLabel = `${formatDate(weekInfo.startDate)} - ${formatDate(weekInfo.endDate)}`;
+    weeks.forEach(week => {
+        const weekInfo = weekData[week.label];
         
-        if (weekInfo.count > 0) {
+        if (weekInfo && weekInfo.count > 0) {
             // Calculate averages for weeks that have data
-            result[weekLabel] = {
-                report_date: weekInfo.startDate.toISOString().split('T')[0],
-                report_time: weekLabel, // Using report_time field to store the week label
+            result[week.label] = {
+                report_date: currentDateStr,
+                report_time: week.label,
                 o3_ppb: weekInfo.o3_ppb / weekInfo.count,
                 co_ppm: weekInfo.co_ppm / weekInfo.count,
                 so2_ppb: weekInfo.so2_ppb / weekInfo.count,
@@ -578,9 +580,9 @@ const processOneMonthData = (data: EpaMonitorsData[]): Record<string, PollutantC
             };
         } else {
             // For weeks with no data, use zero values
-            result[weekLabel] = {
-                report_date: weekInfo.startDate.toISOString().split('T')[0],
-                report_time: weekLabel, // Using report_time field to store the week label
+            result[week.label] = {
+                report_date: currentDateStr,
+                report_time: week.label,
                 o3_ppb: 0,
                 co_ppm: 0,
                 so2_ppb: 0,
@@ -597,21 +599,36 @@ const processOneMonthData = (data: EpaMonitorsData[]): Record<string, PollutantC
                 CO_AQI: 0
             };
         }
-    }
+    });
     
     return result;
 };
 
 // Process data into month-based data points with averaged values
 const processMonthlyData = (data: EpaMonitorsData[], numMonths: number): Record<string, PollutantChartData> => {
-    // Sort data by date to ensure chronological order
-    const sortedData = [...data].sort((a, b) => {
-        return new Date(a.report_date).getTime() - new Date(b.report_date).getTime();
-    });
+    // Get current date
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toISOString().split('T')[0];
     
-    // If no data, return empty object
-    if (sortedData.length === 0) {
-        return {};
+    // Create an array of months going backwards from current month
+    const months: { date: Date, label: string }[] = [];
+    
+    // Month names for labels
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    // Add current month and previous months
+    for (let i = 0; i < numMonths; i++) {
+        const date = new Date(currentDate);
+        date.setMonth(currentDate.getMonth() - i);
+        
+        // Set to first day of month for consistent comparison
+        date.setDate(1);
+        
+        const monthName = monthNames[date.getMonth()];
+        months.push({ date, label: monthName });
     }
     
     // Initialize result object
@@ -636,21 +653,91 @@ const processMonthlyData = (data: EpaMonitorsData[], numMonths: number): Record<
         CO_AQI: number
     }> = {};
     
-    // Month names for labels
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+    // Initialize month data for each month
+    months.forEach(month => {
+        monthData[month.label] = {
+            count: 0,
+            o3_ppb: 0,
+            co_ppm: 0,
+            so2_ppb: 0,
+            no_ppb: 0,
+            no2_ppb: 0,
+            nox_ppb: 0,
+            pm10_ug_m3: 0,
+            pm2_5_ug_m3: 0,
+            PM2_5_AQI: 0,
+            PM10_AQI: 0,
+            SO2_AQI: 0,
+            NO2_AQI: 0,
+            O3_AQI: 0,
+            CO_AQI: 0
+        };
+    });
     
     // Process each data point and add to the appropriate month
-    sortedData.forEach(item => {
-        const date = new Date(item.report_date);
-        const monthYear = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    data.forEach(item => {
+        const itemDate = new Date(item.report_date);
         
-        // Initialize month data if it doesn't exist
-        if (!monthData[monthYear]) {
-            monthData[monthYear] = {
-                count: 0,
+        // Find the matching month
+        const matchingMonth = months.find(month => 
+            itemDate.getMonth() === month.date.getMonth() && 
+            itemDate.getFullYear() === month.date.getFullYear()
+        );
+        
+        // Skip if no matching month
+        if (!matchingMonth) {
+            return;
+        }
+        
+        const monthLabel = matchingMonth.label;
+        
+        // Add data to the month
+        monthData[monthLabel].count++;
+        monthData[monthLabel].o3_ppb += item.o3_ppb || 0;
+        monthData[monthLabel].co_ppm += item.co_ppm || 0;
+        monthData[monthLabel].so2_ppb += item.so2_ppb || 0;
+        monthData[monthLabel].no_ppb += item.no_ppb || 0;
+        monthData[monthLabel].no2_ppb += item.no2_ppb || 0;
+        monthData[monthLabel].nox_ppb += item.nox_ppb || 0;
+        monthData[monthLabel].pm10_ug_m3 += item.pm10_ug_m3 || 0;
+        monthData[monthLabel].pm2_5_ug_m3 += item.pm2_5_ug_m3 || 0;
+        monthData[monthLabel].PM2_5_AQI += item.PM2_5_AQI || 0;
+        monthData[monthLabel].PM10_AQI += item.PM10_AQI || 0;
+        monthData[monthLabel].SO2_AQI += item.SO2_AQI || 0;
+        monthData[monthLabel].NO2_AQI += item.NO2_AQI || 0;
+        monthData[monthLabel].O3_AQI += item.O3_AQI || 0;
+        monthData[monthLabel].CO_AQI += item.CO_AQI || 0;
+    });
+    
+    // Create entries for all months
+    months.forEach(month => {
+        const monthInfo = monthData[month.label];
+        
+        if (monthInfo && monthInfo.count > 0) {
+            // Calculate averages for months that have data
+            result[month.label] = {
+                report_date: currentDateStr,
+                report_time: month.label,
+                o3_ppb: monthInfo.o3_ppb / monthInfo.count,
+                co_ppm: monthInfo.co_ppm / monthInfo.count,
+                so2_ppb: monthInfo.so2_ppb / monthInfo.count,
+                no_ppb: monthInfo.no_ppb / monthInfo.count,
+                no2_ppb: monthInfo.no2_ppb / monthInfo.count,
+                nox_ppb: monthInfo.nox_ppb / monthInfo.count,
+                pm10_ug_m3: monthInfo.pm10_ug_m3 / monthInfo.count,
+                pm2_5_ug_m3: monthInfo.pm2_5_ug_m3 / monthInfo.count,
+                PM2_5_AQI: monthInfo.PM2_5_AQI / monthInfo.count,
+                PM10_AQI: monthInfo.PM10_AQI / monthInfo.count,
+                SO2_AQI: monthInfo.SO2_AQI / monthInfo.count,
+                NO2_AQI: monthInfo.NO2_AQI / monthInfo.count,
+                O3_AQI: monthInfo.O3_AQI / monthInfo.count,
+                CO_AQI: monthInfo.CO_AQI / monthInfo.count
+            };
+        } else {
+            // For months with no data, use zero values
+            result[month.label] = {
+                report_date: currentDateStr,
+                report_time: month.label,
                 o3_ppb: 0,
                 co_ppm: 0,
                 so2_ppb: 0,
@@ -667,67 +754,6 @@ const processMonthlyData = (data: EpaMonitorsData[], numMonths: number): Record<
                 CO_AQI: 0
             };
         }
-        
-        // Add data to the month
-        monthData[monthYear].count++;
-        monthData[monthYear].o3_ppb += item.o3_ppb || 0;
-        monthData[monthYear].co_ppm += item.co_ppm || 0;
-        monthData[monthYear].so2_ppb += item.so2_ppb || 0;
-        monthData[monthYear].no_ppb += item.no_ppb || 0;
-        monthData[monthYear].no2_ppb += item.no2_ppb || 0;
-        monthData[monthYear].nox_ppb += item.nox_ppb || 0;
-        monthData[monthYear].pm10_ug_m3 += item.pm10_ug_m3 || 0;
-        monthData[monthYear].pm2_5_ug_m3 += item.pm2_5_ug_m3 || 0;
-        monthData[monthYear].PM2_5_AQI += item.PM2_5_AQI || 0;
-        monthData[monthYear].PM10_AQI += item.PM10_AQI || 0;
-        monthData[monthYear].SO2_AQI += item.SO2_AQI || 0;
-        monthData[monthYear].NO2_AQI += item.NO2_AQI || 0;
-        monthData[monthYear].O3_AQI += item.O3_AQI || 0;
-        monthData[monthYear].CO_AQI += item.CO_AQI || 0;
-    });
-    
-    // Get all month-year combinations
-    const monthYears = Object.keys(monthData);
-    
-    // Sort month-years chronologically
-    monthYears.sort((a, b) => {
-        const [monthA, yearA] = a.split(' ');
-        const [monthB, yearB] = b.split(' ');
-        
-        const dateA = new Date(`${monthA} 1, ${yearA}`);
-        const dateB = new Date(`${monthB} 1, ${yearB}`);
-        
-        return dateA.getTime() - dateB.getTime();
-    });
-    
-    // Limit to the most recent numMonths months
-    const recentMonths = monthYears.slice(-numMonths);
-    
-    // Calculate averages for each month
-    recentMonths.forEach(monthYear => {
-        const monthInfo = monthData[monthYear];
-        
-        if (monthInfo.count > 0) {
-            // Calculate averages for months that have data
-            result[monthYear] = {
-                report_date: monthYear, // Using report_date field to store the month-year
-                report_time: monthYear, // Using report_time field to store the month-year
-                o3_ppb: monthInfo.o3_ppb / monthInfo.count,
-                co_ppm: monthInfo.co_ppm / monthInfo.count,
-                so2_ppb: monthInfo.so2_ppb / monthInfo.count,
-                no_ppb: monthInfo.no_ppb / monthInfo.count,
-                no2_ppb: monthInfo.no2_ppb / monthInfo.count,
-                nox_ppb: monthInfo.nox_ppb / monthInfo.count,
-                pm10_ug_m3: monthInfo.pm10_ug_m3 / monthInfo.count,
-                pm2_5_ug_m3: monthInfo.pm2_5_ug_m3 / monthInfo.count,
-                PM2_5_AQI: monthInfo.PM2_5_AQI / monthInfo.count,
-                PM10_AQI: monthInfo.PM10_AQI / monthInfo.count,
-                SO2_AQI: monthInfo.SO2_AQI / monthInfo.count,
-                NO2_AQI: monthInfo.NO2_AQI / monthInfo.count,
-                O3_AQI: monthInfo.O3_AQI / monthInfo.count,
-                CO_AQI: monthInfo.CO_AQI / monthInfo.count
-            };
-        }
     });
     
     return result;
@@ -735,32 +761,21 @@ const processMonthlyData = (data: EpaMonitorsData[], numMonths: number): Record<
 
 // Process data into quarterly data points with averaged values
 const processQuarterlyData = (data: EpaMonitorsData[]): Record<string, PollutantChartData> => {
-    // Sort data by date to ensure chronological order
-    const sortedData = [...data].sort((a, b) => {
-        return new Date(a.report_date).getTime() - new Date(b.report_date).getTime();
-    });
+    // Get current date
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+    const currentYear = currentDate.getFullYear();
     
-    // If no data, return empty object
-    if (sortedData.length === 0) {
-        return {};
-    }
-    
-    // Initialize result object
-    const result: Record<string, PollutantChartData> = {};
-    
-    // Month names for labels
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    
-    // Define standard quarters
-    const standardQuarters = [
+    // Define standard quarters with month ranges
+    const quarters = [
         { label: 'January - March', startMonth: 0, endMonth: 2 },
         { label: 'April - June', startMonth: 3, endMonth: 5 },
         { label: 'July - September', startMonth: 6, endMonth: 8 },
         { label: 'October - December', startMonth: 9, endMonth: 11 }
     ];
+    
+    // Initialize result object
+    const result: Record<string, PollutantChartData> = {};
     
     // Initialize accumulators for each quarter
     const quarterData: Record<string, { 
@@ -781,9 +796,27 @@ const processQuarterlyData = (data: EpaMonitorsData[]): Record<string, Pollutant
         CO_AQI: number
     }> = {};
     
-    // Initialize quarter data for standard quarters
-    standardQuarters.forEach(quarter => {
-        quarterData[quarter.label] = {
+    // Create labels with year for each quarter
+    const quarterLabels: string[] = [];
+    
+    // Get current quarter
+    const currentQuarterIndex = Math.floor(currentDate.getMonth() / 3);
+    
+    // Add quarters for the past year, starting from the current quarter and going backwards
+    for (let i = 0; i < 4; i++) {
+        // Calculate quarter index (0-3) going backwards from current quarter
+        let quarterIndex = (currentQuarterIndex - i) % 4;
+        if (quarterIndex < 0) quarterIndex += 4;
+        
+        // Calculate year (current year or previous year)
+        const year = i <= currentQuarterIndex ? currentYear : currentYear - 1;
+        
+        // Create label with year
+        const label = `${quarters[quarterIndex].label} ${year}`;
+        quarterLabels.push(label);
+        
+        // Initialize data for this quarter
+        quarterData[label] = {
             count: 0,
             o3_ppb: 0,
             co_ppm: 0,
@@ -800,24 +833,21 @@ const processQuarterlyData = (data: EpaMonitorsData[]): Record<string, Pollutant
             O3_AQI: 0,
             CO_AQI: 0
         };
-    });
+    }
     
     // Process each data point and add to the appropriate quarter
-    sortedData.forEach(item => {
-        const date = new Date(item.report_date);
-        const month = date.getMonth();
+    data.forEach(item => {
+        const itemDate = new Date(item.report_date);
+        const itemMonth = itemDate.getMonth();
+        const itemYear = itemDate.getFullYear();
         
-        // Determine which quarter this data point belongs to
-        let quarterLabel = '';
-        for (const quarter of standardQuarters) {
-            if (month >= quarter.startMonth && month <= quarter.endMonth) {
-                quarterLabel = quarter.label;
-                break;
-            }
-        }
+        // Find the matching quarter
+        const quarterIndex = Math.floor(itemMonth / 3);
+        const quarterBase = quarters[quarterIndex].label;
+        const quarterLabel = `${quarterBase} ${itemYear}`;
         
-        // If we couldn't determine a quarter, skip this data point
-        if (!quarterLabel) {
+        // Skip if this quarter is not in our list
+        if (!quarterData[quarterLabel]) {
             return;
         }
         
@@ -840,14 +870,14 @@ const processQuarterlyData = (data: EpaMonitorsData[]): Record<string, Pollutant
     });
     
     // Calculate averages for each quarter
-    standardQuarters.forEach(quarter => {
-        const quarterInfo = quarterData[quarter.label];
+    quarterLabels.forEach(label => {
+        const quarterInfo = quarterData[label];
         
         if (quarterInfo.count > 0) {
             // Calculate averages for quarters that have data
-            result[quarter.label] = {
-                report_date: new Date().toISOString().split('T')[0], // Using current date
-                report_time: quarter.label, // Using report_time field to store the quarter label
+            result[label] = {
+                report_date: currentDateStr,
+                report_time: label,
                 o3_ppb: quarterInfo.o3_ppb / quarterInfo.count,
                 co_ppm: quarterInfo.co_ppm / quarterInfo.count,
                 so2_ppb: quarterInfo.so2_ppb / quarterInfo.count,
@@ -865,9 +895,9 @@ const processQuarterlyData = (data: EpaMonitorsData[]): Record<string, Pollutant
             };
         } else {
             // For quarters with no data, use zero values
-            result[quarter.label] = {
-                report_date: new Date().toISOString().split('T')[0], // Using current date
-                report_time: quarter.label, // Using report_time field to store the quarter label
+            result[label] = {
+                report_date: currentDateStr,
+                report_time: label,
                 o3_ppb: 0,
                 co_ppm: 0,
                 so2_ppb: 0,
@@ -887,4 +917,127 @@ const processQuarterlyData = (data: EpaMonitorsData[]): Record<string, Pollutant
     });
     
     return result;
+};
+
+const getHistoricalEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const location = Number(req.params.location);
+        
+        // Get current date and time
+        const currentDate = new Date();
+        const currentDateStr = currentDate.toISOString().split('T')[0];
+        const currentHour = currentDate.getHours();
+        const currentMinute = currentDate.getMinutes();
+        
+        // Calculate dates for different time periods
+        // One day ago
+        const oneDayAgo = new Date(currentDate);
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        const oneDayAgoStr = oneDayAgo.toISOString().split('T')[0];
+        
+        // One week ago
+        const oneWeekAgo = new Date(currentDate);
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+        
+        // One month ago
+        const oneMonthAgo = new Date(currentDate);
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        const oneMonthAgoStr = oneMonthAgo.toISOString().split('T')[0];
+        
+        // Three months ago
+        const threeMonthsAgo = new Date(currentDate);
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+        
+        // Six months ago
+        const sixMonthsAgo = new Date(currentDate);
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0];
+        
+        // One year ago
+        const oneYearAgo = new Date(currentDate);
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const oneYearAgoStr = oneYearAgo.toISOString().split('T')[0];
+        
+        logger.info(`Fetching historical data for location ${location} up to ${currentDateStr}`);
+        
+        // Query MongoDB for all historical data up to one year ago
+        const historicalData = await EpaMonitorsDataModel.find({
+            location: location,
+            report_date: {
+                $gte: oneYearAgoStr,
+                $lte: currentDateStr
+            }
+        }).sort({ report_date: 1, report_time: 1 }).lean() as EpaMonitorsData[];
+        
+        logger.info(`Found ${historicalData.length} historical records for location ${location}`);
+        
+        // Filter data to only include data up to the current time
+        const filterByDateAndTime = (data: EpaMonitorsData[], startDate: string) => {
+            return data.filter(item => {
+                // Include all data from previous days
+                if (item.report_date < currentDateStr && item.report_date >= startDate) {
+                    return true;
+                }
+                
+                // For the current day, only include data up to the current time
+                if (item.report_date === currentDateStr) {
+                    const itemTimeParts = item.report_time.split(':');
+                    const itemHour = parseInt(itemTimeParts[0], 10);
+                    const itemMinute = parseInt(itemTimeParts[1], 10);
+                    
+                    // Compare hours first, then minutes if hours are equal
+                    if (itemHour < currentHour) {
+                        return true;
+                    } else if (itemHour === currentHour && itemMinute <= currentMinute) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            });
+        };
+        
+        // Filter data for each time period
+        const oneDayData = filterByDateAndTime(historicalData, oneDayAgoStr);
+        const oneWeekData = filterByDateAndTime(historicalData, oneWeekAgoStr);
+        const oneMonthData = filterByDateAndTime(historicalData, oneMonthAgoStr);
+        const threeMonthsData = filterByDateAndTime(historicalData, threeMonthsAgoStr);
+        const sixMonthsData = filterByDateAndTime(historicalData, sixMonthsAgoStr);
+        const oneYearData = filterByDateAndTime(historicalData, oneYearAgoStr);
+        
+        logger.info(`Filtered historical data by time periods for location ${location}:`);
+        logger.info(`- One day: ${oneDayData.length} records`);
+        logger.info(`- One week: ${oneWeekData.length} records`);
+        logger.info(`- One month: ${oneMonthData.length} records`);
+        logger.info(`- Three months: ${threeMonthsData.length} records`);
+        logger.info(`- Six months: ${sixMonthsData.length} records`);
+        logger.info(`- One year: ${oneYearData.length} records`);
+        
+        // Process data for each time period
+        const result: FilteredHistoricalDataResponse = {
+            oneDay: processOneDayData(oneDayData),
+            oneWeek: processOneWeekData(oneWeekData),
+            oneMonth: processOneMonthData(oneMonthData),
+            threeMonths: processMonthlyData(threeMonthsData, 3),
+            sixMonths: processMonthlyData(sixMonthsData, 6),
+            oneYear: processQuarterlyData(oneYearData)
+        };
+        
+        res.json(result);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error(`Error fetching historical EPA Monitors data for location ${req.params.location}: ${error.message}`);
+        } else {
+            logger.error(`Unknown error while fetching historical EPA Monitors data for location ${req.params.location}`);
+        }
+        res.status(500).json({message: "Failed to fetch historical EPA Monitors data"});
+    }
+};
+
+export {
+    getCurrentEpaMonitorsDataForLocation,
+    getPollutantSummaryForLocation,
+    getHistoricalEpaMonitorsDataForLocation
 };
