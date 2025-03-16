@@ -121,3 +121,28 @@ const storeEpaMonitorsData = async (data: EpaMonitorsData) => {
         logger.error(`Error storing EPA Monitors data: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     }
 };
+
+export const getEpaMonitorsDataFor24HoursForLocation = async (location: number, currentDateTime: Date): Promise<EpaMonitorsData[]> => {
+    try {
+        // Calculate the date 24 hours ago from the current date
+        const twentyFourHoursAgo = new Date(currentDateTime);
+        twentyFourHoursAgo.setHours(currentDateTime.getHours() - 24);
+        
+        // Query the database for records within the last 24 hours for the specified location
+        const data = await EpaMonitorsDataModel.find({
+            location: location,
+            report_date_time: {
+                $gte: twentyFourHoursAgo,
+                $lte: currentDateTime
+            }
+        }).sort({ report_date_time: 1 }); // Sort by date in ascending order
+        
+        logger.info(`Retrieved ${data.length} records for location ${location} in the last 24 hours`);
+
+        console.log(data);
+        return data;
+    } catch (error) {
+        logger.error(`Error retrieving 24-hour data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        return [];
+    }
+};

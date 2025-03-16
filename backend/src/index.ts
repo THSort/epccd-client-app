@@ -7,7 +7,7 @@ import {connectDB} from "./config/db";
 import exampleRoutes from "./routes/exampleRoutes";
 import userRoutes from "./routes/user.routes";
 import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
-import {pollEpaMonitorsData} from "./services/epaMonitorsData.service";
+import {getEpaMonitorsDataFor24HoursForLocation, pollEpaMonitorsData} from "./services/epaMonitorsData.service";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
 import userActivityRoutes from "./routes/userActivity.routes";
 import {generateHistoricalData} from "./scripts/generateDummyEpaData";
@@ -33,6 +33,8 @@ const startServer = async () => {
     try {
         await connectDB(); // Ensure DB is connected before starting the server
         app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+        await getEpaMonitorsDataFor24HoursForLocation(4, new Date());
 
         // Start polling EPA Monitors Data every 5 minutes
         const POLLING_INTERVAL_MS = 5 * 60 * 1000;
