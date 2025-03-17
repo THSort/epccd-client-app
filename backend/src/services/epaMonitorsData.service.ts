@@ -372,6 +372,30 @@ export const getPastThreeMonthsEpaMonitorsDataForLocation = async (location: num
     }
 };
 
+export const getPastSixMonthsEpaMonitorsDataForLocation = async (location: number, currentDateTime: Date): Promise<EpaMonitorsData[]> => {
+    try {
+        // Calculate the date 6 months ago from the current date
+        const sixMonthsAgo = new Date(currentDateTime);
+        sixMonthsAgo.setMonth(currentDateTime.getMonth() - 6);
+        
+        // Query the database for records within the last 6 months for the specified location
+        const data = await EpaMonitorsDataModel.find({
+            location: location,
+            report_date_time: {
+                $gte: sixMonthsAgo,
+                $lte: currentDateTime
+            }
+        }).sort({ report_date_time: 1 }); // Sort by date in ascending order
+        
+        logger.info(`Retrieved ${data.length} records for location ${location} in the last 6 months`);
+
+        return data;
+    } catch (error) {
+        logger.error(`Error retrieving 6-month data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        return [];
+    }
+};
+
 export const getPollutantHistoryDataForPastWeek = async (location: number, currentDateTime: Date): Promise<PollutantBucketData[]> => {
     try {
         const pastWeekData = await getPastWeekEpaMonitorsDataForLocation(location, currentDateTime);
@@ -678,20 +702,17 @@ export const getPollutantHistoryDataForPastThreeMonths = async (location: number
             return new Date(bucketStartTimes[index + 1].getTime() - 1); // 1ms before next bucket starts
         });
         
-        // Format date to display only month name
-        const getMonthName = (date: Date): string => {
-            return date.toLocaleString('default', { month: 'long' });
+        // Format date to display month and day
+        const getMonthDayFormat = (date: Date): string => {
+            const day = date.getDate();
+            const month = date.toLocaleString('default', { month: 'long' });
+            return `${month} ${day}`;
         };
         
-        // Get bucket labels with month ranges
+        // Get bucket labels with month and day
         const bucketLabels = bucketStartTimes.map((startTime, index) => {
             const endTime = bucketEndTimes[index];
-            // If the start and end months are the same, just show one month
-            if (startTime.getMonth() === endTime.getMonth() && startTime.getFullYear() === endTime.getFullYear()) {
-                return getMonthName(startTime);
-            }
-            // Otherwise show the range
-            return `${getMonthName(startTime)} - ${getMonthName(endTime)}`;
+            return `${getMonthDayFormat(startTime)} - ${getMonthDayFormat(endTime)}`;
         });
         
         // Distribute data points into appropriate buckets
@@ -750,6 +771,139 @@ export const getPollutantHistoryDataForPastThreeMonths = async (location: number
 
     } catch (error) {
         logger.error(`Error extracting 3-month pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        return [];
+    }
+};
+
+export const getPollutantHistoryDataForPastSixMonths = async (location: number, currentDateTime: Date): Promise<PollutantBucketData[]> => {
+    try {
+        const pastSixMonthsData = await getPastSixMonthsEpaMonitorsDataForLocation(location, currentDateTime);
+
+        if (pastSixMonthsData.length === 0) {
+            return [];
+        }
+
+        // Extract only the pollutant concentration/AQI fields and report_date_time
+        const pollutantHistoryData: PollutantHistoryData[] = pastSixMonthsData.map((data: EpaMonitorsData) => ({
+            report_date_time: data.report_date_time,
+            
+            // Pollutant concentration fields
+            o3_ppb: data.o3_ppb,
+            co_ppm: data.co_ppm,
+            so2_ppb: data.so2_ppb,
+            no_ppb: data.no_ppb,
+            no2_ppb: data.no2_ppb,
+            nox_ppb: data.nox_ppb,
+            pm10_ug_m3: data.pm10_ug_m3,
+            pm2_5_ug_m3: data.pm2_5_ug_m3,
+            
+            // AQI values
+            PM2_5_AQI: data.PM2_5_AQI,
+            PM10_AQI: data.PM10_AQI,
+            SO2_AQI: data.SO2_AQI,
+            NO2_AQI: data.NO2_AQI,
+            O3_AQI: data.O3_AQI,
+            CO_AQI: data.CO_AQI
+        }));
+
+        // Find the earliest and latest dates in the data
+        const sortedDates = pollutantHistoryData
+            .map(data => new Date(data.report_date_time))
+            .sort((a, b) => a.getTime() - b.getTime());
+        
+        const earliestDate = sortedDates[0];
+        const latestDate = currentDateTime;
+        
+        // Calculate the total time span in milliseconds
+        const timeSpan = latestDate.getTime() - earliestDate.getTime();
+        const monthSpan = timeSpan / 6; // Divide into 6 equal parts
+        
+        // Create 6 buckets, one for each month of the past six months
+        const buckets: PollutantHistoryData[][] = Array(6).fill(null).map(() => []);
+        
+        // Calculate the start time for each bucket based on actual data range
+        const bucketStartTimes = Array(6).fill(null).map((_, index) => {
+            const bucketStart = new Date(earliestDate.getTime() + (monthSpan * index));
+            return bucketStart;
+        });
+        
+        // Calculate the end time for each bucket
+        const bucketEndTimes = bucketStartTimes.map((startTime, index) => {
+            if (index === 5) {
+                return latestDate; // Last bucket ends at latestDate
+            }
+            return new Date(bucketStartTimes[index + 1].getTime() - 1); // 1ms before next bucket starts
+        });
+        
+        // Format date to display month and day
+        const getMonthDayFormat = (date: Date): string => {
+            const day = date.getDate();
+            const month = date.toLocaleString('default', { month: 'long' });
+            return `${month} ${day}`;
+        };
+        
+        // Get bucket labels with month and day
+        const bucketLabels = bucketStartTimes.map((startTime, index) => {
+            const endTime = bucketEndTimes[index];
+            return `${getMonthDayFormat(startTime)} - ${getMonthDayFormat(endTime)}`;
+        });
+        
+        // Distribute data points into appropriate buckets
+        pollutantHistoryData.forEach(dataPoint => {
+            const dataTime = new Date(dataPoint.report_date_time);
+            
+            for (let i = 0; i < 6; i++) {
+                if (dataTime >= bucketStartTimes[i] && dataTime <= bucketEndTimes[i]) {
+                    buckets[i].push(dataPoint);
+                    break;
+                }
+            }
+        });
+
+        // Calculate average values for each bucket
+        const bucketAverages: PollutantBucketData[] = buckets.map((bucket, index) => {
+            // If bucket is empty, return object with null values
+            if (bucket.length === 0) {
+                return {
+                    label: bucketLabels[index],
+                    o3_ppb: null,
+                    co_ppm: null,
+                    so2_ppb: null,
+                    no2_ppb: null,
+                    pm10_ug_m3: null,
+                    pm2_5_ug_m3: null,
+                    PM2_5_AQI: null,
+                    PM10_AQI: null,
+                    SO2_AQI: null,
+                    NO2_AQI: null,
+                    O3_AQI: null,
+                    CO_AQI: null
+                };
+            }
+
+            // Calculate averages for each pollutant
+            return {
+                label: bucketLabels[index],
+                o3_ppb: calculateAverage(bucket.map(d => d.o3_ppb)),
+                co_ppm: calculateAverage(bucket.map(d => d.co_ppm)),
+                so2_ppb: calculateAverage(bucket.map(d => d.so2_ppb)),
+                no2_ppb: calculateAverage(bucket.map(d => d.no2_ppb)),
+                pm10_ug_m3: calculateAverage(bucket.map(d => d.pm10_ug_m3)),
+                pm2_5_ug_m3: calculateAverage(bucket.map(d => d.pm2_5_ug_m3)),
+                PM2_5_AQI: calculateAverage(bucket.map(d => d.PM2_5_AQI)),
+                PM10_AQI: calculateAverage(bucket.map(d => d.PM10_AQI)),
+                SO2_AQI: calculateAverage(bucket.map(d => d.SO2_AQI)),
+                NO2_AQI: calculateAverage(bucket.map(d => d.NO2_AQI)),
+                O3_AQI: calculateAverage(bucket.map(d => d.O3_AQI)),
+                CO_AQI: calculateAverage(bucket.map(d => d.CO_AQI))
+            };
+        });
+        
+        console.log('sixMonthBucketAverages', bucketAverages);
+        return bucketAverages;
+
+    } catch (error) {
+        logger.error(`Error extracting 6-month pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         return [];
     }
 };

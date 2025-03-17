@@ -10,7 +10,7 @@ import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
 import {
     getPast24HoursEpaMonitorsDataForLocation,
     getPollutantHistoryDataForPast24Hours,
-    getPollutantHistoryDataForPastMonth,
+    getPollutantHistoryDataForPastMonth, getPollutantHistoryDataForPastSixMonths,
     getPollutantHistoryDataForPastThreeMonths,
     getPollutantHistoryDataForPastWeek,
     pollEpaMonitorsData
@@ -47,7 +47,8 @@ const startServer = async () => {
         // await getPollutantHistoryDataForPast24Hours(4, currentDateTime);
         // await getPollutantHistoryDataForPastWeek(4, currentDateTime);
         // await getPollutantHistoryDataForPastMonth(4, currentDateTime);
-        await getPollutantHistoryDataForPastThreeMonths(4, currentDateTime);
+        // await getPollutantHistoryDataForPastThreeMonths(4, currentDateTime);
+        await getPollutantHistoryDataForPastSixMonths(4, currentDateTime)
 
         // // Start polling EPA Monitors Data every 5 minutes
         // const POLLING_INTERVAL_MS = 5 * 60 * 1000;
