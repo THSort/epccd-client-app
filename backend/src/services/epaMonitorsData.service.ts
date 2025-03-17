@@ -678,18 +678,20 @@ export const getPollutantHistoryDataForPastThreeMonths = async (location: number
             return new Date(bucketStartTimes[index + 1].getTime() - 1); // 1ms before next bucket starts
         });
         
-        // Format date to display day, month and year
-        const formatDate = (date: Date): string => {
-            const day = date.getDate();
-            const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear();
-            return `${day} ${month} ${year}`;
+        // Format date to display only month name
+        const getMonthName = (date: Date): string => {
+            return date.toLocaleString('default', { month: 'long' });
         };
         
-        // Get bucket labels (startday - endday)
+        // Get bucket labels with month ranges
         const bucketLabels = bucketStartTimes.map((startTime, index) => {
             const endTime = bucketEndTimes[index];
-            return `${formatDate(startTime)} - ${formatDate(endTime)}`;
+            // If the start and end months are the same, just show one month
+            if (startTime.getMonth() === endTime.getMonth() && startTime.getFullYear() === endTime.getFullYear()) {
+                return getMonthName(startTime);
+            }
+            // Otherwise show the range
+            return `${getMonthName(startTime)} - ${getMonthName(endTime)}`;
         });
         
         // Distribute data points into appropriate buckets
