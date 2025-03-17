@@ -54,6 +54,10 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
 
+    // State for tooltip
+    const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
+    const [tooltipPosition, setTooltipPosition] = useState<{x: number, y: number} | null>(null);
+
     // Map pollutant types to translation keys
     const getPollutantTranslation = useCallback((pollutantType: Pollutant, type: 'name' | 'description' | 'unit'): string => {
         switch (pollutantType) {
@@ -122,6 +126,12 @@ export function AirQualityHistory({route}: Props): ReactElement {
             backEvent.remove();
         };
     }, [handleBackButtonClick]);
+
+    // Reset tooltip when chart settings change
+    useEffect(() => {
+        setActivePointIndex(null);
+        setTooltipPosition(null);
+    }, [timeRange, displayMode, pollutant]);
 
     const fetchHistoricalData = useCallback(async () => {
         if (!selectedLocation) {
@@ -284,6 +294,64 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
+    // Handle tap on data point
+    const handleDataPointClick = (data: any) => {
+        const { index, value, x, y } = data;
+
+        // Set the active point index
+        setActivePointIndex(index);
+
+        // Position the tooltip, store original y position for smart positioning
+        setTooltipPosition({ x, y });
+
+        // Track the interaction
+        void trackButton('chart_data_point_touch', currentScreen, {
+            timestamp: new Date().toISOString(),
+            dataPoint: index,
+            value: value,
+        });
+    };
+
+    // Clear tooltip when tapping elsewhere
+    const handleBackgroundPress = () => {
+        setActivePointIndex(null);
+        setTooltipPosition(null);
+    };
+
+    // Custom tooltip component
+    const Tooltip = ({ value, label }: { value: number, label: string }) => {
+        // Position tooltip below the point instead of above when near the top
+        const isNearTop = tooltipPosition && tooltipPosition.y < 100;
+
+        return (
+            <View
+                style={{
+                    position: 'absolute',
+                    left: tooltipPosition?.x ? tooltipPosition.x - 60 : 0,
+                    // If near top, position below the point instead of above
+                    top: tooltipPosition?.y
+                        ? (isNearTop ? tooltipPosition.y + 20 : tooltipPosition.y - 70)
+                        : 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 10,
+                    borderRadius: 5,
+                    width: 150,
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 215, 0, 0.5)',
+                    zIndex: 1000,
+                }}
+            >
+                <Text style={{ color: '#FFD700', fontWeight: 'bold', marginBottom: 5 }}>{label}</Text>
+                <Text style={{ color: 'white' }}>
+                    {displayMode === 'concentration'
+                        ? `${value.toFixed(2)} ${getPollutantUnit(pollutant)}`
+                        : `AQI: ${Math.round(value)}`}
+                </Text>
+            </View>
+        );
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -354,54 +422,63 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
                                     {/* Historical Data Chart */}
                                     <View style={styles.chartWrapper}>
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-                                            <LineChart
-                                                data={{
-                                                    labels: getChartData().labels,
-                                                    datasets: [{
-                                                        data: getChartData().values,
-                                                    }],
-                                                }}
-                                                width={
-                                                    timeRange === '1d'
-                                                        ? Math.max(screenWidth * 2, getChartData().labels.length * 120)
-                                                        : Math.max(screenWidth * 1.5, getChartData().labels.length * 80)
-                                                }
-                                                height={275}
-                                                chartConfig={{
-                                                    backgroundColor: '#1e2923',
-                                                    backgroundGradientFrom: '#1e2923',
-                                                    backgroundGradientTo: '#08130D',
-                                                    decimalPlaces: displayMode === 'concentration' ? 2 : 0,
-                                                    color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`,
-                                                    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                                    style: {
-                                                        borderRadius: 16,
-                                                    },
-                                                    propsForDots: {
-                                                        r: '6',
-                                                        strokeWidth: '2',
-                                                        stroke: '#FFD700',
-                                                    },
-                                                    propsForBackgroundLines: {
-                                                        strokeDasharray: '', // Solid lines
-                                                        stroke: 'rgba(255, 255, 255, 0.2)',
-                                                        strokeWidth: 1,
-                                                    },
-                                                    propsForLabels: {
-                                                        fontSize: 10,
-                                                    },
-                                                }}
-                                                bezier
-                                                withInnerLines={true}
-                                                withOuterLines={true}
-                                                withVerticalLines={true}
-                                                withHorizontalLines={true}
-                                                withDots={true}
-                                                withShadow={true}
-                                                style={styles.chart}
-                                            />
-                                        </ScrollView>
+                                            <ScrollView onScroll={handleBackgroundPress} horizontal showsHorizontalScrollIndicator={true} onScrollBeginDrag={handleBackgroundPress}>
+                                                <LineChart
+                                                    data={{
+                                                        labels: getChartData().labels,
+                                                        datasets: [{
+                                                            data: getChartData().values,
+                                                        }],
+                                                    }}
+                                                    width={
+                                                        timeRange === '1d'
+                                                            ? Math.max(screenWidth * 2, getChartData().labels.length * 120)
+                                                            : Math.max(screenWidth * 1.5, getChartData().labels.length * 80)
+                                                    }
+                                                    height={275}
+                                                    chartConfig={{
+                                                        backgroundColor: '#1e2923',
+                                                        backgroundGradientFrom: '#1e2923',
+                                                        backgroundGradientTo: '#08130D',
+                                                        decimalPlaces: displayMode === 'concentration' ? 2 : 0,
+                                                        color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`,
+                                                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                                        style: {
+                                                            borderRadius: 16,
+                                                        },
+                                                        propsForDots: {
+                                                            r: '6',
+                                                            strokeWidth: '2',
+                                                            stroke: '#FFD700',
+                                                        },
+                                                        propsForBackgroundLines: {
+                                                            strokeDasharray: '', // Solid lines
+                                                            stroke: 'rgba(255, 255, 255, 0.2)',
+                                                            strokeWidth: 1,
+                                                        },
+                                                        propsForLabels: {
+                                                            fontSize: 10,
+                                                        },
+                                                    }}
+                                                    bezier
+                                                    withInnerLines={true}
+                                                    withOuterLines={true}
+                                                    withVerticalLines={true}
+                                                    withHorizontalLines={true}
+                                                    withDots={true}
+                                                    withShadow={true}
+                                                    style={styles.chart}
+                                                    onDataPointClick={handleDataPointClick}
+                                                />
+
+                                                {/* Display tooltip when a data point is active */}
+                                                {activePointIndex !== null && tooltipPosition && (
+                                                    <Tooltip
+                                                        value={getChartData().values[activePointIndex]}
+                                                        label={getChartData().labels[activePointIndex]}
+                                                    />
+                                                )}
+                                            </ScrollView>
                                     </View>
 
                                     {/* Stats Cards */}

@@ -96,6 +96,7 @@ export const styles = StyleSheet.create({
         minHeight: 200,
     },
     chartWrapper: {
+        position: 'relative',
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
