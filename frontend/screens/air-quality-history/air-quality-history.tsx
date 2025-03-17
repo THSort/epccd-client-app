@@ -61,28 +61,52 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const getPollutantTranslation = useCallback((pollutantType: Pollutant, type: 'name' | 'description' | 'unit'): string => {
         switch (pollutantType) {
             case Pollutant.PM2_5:
-                if (type === 'name') {return getTranslation('pm25', currentLanguage);}
-                if (type === 'description') {return getTranslation('pm25Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('pm25', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('pm25Description', currentLanguage);
+                }
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.PM10:
-                if (type === 'name') {return getTranslation('pm10', currentLanguage);}
-                if (type === 'description') {return getTranslation('pm10Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('pm10', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('pm10Description', currentLanguage);
+                }
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.O3:
-                if (type === 'name') {return getTranslation('o3', currentLanguage);}
-                if (type === 'description') {return getTranslation('o3Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('o3', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('o3Description', currentLanguage);
+                }
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.SO2:
-                if (type === 'name') {return getTranslation('so2', currentLanguage);}
-                if (type === 'description') {return getTranslation('so2Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('so2', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('so2Description', currentLanguage);
+                }
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.NO2:
-                if (type === 'name') {return getTranslation('no2', currentLanguage);}
-                if (type === 'description') {return getTranslation('no2Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('no2', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('no2Description', currentLanguage);
+                }
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.CO:
-                if (type === 'name') {return getTranslation('co', currentLanguage);}
-                if (type === 'description') {return getTranslation('coDescription', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('co', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('coDescription', currentLanguage);
+                }
                 return getTranslation('ppm', currentLanguage);
             default:
                 return '';
@@ -244,21 +268,27 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     // Get the current value from summary data based on selected pollutant and display mode
     const getCurrentValue = useCallback(() => {
-        if (!summaryData) {return 0;}
+        if (!summaryData) {
+            return 0;
+        }
 
         return getValueForPollutant(summaryData.current);
     }, [summaryData, getValueForPollutant]);
 
     // Get the 24h average value from summary data based on selected pollutant and display mode
     const getDailyAvgValue = useCallback(() => {
-        if (!summaryData) {return 0;}
+        if (!summaryData) {
+            return 0;
+        }
 
         return getValueForPollutant(summaryData.daily_avg);
     }, [summaryData, getValueForPollutant]);
 
     // Get the weekly average value from summary data based on selected pollutant and display mode
     const getWeeklyAvgValue = useCallback(() => {
-        if (!summaryData) {return 0;}
+        if (!summaryData) {
+            return 0;
+        }
 
         return getValueForPollutant(summaryData.weekly_avg);
     }, [summaryData, getValueForPollutant]);
@@ -318,7 +348,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     if (dayIndexA !== -1) {
                         // Calculate days ago
                         let daysAgo = currentDayOfWeek - dayIndexA;
-                        if (daysAgo < 0) {daysAgo += 7;} // Wrap around for days earlier in the week
+                        if (daysAgo < 0) {
+                            daysAgo += 7;
+                        } // Wrap around for days earlier in the week
                         orderA = 4 - daysAgo; // Adjust to fit between Yesterday (5) and the oldest day
                     }
                 }
@@ -328,7 +360,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     if (dayIndexB !== -1) {
                         // Calculate days ago
                         let daysAgo = currentDayOfWeek - dayIndexB;
-                        if (daysAgo < 0) {daysAgo += 7;} // Wrap around for days earlier in the week
+                        if (daysAgo < 0) {
+                            daysAgo += 7;
+                        } // Wrap around for days earlier in the week
                         orderB = 4 - daysAgo; // Adjust to fit between Yesterday (5) and the oldest day
                     }
                 }
@@ -383,10 +417,15 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 const quarterLabel = item.time.substring(0, item.time.lastIndexOf(' ')).trim();
 
                 let quarterIndex = 0;
-                if (quarterLabel === 'January - March') {quarterIndex = 0;}
-                else if (quarterLabel === 'April - June') {quarterIndex = 1;}
-                else if (quarterLabel === 'July - September') {quarterIndex = 2;}
-                else if (quarterLabel === 'October - December') {quarterIndex = 3;}
+                if (quarterLabel === 'January - March') {
+                    quarterIndex = 0;
+                } else if (quarterLabel === 'April - June') {
+                    quarterIndex = 1;
+                } else if (quarterLabel === 'July - September') {
+                    quarterIndex = 2;
+                } else if (quarterLabel === 'October - December') {
+                    quarterIndex = 3;
+                }
 
                 // Create a sortable value (year * 10 + quarter)
                 quarterOrder[item.time] = year * 10 + quarterIndex;
@@ -581,7 +620,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                     // For month names in 3m and 6m views
                                                     if ((timeRange === '3m' || timeRange === '6m') &&
                                                         ['January', 'February', 'March', 'April', 'May', 'June',
-                                                         'July', 'August', 'September', 'October', 'November', 'December'].includes(label)) {
+                                                            'July', 'August', 'September', 'October', 'November', 'December'].includes(label)) {
                                                         // Translate month names if needed
                                                         return label;
                                                     }
