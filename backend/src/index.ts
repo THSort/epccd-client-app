@@ -12,7 +12,7 @@ import {
     getPollutantHistoryDataForPast24Hours,
     getPollutantHistoryDataForPastMonth, getPollutantHistoryDataForPastSixMonths,
     getPollutantHistoryDataForPastThreeMonths,
-    getPollutantHistoryDataForPastWeek,
+    getPollutantHistoryDataForPastWeek, getPollutantHistoryDataForPastYear,
     pollEpaMonitorsData
 } from "./services/epaMonitorsData.service";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
@@ -48,7 +48,8 @@ const startServer = async () => {
         // await getPollutantHistoryDataForPastWeek(4, currentDateTime);
         // await getPollutantHistoryDataForPastMonth(4, currentDateTime);
         // await getPollutantHistoryDataForPastThreeMonths(4, currentDateTime);
-        await getPollutantHistoryDataForPastSixMonths(4, currentDateTime)
+        // await getPollutantHistoryDataForPastSixMonths(4, currentDateTime)
+        await getPollutantHistoryDataForPastYear(4, currentDateTime)
 
         // // Start polling EPA Monitors Data every 5 minutes
         // const POLLING_INTERVAL_MS = 5 * 60 * 1000;
