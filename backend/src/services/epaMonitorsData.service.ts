@@ -4,6 +4,7 @@ import logger from "../utils/logger";
 import {shouldAlertUsersInLocation} from "./forecastingModelService";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 import {alertUsersInLocations} from "./notificationService";
+import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
 
 const BASE_URL = "http://34.132.171.41:8000/api/aqms_data/";
 
@@ -1063,5 +1064,45 @@ export const getPollutantHistoryDataForPastYear = async (location: number, curre
     } catch (error) {
         logger.error(`Error extracting yearly pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         return [];
+    }
+};
+
+export const getAllPollutantHistoricalData = async (location: number, currentDateTime: Date): Promise<PollutantHistoricalData> => {
+    try {
+        // Fetch all historical data in parallel
+        const [
+            oneDay,
+            oneWeek,
+            oneMonth,
+            threeMonths,
+            sixMonths,
+            twelveMonths
+        ] = await Promise.all([
+            getPollutantHistoryDataForPast24Hours(location, currentDateTime),
+            getPollutantHistoryDataForPastWeek(location, currentDateTime),
+            getPollutantHistoryDataForPastMonth(location, currentDateTime),
+            getPollutantHistoryDataForPastThreeMonths(location, currentDateTime),
+            getPollutantHistoryDataForPastSixMonths(location, currentDateTime),
+            getPollutantHistoryDataForPastYear(location, currentDateTime)
+        ]);
+
+        return {
+            oneDay,
+            oneWeek,
+            oneMonth,
+            threeMonths,
+            sixMonths,
+            twelveMonths
+        };
+    } catch (error) {
+        logger.error(`Error fetching all historical pollutant data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        return {
+            oneDay: [],
+            oneWeek: [],
+            oneMonth: [],
+            threeMonths: [],
+            sixMonths: [],
+            twelveMonths: []
+        };
     }
 };
