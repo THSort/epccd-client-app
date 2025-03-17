@@ -301,38 +301,38 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 'Wed': 1,
                 'Thu': 0,
                 'Fri': -1,
-                'Sat': -2
+                'Sat': -2,
             };
 
             // Sort the data by days (oldest first)
             return [...data].sort((a, b) => {
                 // Adjust the day order based on the current day of the week
                 const currentDayOfWeek = new Date().getDay(); // 0 = Sunday, 6 = Saturday
-                
+
                 let orderA = dayOrder[a.time] !== undefined ? dayOrder[a.time] : -100;
                 let orderB = dayOrder[b.time] !== undefined ? dayOrder[b.time] : -100;
-                
+
                 // Adjust the order based on the current day of the week
                 if (a.time !== 'Today' && a.time !== 'Yesterday') {
                     const dayIndexA = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(a.time);
                     if (dayIndexA !== -1) {
                         // Calculate days ago
                         let daysAgo = currentDayOfWeek - dayIndexA;
-                        if (daysAgo < 0) daysAgo += 7; // Wrap around for days earlier in the week
+                        if (daysAgo < 0) {daysAgo += 7;} // Wrap around for days earlier in the week
                         orderA = 4 - daysAgo; // Adjust to fit between Yesterday (5) and the oldest day
                     }
                 }
-                
+
                 if (b.time !== 'Today' && b.time !== 'Yesterday') {
                     const dayIndexB = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(b.time);
                     if (dayIndexB !== -1) {
                         // Calculate days ago
                         let daysAgo = currentDayOfWeek - dayIndexB;
-                        if (daysAgo < 0) daysAgo += 7; // Wrap around for days earlier in the week
+                        if (daysAgo < 0) {daysAgo += 7;} // Wrap around for days earlier in the week
                         orderB = 4 - daysAgo; // Adjust to fit between Yesterday (5) and the oldest day
                     }
                 }
-                
+
                 return orderA - orderB; // Oldest first
             });
         } else if (timeRange === '1m') {
@@ -366,7 +366,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 'September': 8,
                 'October': 9,
                 'November': 10,
-                'December': 11
+                'December': 11,
             };
 
             return [...data].sort((a, b) => {
@@ -375,23 +375,23 @@ export function AirQualityHistory({route}: Props): ReactElement {
         } else if (timeRange === '1y') {
             // Sort quarters chronologically
             const quarterOrder: Record<string, number> = {};
-            
+
             // Extract the year and quarter from the label (e.g., "January - March 2023")
             data.forEach(item => {
                 const parts = item.time.split(' ');
                 const year = parseInt(parts[parts.length - 1]);
                 const quarterLabel = item.time.substring(0, item.time.lastIndexOf(' ')).trim();
-                
+
                 let quarterIndex = 0;
-                if (quarterLabel === 'January - March') quarterIndex = 0;
-                else if (quarterLabel === 'April - June') quarterIndex = 1;
-                else if (quarterLabel === 'July - September') quarterIndex = 2;
-                else if (quarterLabel === 'October - December') quarterIndex = 3;
-                
+                if (quarterLabel === 'January - March') {quarterIndex = 0;}
+                else if (quarterLabel === 'April - June') {quarterIndex = 1;}
+                else if (quarterLabel === 'July - September') {quarterIndex = 2;}
+                else if (quarterLabel === 'October - December') {quarterIndex = 3;}
+
                 // Create a sortable value (year * 10 + quarter)
                 quarterOrder[item.time] = year * 10 + quarterIndex;
             });
-            
+
             return [...data].sort((a, b) => {
                 return quarterOrder[a.time] - quarterOrder[b.time];
             });
@@ -566,7 +566,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                     if (timeRange === '1d' && /\d+\s+(AM|PM)/.test(label)) {
                                                         return label.replace(/\d+/, (match) => getTranslatedNumber(match, currentLanguage));
                                                     }
-                                                    
+
                                                     // For day labels in 1w view (Today, Yesterday, Mon, Tue, etc.)
                                                     if (timeRange === '1w') {
                                                         if (label === 'Today') {
@@ -577,26 +577,26 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                         // For day names, translate if needed
                                                         return label;
                                                     }
-                                                    
+
                                                     // For month names in 3m and 6m views
-                                                    if ((timeRange === '3m' || timeRange === '6m') && 
-                                                        ['January', 'February', 'March', 'April', 'May', 'June', 
+                                                    if ((timeRange === '3m' || timeRange === '6m') &&
+                                                        ['January', 'February', 'March', 'April', 'May', 'June',
                                                          'July', 'August', 'September', 'October', 'November', 'December'].includes(label)) {
                                                         // Translate month names if needed
                                                         return label;
                                                     }
-                                                    
+
                                                     // For quarter labels in 1y view (e.g., "January '23")
                                                     if (timeRange === '1y' && label.includes("'")) {
                                                         const [month, year] = label.split("'");
                                                         return `${month}'${getTranslatedNumber(year.trim(), currentLanguage)}`;
                                                     }
-                                                    
+
                                                     // For date formats like dd/mm
                                                     if (/^\d{2}\/\d{2}$/.test(label)) {
                                                         return getTranslatedNumber(label, currentLanguage);
                                                     }
-                                                    
+
                                                     return label;
                                                 },
                                                 propsForLabels: {
