@@ -44,10 +44,8 @@ export interface HistoricalEpaMonitorsDataResponse {
 
 // Interface for filtered pollutant data for charts
 export interface PollutantChartData {
-    // Date and time fields
-    report_date: string;
-    report_time: string;
-    
+    label: string;
+
     // Pollutant concentration fields
     o3_ppb: number;
     co_ppm: number;
@@ -57,7 +55,7 @@ export interface PollutantChartData {
     nox_ppb: number;
     pm10_ug_m3: number;
     pm2_5_ug_m3: number;
-    
+
     // AQI values
     PM2_5_AQI: number;
     PM10_AQI: number;
@@ -74,7 +72,7 @@ export interface FilteredHistoricalDataResponse {
     oneMonth: Record<string, PollutantChartData>;
     threeMonths: Record<string, PollutantChartData>;
     sixMonths: Record<string, PollutantChartData>;
-    oneYear: Record<string, PollutantChartData>;
+    twelveMonths: Record<string, PollutantChartData>;
 }
 
 // Interface for pollutant summary data containing current value, 24h avg, and weekly avg
@@ -90,7 +88,7 @@ export interface PollutantSummaryResponse {
         nox_ppb: number;
         pm10_ug_m3: number;
         pm2_5_ug_m3: number;
-        
+
         // AQI values
         PM2_5_AQI: number;
         PM10_AQI: number;
@@ -98,11 +96,11 @@ export interface PollutantSummaryResponse {
         NO2_AQI: number;
         O3_AQI: number;
         CO_AQI: number;
-        
+
         // Timestamp
         timestamp: string;
     };
-    
+
     // 24-hour average values
     daily_avg: {
         // Pollutant concentration fields
@@ -114,7 +112,7 @@ export interface PollutantSummaryResponse {
         nox_ppb: number;
         pm10_ug_m3: number;
         pm2_5_ug_m3: number;
-        
+
         // AQI values
         PM2_5_AQI: number;
         PM10_AQI: number;
@@ -123,7 +121,7 @@ export interface PollutantSummaryResponse {
         O3_AQI: number;
         CO_AQI: number;
     };
-    
+
     // Weekly average values
     weekly_avg: {
         // Pollutant concentration fields
@@ -135,7 +133,7 @@ export interface PollutantSummaryResponse {
         nox_ppb: number;
         pm10_ug_m3: number;
         pm2_5_ug_m3: number;
-        
+
         // AQI values
         PM2_5_AQI: number;
         PM10_AQI: number;
