@@ -294,6 +294,26 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
+    // Helper function to get pollutant name
+    const getPollutantName = (pollutantType: Pollutant): string => {
+        switch (pollutantType) {
+            case Pollutant.PM2_5:
+                return 'PM₂.₅';
+            case Pollutant.PM10:
+                return 'PM₁₀';
+            case Pollutant.O3:
+                return 'O₃';
+            case Pollutant.SO2:
+                return 'SO₂';
+            case Pollutant.NO2:
+                return 'NO₂';
+            case Pollutant.CO:
+                return 'CO';
+            default:
+                return '';
+        }
+    };
+
     // Handle tap on data point
     const handleDataPointClick = (data: any) => {
         const { index, value, x, y } = data;
@@ -422,6 +442,14 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
                                     {/* Historical Data Chart */}
                                     <View style={styles.chartWrapper}>
+                                        <View style={{ marginBottom: 10, alignItems: 'center' }}>
+                                            <Text style={{ color: '#FFD700', fontSize: 14, fontWeight: 'bold' }}>
+                                                {displayMode === 'concentration'
+                                                  ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
+                                                  : `Average ${getPollutantName(pollutant)} AQI`}
+                                            </Text>
+                                        </View>
+
                                             <ScrollView onScroll={handleBackgroundPress} horizontal showsHorizontalScrollIndicator={true} onScrollBeginDrag={handleBackgroundPress}>
                                                 <LineChart
                                                     data={{
@@ -437,9 +465,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                     }
                                                     height={275}
                                                     chartConfig={{
-                                                        backgroundColor: '#1e2923',
+                                                        backgroundColor: '#1e2923', // Match app background
                                                         backgroundGradientFrom: '#1e2923',
-                                                        backgroundGradientTo: '#08130D',
+                                                        backgroundGradientTo: '#1e2923',
                                                         decimalPlaces: displayMode === 'concentration' ? 2 : 0,
                                                         color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`,
                                                         labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
@@ -457,8 +485,10 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                                             strokeWidth: 1,
                                                         },
                                                         propsForLabels: {
-                                                            fontSize: 10,
+                                                            fontSize: 12,
                                                         },
+                                                        fillShadowGradient: '#FFD700', // Add gold fill under the line
+                                                        fillShadowGradientOpacity: 0.85, // More opaque fill to match screenshot
                                                     }}
                                                     bezier
                                                     withInnerLines={true}
