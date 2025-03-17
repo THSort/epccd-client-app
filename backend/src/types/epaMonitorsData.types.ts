@@ -142,3 +142,51 @@ export interface PollutantSummaryData {
         CO_AQI: number;
     };
 }
+
+// Interface for historical pollutant data with timestamps
+export interface PollutantHistoryData {
+    // Timestamp
+    report_date_time: Date;
+    
+    // Pollutant concentration fields
+    o3_ppb: number;
+    co_ppm: number;
+    so2_ppb: number;
+    no_ppb: number;
+    no2_ppb: number;
+    nox_ppb: number;
+    pm10_ug_m3: number;
+    pm2_5_ug_m3: number;
+    
+    // AQI values
+    PM2_5_AQI: number;
+    PM10_AQI: number;
+    SO2_AQI: number;
+    NO2_AQI: number;
+    O3_AQI: number;
+    CO_AQI: number;
+}
+
+// Interface for time-bucketed pollutant data
+export interface PollutantBucketData {
+    // Time range for this bucket
+    timeRange?: string;
+    // Label for this bucket (used for day names in weekly view)
+    label?: string;
+    
+    // Pollutant concentration fields (can be null if no data)
+    o3_ppb: number | null;
+    co_ppm: number | null;
+    so2_ppb: number | null;
+    no2_ppb: number | null;
+    pm10_ug_m3: number | null;
+    pm2_5_ug_m3: number | null;
+    
+    // AQI values (can be null if no data)
+    PM2_5_AQI: number | null;
+    PM10_AQI: number | null;
+    SO2_AQI: number | null;
+    NO2_AQI: number | null;
+    O3_AQI: number | null;
+    CO_AQI: number | null;
+}
