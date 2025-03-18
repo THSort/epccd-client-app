@@ -267,8 +267,6 @@ export const getPollutantHistoryDataForPast24Hours = async (location: number, cu
             };
         });
 
-        console.log('formattedBucketAverages', formattedBucketAverages)
-        
         return formattedBucketAverages;
 
     } catch (error) {
@@ -512,7 +510,6 @@ export const getPollutantHistoryDataForPastWeek = async (location: number, curre
             };
         });
         
-        console.log('dayAverages', dayAverages);
         return dayAverages;
 
     } catch (error) {
@@ -634,7 +631,6 @@ export const getPollutantHistoryDataForPastMonth = async (location: number, curr
             };
         });
         
-        console.log('weekAverages', weekAverages);
         return weekAverages;
 
     } catch (error) {
@@ -767,7 +763,6 @@ export const getPollutantHistoryDataForPastThreeMonths = async (location: number
             };
         });
         
-        console.log('bucketAverages', bucketAverages);
         return bucketAverages;
 
     } catch (error) {
@@ -900,7 +895,6 @@ export const getPollutantHistoryDataForPastSixMonths = async (location: number, 
             };
         });
         
-        console.log('sixMonthBucketAverages', bucketAverages);
         return bucketAverages;
 
     } catch (error) {
@@ -1058,7 +1052,6 @@ export const getPollutantHistoryDataForPastYear = async (location: number, curre
             };
         });
         
-        console.log('yearlyQuarterBucketAverages', bucketAverages);
         return bucketAverages;
 
     } catch (error) {

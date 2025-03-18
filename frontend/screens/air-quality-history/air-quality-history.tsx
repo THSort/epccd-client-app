@@ -1,6 +1,6 @@
-import {ReactElement, useState, useEffect, useCallback, useMemo} from 'react';
+import {ReactElement, useState, useEffect, useCallback} from 'react';
 import React from 'react';
-import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, Dimensions} from 'react-native';
+import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {styles} from './air-quality-history.styles';
@@ -11,20 +11,16 @@ import {LocationModal} from '../home-screen/components/location-modal/location-m
 import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
-import {fetchHistoricalEpaMonitorsData, fetchPollutantSummary} from '../../services/api.service.ts';
-import {FilteredHistoricalDataResponse, PollutantChartData, PollutantSummaryResponse} from '../../types/epaMonitorsApiResponse.types.ts';
+import {fetchHistoricalEpaMonitorsData, fetchPollutantDataForTimePeriod} from '../../services/api.service.ts';
+import {FilteredHistoricalDataResponse, PollutantChartData} from '../../types/epaMonitorsApiResponse.types.ts';
 import {TimeRangeSelector} from './components/time-range-selector/time-range-selector.tsx';
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
 import {ChartDisplayToggle} from './components/chart-display-toggle/chart-display-toggle.tsx';
 import {ChartDisplayMode} from './components/chart-display-toggle/chart-display-toggle.types.ts';
-import {LineChart} from 'react-native-chart-kit';
 import {PollutantSelector} from './components/pollutant-selector/pollutant-selector.tsx';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
-import {getTranslation, Language, getTranslatedNumber} from '../../utils/translations';
-
-// Get screen width for responsive charts
-const screenWidth = Dimensions.get('window').width;
+import {getTranslation, Language} from '../../utils/translations';
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -47,72 +43,15 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
 
     const [pollutant, setPollutant] = useState<Pollutant>(selectedPollutant);
+
     const [historicalData, setHistoricalData] = useState<FilteredHistoricalDataResponse | null>(null);
-    // const [summaryData, setSummaryData] = useState<PollutantSummaryResponse | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [historicalDataForSelectedTimePeriod, setHistoricalDataForSelectedTimePeriod] = useState<Record<string, PollutantChartData> | null>(null);
+    const [isLoadingTimePeriodData, setIsLoadingTimePeriodData] = useState<boolean>(true);
+    const [isLoadingAllHistoricalData, setIsLoadingAllHistoricalData] = useState<boolean>(true);
+
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
-
-    // State for tooltip
-    const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
-    const [tooltipPosition, setTooltipPosition] = useState<{x: number, y: number} | null>(null);
-
-    // Map pollutant types to translation keys
-    const getPollutantTranslation = useCallback((pollutantType: Pollutant, type: 'name' | 'description' | 'unit'): string => {
-        switch (pollutantType) {
-            case Pollutant.PM2_5:
-                if (type === 'name') {
-                    return getTranslation('pm25', currentLanguage);
-                }
-                if (type === 'description') {
-                    return getTranslation('pm25Description', currentLanguage);
-                }
-                return getTranslation('ugm3', currentLanguage);
-            case Pollutant.PM10:
-                if (type === 'name') {
-                    return getTranslation('pm10', currentLanguage);
-                }
-                if (type === 'description') {
-                    return getTranslation('pm10Description', currentLanguage);
-                }
-                return getTranslation('ugm3', currentLanguage);
-            case Pollutant.O3:
-                if (type === 'name') {
-                    return getTranslation('o3', currentLanguage);
-                }
-                if (type === 'description') {
-                    return getTranslation('o3Description', currentLanguage);
-                }
-                return getTranslation('ppb', currentLanguage);
-            case Pollutant.SO2:
-                if (type === 'name') {
-                    return getTranslation('so2', currentLanguage);
-                }
-                if (type === 'description') {
-                    return getTranslation('so2Description', currentLanguage);
-                }
-                return getTranslation('ppb', currentLanguage);
-            case Pollutant.NO2:
-                if (type === 'name') {
-                    return getTranslation('no2', currentLanguage);
-                }
-                if (type === 'description') {
-                    return getTranslation('no2Description', currentLanguage);
-                }
-                return getTranslation('ppb', currentLanguage);
-            case Pollutant.CO:
-                if (type === 'name') {
-                    return getTranslation('co', currentLanguage);
-                }
-                if (type === 'description') {
-                    return getTranslation('coDescription', currentLanguage);
-                }
-                return getTranslation('ppm', currentLanguage);
-            default:
-                return '';
-        }
-    }, [currentLanguage]);
 
     const handleBackButtonClick = useCallback(() => {
         trackBackButton(currentScreen);
@@ -127,60 +66,49 @@ export function AirQualityHistory({route}: Props): ReactElement {
         };
     }, [handleBackButtonClick]);
 
-    // Reset tooltip when chart settings change
-    useEffect(() => {
-        setActivePointIndex(null);
-        setTooltipPosition(null);
-    }, [timeRange, displayMode, pollutant]);
-
-    const fetchHistoricalData = useCallback(async () => {
+    const fetchTimePeriodData = async (): Promise<void> => {
         if (!selectedLocation) {
             return;
         }
 
-        setIsLoading(true);
         setError(null);
 
         try {
-            const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
-            console.log('Historical data fetched for different time periods');
-            console.log('One day data (time-based averages):', data.oneDay);
-            console.log('One week data (day-based averages):', data.oneWeek);
-            console.log('One month data (week-based averages):', data.oneMonth);
-            console.log('Three months data (month-based averages):', data.threeMonths);
-            console.log('Six months data (month-based averages):', data.sixMonths);
-            console.log('One year data (quarterly averages):', data.twelveMonths);
-            setHistoricalData(data);
-            console.log('-->', data);
+            const historicalDataForSelectedTime = await fetchPollutantDataForTimePeriod(selectedLocation, timeRange);
+            setHistoricalDataForSelectedTimePeriod(historicalDataForSelectedTime);
         } catch (error) {
-            console.error('Error fetching historical data:', error);
+            console.error('Error fetching time period data:', error);
             setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
         } finally {
-            setIsLoading(false);
+            setIsLoadingTimePeriodData(false);
         }
-    }, [selectedLocation, currentLanguage]);
+    };
 
-    const fetchSummaryData = useCallback(async () => {
+    const fetchHistoricalData = async (): Promise<void> => {
         if (!selectedLocation) {
             return;
         }
 
         try {
-            // const data = await fetchPollutantSummary(selectedLocation);
-            // console.log('Summary data fetched:', data);
-            // setSummaryData(data);
+            const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
+            setHistoricalData(data);
         } catch (error) {
-            // console.error('Error fetching summary data:', error);
-            // Don't set error state here to avoid blocking the UI if only summary data fails
+            console.error('Error fetching historical data:', error);
+            // Don't set error state here since we're loading in the background
+        } finally {
+            setIsLoadingAllHistoricalData(false);
         }
-    }, [selectedLocation]);
+    };
 
+    // Initial data loading
     useEffect(() => {
+        void fetchTimePeriodData();
+        // Load historical data in the background
         void fetchHistoricalData();
         // void fetchSummaryData();
-    }, [fetchHistoricalData, fetchSummaryData]);
+    }, []);
 
-    if (isLoading) {
+    if (isLoadingTimePeriodData && !historicalDataForSelectedTimePeriod) {
         return (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#FFD700"/>
@@ -190,7 +118,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     const getDataFromPeriod = (): Record<string, PollutantChartData> => {
         if (!historicalData) {
-            throw new Error('Historical data is null in getDataFromPeriod');
+            throw new Error('historicalData is null in getDataFromPeriod');
         }
 
         switch (timeRange) {
@@ -267,7 +195,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     };
 
     const getChartData = (): { labels: string[], values: number[] } => {
-        const dataFromPeriodToUse = getDataFromPeriod();
+        const dataFromPeriodToUse = historicalDataForSelectedTimePeriod ?? getDataFromPeriod();
         const labels = getLabelsForDataToUse(dataFromPeriodToUse);
         const dataValues = getDataForPollutant(dataFromPeriodToUse);
 
@@ -314,60 +242,107 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
-    // Handle tap on data point
-    const handleDataPointClick = (data: any) => {
-        const { index, value, x, y } = data;
-
-        // Set the active point index
-        setActivePointIndex(index);
-
-        // Position the tooltip, store original y position for smart positioning
-        setTooltipPosition({ x, y });
-
-        // Track the interaction
-        void trackButton('chart_data_point_touch', currentScreen, {
-            timestamp: new Date().toISOString(),
-            dataPoint: index,
-            value: value,
-        });
+    const getLoader = (): ReactElement => {
+        return (
+            <View style={styles.chartContainer}>
+                <ActivityIndicator size="large" color="#FFD700"/>
+                <Text style={{color: 'white', textAlign: 'center', marginTop: 10}}>
+                    {getTranslation('loading', currentLanguage)}
+                </Text>
+            </View>
+        );
     };
 
-    // Clear tooltip when tapping elsewhere
-    const handleBackgroundPress = () => {
-        setActivePointIndex(null);
-        setTooltipPosition(null);
-    };
+    const getHistoricalDataContent = (): ReactElement => {
+        if (isLoadingTimePeriodData) {
+            return getLoader();
+        }
 
-    // Custom tooltip component
-    const Tooltip = ({ value, label }: { value: number, label: string }) => {
-        // Position tooltip below the point instead of above when near the top
-        const isNearTop = tooltipPosition && tooltipPosition.y < 100;
+        let data;
+        if (historicalDataForSelectedTimePeriod) {
+            data = historicalDataForSelectedTimePeriod;
+        }
+
+        if (!isLoadingTimePeriodData && !historicalDataForSelectedTimePeriod) {
+            if (isLoadingAllHistoricalData) {
+                return getLoader();
+            }
+        }
+
+        if (historicalData) {
+            data = getChartData();
+        }
+
+        if (data) {
+            return (
+                <View style={styles.chartContainer}>
+                    {/* Concentration/AQI Toggle */}
+                    <ChartDisplayToggle
+                        selectedMode={displayMode}
+                        onModeSelected={(mode) => {
+                            setDisplayMode(mode);
+
+                            void trackButton('chart_display_mode_toggle', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                                selectedMode: mode,
+                            });
+                        }}
+                    />
+
+                    {/* Historical Data Chart */}
+                    <View style={styles.chartWrapper}>
+                        <View style={{marginBottom: 10, alignItems: 'center'}}>
+                            <Text style={{color: '#FFD700', fontSize: 14, fontWeight: 'bold'}}>
+                                {displayMode === 'concentration'
+                                    ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
+                                    : `Average ${getPollutantName(pollutant)} AQI`}
+                            </Text>
+                        </View>
+
+                        <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                            {/*<Chart/>*/}
+                        </ScrollView>
+                    </View>
+
+                    {/* Stats Cards */}
+                    {/*        <View style={styles.statsCardsContainer}>*/}
+                    {/*            /!* Current Value Card *!/*/}
+                    {/*            <View style={styles.statCard}>*/}
+                    {/*                <Text style={styles.statCardTitle}>*/}
+                    {/*                    {getTranslation('currentValue', currentLanguage)}*/}
+                    {/*                </Text>*/}
+                    {/*                <Text style={styles.statCardValue}>*/}
+                    {/*                    {getTranslatedNumber(getCurrentValue().toFixed(1), currentLanguage)} {getUnitForPollutant()}*/}
+                    {/*                </Text>*/}
+                    {/*            </View>*/}
+                    {/*        */}
+                    {/*            /!* 24h Average Card *!/*/}
+                    {/*            <View style={styles.statCard}>*/}
+                    {/*                <Text style={styles.statCardTitle}>*/}
+                    {/*                    {getTranslation('dailyAverage', currentLanguage)}*/}
+                    {/*                </Text>*/}
+                    {/*                <Text style={styles.statCardValue}>*/}
+                    {/*                    {getTranslatedNumber(getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}*/}
+                    {/*                </Text>*/}
+                    {/*            </View>*/}
+                    {/*        */}
+                    {/*            /!* Weekly Average Card *!/*/}
+                    {/*            <View style={styles.statCard}>*/}
+                    {/*                <Text style={styles.statCardTitle}>*/}
+                    {/*                    {getTranslation('weeklyAverage', currentLanguage)}*/}
+                    {/*                </Text>*/}
+                    {/*                <Text style={styles.statCardValue}>*/}
+                    {/*                    {getTranslatedNumber(getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}*/}
+                    {/*                </Text>*/}
+                    {/*            </View>*/}
+                    {/*        </View>*/}
+                </View>
+            );
+        }
 
         return (
-            <View
-                style={{
-                    position: 'absolute',
-                    left: tooltipPosition?.x ? tooltipPosition.x - 60 : 0,
-                    // If near top, position below the point instead of above
-                    top: tooltipPosition?.y
-                        ? (isNearTop ? tooltipPosition.y + 20 : tooltipPosition.y - 70)
-                        : 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 10,
-                    borderRadius: 5,
-                    width: 150,
-                    alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 215, 0, 0.5)',
-                    zIndex: 1000,
-                }}
-            >
-                <Text style={{ color: '#FFD700', fontWeight: 'bold', marginBottom: 5 }}>{label}</Text>
-                <Text style={{ color: 'white' }}>
-                    {displayMode === 'concentration'
-                        ? `${value.toFixed(2)} ${getPollutantUnit(pollutant)}`
-                        : `AQI: ${Math.round(value)}`}
-                </Text>
+            <View style={styles.noDataContainer}>
+                <Text style={styles.noDataText}>{getTranslation('noHistoricalDataAvailable', currentLanguage)}</Text>
             </View>
         );
     };
@@ -416,6 +391,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             <TimeRangeSelector
                                 selectedTimeRange={timeRange}
                                 onTimeRangeSelected={(timeRangeSelected) => {
+                                    setHistoricalDataForSelectedTimePeriod(null);
+
                                     setTimeRange(timeRangeSelected);
 
                                     void trackButton('time_range_toggle', currentScreen, {
@@ -425,130 +402,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                                 }}
                             />
 
-                            {historicalData && getChartData().values.length > 0 ? (
-                                <View style={styles.chartContainer}>
-                                    {/* Concentration/AQI Toggle */}
-                                    <ChartDisplayToggle
-                                        selectedMode={displayMode}
-                                        onModeSelected={(mode) => {
-                                            setDisplayMode(mode);
-
-                                            void trackButton('chart_display_mode_toggle', currentScreen, {
-                                                timestamp: new Date().toISOString(),
-                                                selectedMode: mode,
-                                            });
-                                        }}
-                                    />
-
-                                    {/* Historical Data Chart */}
-                                    <View style={styles.chartWrapper}>
-                                        <View style={{ marginBottom: 10, alignItems: 'center' }}>
-                                            <Text style={{ color: '#FFD700', fontSize: 14, fontWeight: 'bold' }}>
-                                                {displayMode === 'concentration'
-                                                  ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
-                                                  : `Average ${getPollutantName(pollutant)} AQI`}
-                                            </Text>
-                                        </View>
-
-                                            <ScrollView onScroll={handleBackgroundPress} horizontal showsHorizontalScrollIndicator={true} onScrollBeginDrag={handleBackgroundPress}>
-                                                <LineChart
-                                                    data={{
-                                                        labels: getChartData().labels,
-                                                        datasets: [{
-                                                            data: getChartData().values,
-                                                        }],
-                                                    }}
-                                                    width={
-                                                        timeRange === '1d'
-                                                            ? Math.max(screenWidth * 2, getChartData().labels.length * 120)
-                                                            : Math.max(screenWidth * 1.5, getChartData().labels.length * 80)
-                                                    }
-                                                    height={275}
-                                                    chartConfig={{
-                                                        backgroundColor: '#1e2923', // Match app background
-                                                        backgroundGradientFrom: '#1e2923',
-                                                        backgroundGradientTo: '#1e2923',
-                                                        decimalPlaces: displayMode === 'concentration' ? 2 : 0,
-                                                        color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`,
-                                                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                                        style: {
-                                                            borderRadius: 16,
-                                                        },
-                                                        propsForDots: {
-                                                            r: '6',
-                                                            strokeWidth: '2',
-                                                            stroke: '#FFD700',
-                                                        },
-                                                        propsForBackgroundLines: {
-                                                            strokeDasharray: '', // Solid lines
-                                                            stroke: 'rgba(255, 255, 255, 0.2)',
-                                                            strokeWidth: 1,
-                                                        },
-                                                        propsForLabels: {
-                                                            fontSize: 12,
-                                                        },
-                                                        fillShadowGradient: '#FFD700', // Add gold fill under the line
-                                                        fillShadowGradientOpacity: 0.85, // More opaque fill to match screenshot
-                                                    }}
-                                                    bezier
-                                                    withInnerLines={true}
-                                                    withOuterLines={true}
-                                                    withVerticalLines={true}
-                                                    withHorizontalLines={true}
-                                                    withDots={true}
-                                                    withShadow={true}
-                                                    style={styles.chart}
-                                                    onDataPointClick={handleDataPointClick}
-                                                />
-
-                                                {/* Display tooltip when a data point is active */}
-                                                {activePointIndex !== null && tooltipPosition && (
-                                                    <Tooltip
-                                                        value={getChartData().values[activePointIndex]}
-                                                        label={getChartData().labels[activePointIndex]}
-                                                    />
-                                                )}
-                                            </ScrollView>
-                                    </View>
-
-                                    {/* Stats Cards */}
-                                    {/*        <View style={styles.statsCardsContainer}>*/}
-                                    {/*            /!* Current Value Card *!/*/}
-                                    {/*            <View style={styles.statCard}>*/}
-                                    {/*                <Text style={styles.statCardTitle}>*/}
-                                    {/*                    {getTranslation('currentValue', currentLanguage)}*/}
-                                    {/*                </Text>*/}
-                                    {/*                <Text style={styles.statCardValue}>*/}
-                                    {/*                    {getTranslatedNumber(getCurrentValue().toFixed(1), currentLanguage)} {getUnitForPollutant()}*/}
-                                    {/*                </Text>*/}
-                                    {/*            </View>*/}
-                                    {/*        */}
-                                    {/*            /!* 24h Average Card *!/*/}
-                                    {/*            <View style={styles.statCard}>*/}
-                                    {/*                <Text style={styles.statCardTitle}>*/}
-                                    {/*                    {getTranslation('dailyAverage', currentLanguage)}*/}
-                                    {/*                </Text>*/}
-                                    {/*                <Text style={styles.statCardValue}>*/}
-                                    {/*                    {getTranslatedNumber(getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}*/}
-                                    {/*                </Text>*/}
-                                    {/*            </View>*/}
-                                    {/*        */}
-                                    {/*            /!* Weekly Average Card *!/*/}
-                                    {/*            <View style={styles.statCard}>*/}
-                                    {/*                <Text style={styles.statCardTitle}>*/}
-                                    {/*                    {getTranslation('weeklyAverage', currentLanguage)}*/}
-                                    {/*                </Text>*/}
-                                    {/*                <Text style={styles.statCardValue}>*/}
-                                    {/*                    {getTranslatedNumber(getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}*/}
-                                    {/*                </Text>*/}
-                                    {/*            </View>*/}
-                                    {/*        </View>*/}
-                                </View>
-                            ) : (
-                                <View style={styles.noDataContainer}>
-                                    <Text style={styles.noDataText}>{getTranslation('noHistoricalDataAvailable', currentLanguage)}</Text>
-                                </View>
-                            )}
+                            {getHistoricalDataContent()}
                         </>
                     )}
                 </View>
