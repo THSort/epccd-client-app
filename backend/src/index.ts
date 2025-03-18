@@ -49,17 +49,17 @@ const startServer = async () => {
         // await getPollutantHistoryDataForPastMonth(4, currentDateTime);
         // await getPollutantHistoryDataForPastThreeMonths(4, currentDateTime);
         // await getPollutantHistoryDataForPastSixMonths(4, currentDateTime)
-        await getPollutantHistoryDataForPastYear(4, currentDateTime)
+        // await getPollutantHistoryDataForPastYear(4, currentDateTime)
 
-        // // Start polling EPA Monitors Data every 5 minutes
-        // const POLLING_INTERVAL_MS = 5 * 60 * 1000;
-        // setInterval(() => {
-        //     console.log("📡 Polling EPA Monitors data...");
-        //     void pollEpaMonitorsData();
-        // }, POLLING_INTERVAL_MS);
-        //
-        // // // Run the function immediately on startup
-        // void pollEpaMonitorsData();
+        // Start polling EPA Monitors Data every 5 minutes
+        const POLLING_INTERVAL_MS = 5 * 60 * 1000;
+        setInterval(() => {
+            console.log("📡 Polling EPA Monitors data...");
+            void pollEpaMonitorsData();
+        }, POLLING_INTERVAL_MS);
+
+        // // Run the function immediately on startup
+        void pollEpaMonitorsData();
 
 
     } catch (error) {

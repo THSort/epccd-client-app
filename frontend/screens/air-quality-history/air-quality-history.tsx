@@ -21,6 +21,7 @@ import {PollutantSelector} from './components/pollutant-selector/pollutant-selec
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getTranslation, Language} from '../../utils/translations';
+import {Chart} from './components/chart/chart.tsx';
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -258,20 +259,14 @@ export function AirQualityHistory({route}: Props): ReactElement {
             return getLoader();
         }
 
-        let data;
-        if (historicalDataForSelectedTimePeriod) {
-            data = historicalDataForSelectedTimePeriod;
-        }
-
         if (!isLoadingTimePeriodData && !historicalDataForSelectedTimePeriod) {
             if (isLoadingAllHistoricalData) {
                 return getLoader();
             }
         }
 
-        if (historicalData) {
-            data = getChartData();
-        }
+        let data;
+        data = getChartData();
 
         if (data) {
             return (
@@ -299,9 +294,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             </Text>
                         </View>
 
-                        <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-                            {/*<Chart/>*/}
-                        </ScrollView>
+                        <Chart data={data}/>
                     </View>
 
                     {/* Stats Cards */}
@@ -391,6 +384,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             <TimeRangeSelector
                                 selectedTimeRange={timeRange}
                                 onTimeRangeSelected={(timeRangeSelected) => {
+                                    // Clear current time period data and show loading state
                                     setHistoricalDataForSelectedTimePeriod(null);
 
                                     setTimeRange(timeRangeSelected);
