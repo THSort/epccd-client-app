@@ -31,8 +31,6 @@ const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response)
 };
 
 const getHistoricalPollutantsDataForAllTimePeriods = async (req: Request, res: Response): Promise<void> => {
-    console.log('getHistoricalPollutantsDataForAllTimePeriods', req.params);
-
     try {
         const location = Number(req.params.location);
         const currentDateTime = new Date();
@@ -51,8 +49,6 @@ const getHistoricalPollutantsDataForAllTimePeriods = async (req: Request, res: R
 };
 
 const getHistoricalPollutantsDataForSpecificTimePeriod = async (req: Request, res: Response): Promise<void> => {
-    console.log('getHistoricalPollutantsDataForSpecificTimePeriod', req.params);
-
     try {
         const location = Number(req.params.location);
         const timePeriod = req.params.timePeriod as TimeRange;

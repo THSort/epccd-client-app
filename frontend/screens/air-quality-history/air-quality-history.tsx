@@ -293,39 +293,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         </View>
                         <Chart selectedTimePeriod={timeRange} data={data}/>
                     </View>
-
-                    {/* Stats Cards */}
-                    {/*        <View style={styles.statsCardsContainer}>*/}
-                    {/*            /!* Current Value Card *!/*/}
-                    {/*            <View style={styles.statCard}>*/}
-                    {/*                <Text style={styles.statCardTitle}>*/}
-                    {/*                    {getTranslation('currentValue', currentLanguage)}*/}
-                    {/*                </Text>*/}
-                    {/*                <Text style={styles.statCardValue}>*/}
-                    {/*                    {getTranslatedNumber(getCurrentValue().toFixed(1), currentLanguage)} {getUnitForPollutant()}*/}
-                    {/*                </Text>*/}
-                    {/*            </View>*/}
-                    {/*        */}
-                    {/*            /!* 24h Average Card *!/*/}
-                    {/*            <View style={styles.statCard}>*/}
-                    {/*                <Text style={styles.statCardTitle}>*/}
-                    {/*                    {getTranslation('dailyAverage', currentLanguage)}*/}
-                    {/*                </Text>*/}
-                    {/*                <Text style={styles.statCardValue}>*/}
-                    {/*                    {getTranslatedNumber(getDailyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}*/}
-                    {/*                </Text>*/}
-                    {/*            </View>*/}
-                    {/*        */}
-                    {/*            /!* Weekly Average Card *!/*/}
-                    {/*            <View style={styles.statCard}>*/}
-                    {/*                <Text style={styles.statCardTitle}>*/}
-                    {/*                    {getTranslation('weeklyAverage', currentLanguage)}*/}
-                    {/*                </Text>*/}
-                    {/*                <Text style={styles.statCardValue}>*/}
-                    {/*                    {getTranslatedNumber(getWeeklyAvgValue().toFixed(displayMode === 'concentration' ? 2 : 0), currentLanguage)} {getUnitForPollutant()}*/}
-                    {/*                </Text>*/}
-                    {/*            </View>*/}
-                    {/*        </View>*/}
                 </View>
             );
         }

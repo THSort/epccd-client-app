@@ -123,8 +123,6 @@ const storeEpaMonitorsData = async (data: EpaMonitorsData) => {
         if (!existingRecord) {
             await EpaMonitorsDataModel.create(data);
             logger.info(`✅ Stored EPA Monitors data for location ${data.location} at ${data.report_date_time}`);
-        } else {
-            logger.info(`⚠️ Duplicate data skipped for location ${data.location} at ${data.report_date_time}`);
         }
     } catch (error) {
         logger.error(`Error storing EPA Monitors data: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
@@ -290,9 +288,7 @@ export const getPast24HoursEpaMonitorsDataForLocation = async (location: number,
             }
         }).sort({ report_date_time: 1 }); // Sort by date in ascending order
 
-        console.log(currentDateTime)
         logger.info(`Retrieved ${data.length} records for location ${location} in the last 24 hours`);
-        console.log(data);
 
         return data;
     } catch (error) {
