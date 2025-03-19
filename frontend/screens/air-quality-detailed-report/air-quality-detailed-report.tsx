@@ -41,28 +41,28 @@ export function AirQualityDetailedReport(): ReactElement {
     const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
         switch (pollutant) {
             case Pollutant.PM2_5:
-                if (type === 'name') return getTranslation('pm25', currentLanguage);
-                if (type === 'description') return getTranslation('pm25Description', currentLanguage);
+                if (type === 'name') {return getTranslation('pm25', currentLanguage);}
+                if (type === 'description') {return getTranslation('pm25Description', currentLanguage);}
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.PM10:
-                if (type === 'name') return getTranslation('pm10', currentLanguage);
-                if (type === 'description') return getTranslation('pm10Description', currentLanguage);
+                if (type === 'name') {return getTranslation('pm10', currentLanguage);}
+                if (type === 'description') {return getTranslation('pm10Description', currentLanguage);}
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.O3:
-                if (type === 'name') return getTranslation('o3', currentLanguage);
-                if (type === 'description') return getTranslation('o3Description', currentLanguage);
+                if (type === 'name') {return getTranslation('o3', currentLanguage);}
+                if (type === 'description') {return getTranslation('o3Description', currentLanguage);}
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.SO2:
-                if (type === 'name') return getTranslation('so2', currentLanguage);
-                if (type === 'description') return getTranslation('so2Description', currentLanguage);
+                if (type === 'name') {return getTranslation('so2', currentLanguage);}
+                if (type === 'description') {return getTranslation('so2Description', currentLanguage);}
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.NO2:
-                if (type === 'name') return getTranslation('no2', currentLanguage);
-                if (type === 'description') return getTranslation('no2Description', currentLanguage);
+                if (type === 'name') {return getTranslation('no2', currentLanguage);}
+                if (type === 'description') {return getTranslation('no2Description', currentLanguage);}
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.CO:
-                if (type === 'name') return getTranslation('co', currentLanguage);
-                if (type === 'description') return getTranslation('coDescription', currentLanguage);
+                if (type === 'name') {return getTranslation('co', currentLanguage);}
+                if (type === 'description') {return getTranslation('coDescription', currentLanguage);}
                 return getTranslation('ppm', currentLanguage);
             default:
                 return '';
@@ -129,7 +129,10 @@ export function AirQualityDetailedReport(): ReactElement {
         if (isFetchingData) {
             return (
                 <View style={styles.aqiContainer}>
-                    <ActivityIndicator size="large" color="#FFD700" />
+                    <ActivityIndicator style={{
+                        marginLeft: 'auto',
+                        marginRight: 'auto',
+                    }} size="large" color="#FFD700" />
                 </View>
             );
         }
