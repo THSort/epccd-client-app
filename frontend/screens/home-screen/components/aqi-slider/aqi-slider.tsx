@@ -12,7 +12,8 @@ export function AQISlider({ aqi }: AQISliderProps) {
     const normalizedAqi = Math.min(Math.max(aqi, 0), 170);
 
     // Calculate arrow position as a percentage of the track width
-    const arrowPosition = (normalizedAqi / 170) * 100;
+    // Limit to 98% to prevent arrow from going beyond the track's right edge
+    const arrowPosition = Math.min((normalizedAqi / 170) * 100, 98);
 
     return (
         <View style={styles.container}>
