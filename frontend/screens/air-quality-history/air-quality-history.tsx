@@ -51,7 +51,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [isLoadingAllHistoricalData, setIsLoadingAllHistoricalData] = useState<boolean>(true);
 
     const [error, setError] = useState<string | null>(null);
-    const [timeRange, setTimeRange] = useState<TimeRange>('1m');
+    const [timeRange, setTimeRange] = useState<TimeRange>('1d');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
 
     const handleBackButtonClick = useCallback(() => {
@@ -114,14 +114,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
         void fetchHistoricalData();
         // void fetchSummaryData();
     }, [selectedLocation]);
-
-    if (isLoadingTimePeriodData && !historicalDataForSelectedTimePeriod) {
-        return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#FFD700"/>
-            </View>
-        );
-    }
 
     const getDataFromPeriod = (): Record<string, PollutantChartData> => {
         if (!historicalData) {

@@ -72,9 +72,10 @@ export function Chart({...props}: ChartProps): ReactElement {
             overflow: 'hidden',
             width: 350,
         }}>
-            <LineChart dataPointsColor={'white'}
+            <LineChart
+                onlyPositive={true}
+                dataPointsColor={'white'}
                 height={200}
-                curved={true}
                 adjustToWidth={true}
                 showScrollIndicator={true}
                 showVerticalLines={true}
