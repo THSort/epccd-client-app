@@ -100,7 +100,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        height: 400,
+        height: 300,
     },
     chart: {
         marginVertical: 8,

@@ -47,22 +47,22 @@ export interface PollutantChartData {
     label: string;
 
     // Pollutant concentration fields
-    o3_ppb: number;
-    co_ppm: number;
-    so2_ppb: number;
-    no_ppb: number;
-    no2_ppb: number;
-    nox_ppb: number;
-    pm10_ug_m3: number;
-    pm2_5_ug_m3: number;
+    o3_ppb?: number;
+    co_ppm?: number;
+    so2_ppb?: number;
+    no_ppb?: number;
+    no2_ppb?: number;
+    nox_ppb?: number;
+    pm10_ug_m3?: number;
+    pm2_5_ug_m3?: number;
 
     // AQI values
-    PM2_5_AQI: number;
-    PM10_AQI: number;
-    SO2_AQI: number;
-    NO2_AQI: number;
-    O3_AQI: number;
-    CO_AQI: number;
+    PM2_5_AQI?: number;
+    PM10_AQI?: number;
+    SO2_AQI?: number;
+    NO2_AQI?: number;
+    O3_AQI?: number;
+    CO_AQI?: number;
 }
 
 // Updated response type for the filtered historical data

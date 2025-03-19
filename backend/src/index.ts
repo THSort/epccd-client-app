@@ -41,9 +41,6 @@ const startServer = async () => {
         await connectDB(); // Ensure DB is connected before starting the server
         app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-
-        const currentDateTime = new Date();
-
         // await getPollutantHistoryDataForPast24Hours(4, currentDateTime);
         // await getPollutantHistoryDataForPastWeek(4, currentDateTime);
         // await getPollutantHistoryDataForPastMonth(4, currentDateTime);

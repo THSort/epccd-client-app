@@ -174,19 +174,19 @@ export interface PollutantBucketData {
     // Label for this bucket (used for day names in weekly view)
     label?: string;
     
-    // Pollutant concentration fields (can be null if no data)
-    o3_ppb: number | null;
-    co_ppm: number | null;
-    so2_ppb: number | null;
-    no2_ppb: number | null;
-    pm10_ug_m3: number | null;
-    pm2_5_ug_m3: number | null;
+    // Pollutant concentration fields (can be undefined if no data)
+    o3_ppb: number | undefined;
+    co_ppm: number | undefined;
+    so2_ppb: number | undefined;
+    no2_ppb: number | undefined;
+    pm10_ug_m3: number | undefined;
+    pm2_5_ug_m3: number | undefined;
     
-    // AQI values (can be null if no data)
-    PM2_5_AQI: number | null;
-    PM10_AQI: number | null;
-    SO2_AQI: number | null;
-    NO2_AQI: number | null;
-    O3_AQI: number | null;
-    CO_AQI: number | null;
+    // AQI values (can be undefined if no data)
+    PM2_5_AQI: number | undefined;
+    PM10_AQI: number | undefined;
+    SO2_AQI: number | undefined;
+    NO2_AQI: number | undefined;
+    O3_AQI: number | undefined;
+    CO_AQI: number | undefined;
 }

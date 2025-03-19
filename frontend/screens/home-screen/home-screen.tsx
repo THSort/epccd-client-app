@@ -26,7 +26,7 @@ const HomeScreen = () => {
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {selectedLanguage, isLoadingLanguage} = useSelectedLanguage();
-    
+
     // Default to English if no language is selected
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
@@ -106,8 +106,8 @@ const HomeScreen = () => {
     const getFooter = () => {
         return (
             <View style={styles.homeScreenFooter}>
-                <LocationSelector 
-                    selectedLocation={selectedLocation} 
+                <LocationSelector
+                    selectedLocation={selectedLocation}
                     onOpenLocationModal={() => {
                         openLocationModal();
                         void trackButton('location_selector', currentScreen, {
@@ -151,10 +151,10 @@ const HomeScreen = () => {
     };
 
     const getLocationDisplay = () => {
-        const locationDisplayName = selectedLocation 
+        const locationDisplayName = selectedLocation
             ? getTranslatedLocationName(selectedLocation.locationName, currentLanguage)
             : getTranslation('selectLocation', currentLanguage);
-            
+
         return (
             <View style={[styles.locationDisplayContainer]}>
                 <Icon name="map-marker" size={20} color="yellow" style={styles.locationDisplayIcon}/>

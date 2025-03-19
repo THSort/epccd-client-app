@@ -92,6 +92,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
         try {
             const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
+            console.log('all data', data);
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);
@@ -146,7 +147,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
         });
     };
 
-    const getDataForPollutant = (dataForSelectedPeriod: Record<string, PollutantChartData>): number[] => {
+    const getDataForPollutant = (dataForSelectedPeriod: Record<string, PollutantChartData>): (number | undefined)[] => {
         switch (pollutant) {
             case Pollutant.PM2_5:
                 return Object.values(dataForSelectedPeriod).map((dataPoint) => {
@@ -195,7 +196,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
-    const getChartData = (): { labels: string[], values: number[] } => {
+    const getChartData = (): { labels: string[], values: (number | undefined)[] } => {
         const dataFromPeriodToUse = historicalDataForSelectedTimePeriod ?? getDataFromPeriod();
         const labels = getLabelsForDataToUse(dataFromPeriodToUse);
         const dataValues = getDataForPollutant(dataFromPeriodToUse);
@@ -286,15 +287,14 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
                     {/* Historical Data Chart */}
                     <View style={styles.chartWrapper}>
-                        <View style={{marginBottom: 10, alignItems: 'center'}}>
-                            <Text style={{color: '#FFD700', fontSize: 14, fontWeight: 'bold'}}>
-                                {displayMode === 'concentration'
-                                    ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
-                                    : `Average ${getPollutantName(pollutant)} AQI`}
-                            </Text>
-                        </View>
-
-                        <Chart data={data}/>
+                        {/*<View style={{marginBottom: 10, alignItems: 'center'}}>*/}
+                        {/*    <Text style={{color: '#FFD700', fontSize: 14, fontWeight: 'bold'}}>*/}
+                        {/*        {displayMode === 'concentration'*/}
+                        {/*            ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`*/}
+                        {/*            : `Average ${getPollutantName(pollutant)} AQI`}*/}
+                        {/*    </Text>*/}
+                        {/*</View>*/}
+                        <Chart selectedTimePeriod={timeRange} data={data}/>
                     </View>
 
                     {/* Stats Cards */}

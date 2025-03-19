@@ -9,9 +9,9 @@ import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
 const BASE_URL = "http://34.132.171.41:8000/api/aqms_data/";
 
 // Helper function to calculate average of numeric values, ignoring null/undefined
-const calculateAverage = (values: (number | null | undefined)[]): number | null => {
+const calculateAverage = (values: (number | null | undefined)[]): number | undefined => {
     const validValues = values.filter(val => val !== null && val !== undefined) as number[];
-    if (validValues.length === 0) return null;
+    if (validValues.length === 0) return undefined;
     const sum = validValues.reduce((acc, val) => acc + val, 0);
     return sum / validValues.length;
 };
@@ -197,18 +197,18 @@ export const getPollutantHistoryDataForPast24Hours = async (location: number, cu
             if (bucket.length === 0) {
                 return {
                     timeRange: `${bucketStartTimes[index].toISOString()} - ${bucketEndTimes[index].toISOString()}`,
-                    o3_ppb: null,
-                    co_ppm: null,
-                    so2_ppb: null,
-                    no2_ppb: null,
-                    pm10_ug_m3: null,
-                    pm2_5_ug_m3: null,
-                    PM2_5_AQI: null,
-                    PM10_AQI: null,
-                    SO2_AQI: null,
-                    NO2_AQI: null,
-                    O3_AQI: null,
-                    CO_AQI: null
+                    o3_ppb: undefined,
+                    co_ppm: undefined,
+                    so2_ppb: undefined,
+                    no2_ppb: undefined,
+                    pm10_ug_m3: undefined,
+                    pm2_5_ug_m3: undefined,
+                    PM2_5_AQI: undefined,
+                    PM10_AQI: undefined,
+                    SO2_AQI: undefined,
+                    NO2_AQI: undefined,
+                    O3_AQI: undefined,
+                    CO_AQI: undefined
                 };
             }
 
@@ -289,8 +289,10 @@ export const getPast24HoursEpaMonitorsDataForLocation = async (location: number,
                 $lte: currentDateTime
             }
         }).sort({ report_date_time: 1 }); // Sort by date in ascending order
-        
+
+        console.log(currentDateTime)
         logger.info(`Retrieved ${data.length} records for location ${location} in the last 24 hours`);
+        console.log(data);
 
         return data;
     } catch (error) {
@@ -477,18 +479,18 @@ export const getPollutantHistoryDataForPastWeek = async (location: number, curre
             if (bucket.length === 0) {
                 return {
                     label: dayNames[index],
-                    o3_ppb: null,
-                    co_ppm: null,
-                    so2_ppb: null,
-                    no2_ppb: null,
-                    pm10_ug_m3: null,
-                    pm2_5_ug_m3: null,
-                    PM2_5_AQI: null,
-                    PM10_AQI: null,
-                    SO2_AQI: null,
-                    NO2_AQI: null,
-                    O3_AQI: null,
-                    CO_AQI: null
+                    o3_ppb: undefined,
+                    co_ppm: undefined,
+                    so2_ppb: undefined,
+                    no2_ppb: undefined,
+                    pm10_ug_m3: undefined,
+                    pm2_5_ug_m3: undefined,
+                    PM2_5_AQI: undefined,
+                    PM10_AQI: undefined,
+                    SO2_AQI: undefined,
+                    NO2_AQI: undefined,
+                    O3_AQI: undefined,
+                    CO_AQI: undefined
                 };
             }
 
@@ -570,7 +572,7 @@ export const getPollutantHistoryDataForPastMonth = async (location: number, curr
         // Format date to display day and month
         const formatDate = (date: Date): string => {
             const day = date.getDate();
-            const month = date.toLocaleString('default', { month: 'short' });
+            const month = date.toLocaleString('default', { month: 'long' });
             return `${day} ${month}`;
         };
         
@@ -598,18 +600,18 @@ export const getPollutantHistoryDataForPastMonth = async (location: number, curr
             if (bucket.length === 0) {
                 return {
                     label: weekLabels[index],
-                    o3_ppb: null,
-                    co_ppm: null,
-                    so2_ppb: null,
-                    no2_ppb: null,
-                    pm10_ug_m3: null,
-                    pm2_5_ug_m3: null,
-                    PM2_5_AQI: null,
-                    PM10_AQI: null,
-                    SO2_AQI: null,
-                    NO2_AQI: null,
-                    O3_AQI: null,
-                    CO_AQI: null
+                    o3_ppb: undefined,
+                    co_ppm: undefined,
+                    so2_ppb: undefined,
+                    no2_ppb: undefined,
+                    pm10_ug_m3: undefined,
+                    pm2_5_ug_m3: undefined,
+                    PM2_5_AQI: undefined,
+                    PM10_AQI: undefined,
+                    SO2_AQI: undefined,
+                    NO2_AQI: undefined,
+                    O3_AQI: undefined,
+                    CO_AQI: undefined
                 };
             }
 
@@ -730,18 +732,18 @@ export const getPollutantHistoryDataForPastThreeMonths = async (location: number
             if (bucket.length === 0) {
                 return {
                     label: bucketLabels[index],
-                    o3_ppb: null,
-                    co_ppm: null,
-                    so2_ppb: null,
-                    no2_ppb: null,
-                    pm10_ug_m3: null,
-                    pm2_5_ug_m3: null,
-                    PM2_5_AQI: null,
-                    PM10_AQI: null,
-                    SO2_AQI: null,
-                    NO2_AQI: null,
-                    O3_AQI: null,
-                    CO_AQI: null
+                    o3_ppb: undefined,
+                    co_ppm: undefined,
+                    so2_ppb: undefined,
+                    no2_ppb: undefined,
+                    pm10_ug_m3: undefined,
+                    pm2_5_ug_m3: undefined,
+                    PM2_5_AQI: undefined,
+                    PM10_AQI: undefined,
+                    SO2_AQI: undefined,
+                    NO2_AQI: undefined,
+                    O3_AQI: undefined,
+                    CO_AQI: undefined
                 };
             }
 
@@ -862,18 +864,18 @@ export const getPollutantHistoryDataForPastSixMonths = async (location: number, 
             if (bucket.length === 0) {
                 return {
                     label: bucketLabels[index],
-                    o3_ppb: null,
-                    co_ppm: null,
-                    so2_ppb: null,
-                    no2_ppb: null,
-                    pm10_ug_m3: null,
-                    pm2_5_ug_m3: null,
-                    PM2_5_AQI: null,
-                    PM10_AQI: null,
-                    SO2_AQI: null,
-                    NO2_AQI: null,
-                    O3_AQI: null,
-                    CO_AQI: null
+                    o3_ppb: undefined,
+                    co_ppm: undefined,
+                    so2_ppb: undefined,
+                    no2_ppb: undefined,
+                    pm10_ug_m3: undefined,
+                    pm2_5_ug_m3: undefined,
+                    PM2_5_AQI: undefined,
+                    PM10_AQI: undefined,
+                    SO2_AQI: undefined,
+                    NO2_AQI: undefined,
+                    O3_AQI: undefined,
+                    CO_AQI: undefined
                 };
             }
 
@@ -1019,18 +1021,18 @@ export const getPollutantHistoryDataForPastYear = async (location: number, curre
             if (bucket.length === 0) {
                 return {
                     label: bucketLabels[index],
-                    o3_ppb: null,
-                    co_ppm: null,
-                    so2_ppb: null,
-                    no2_ppb: null,
-                    pm10_ug_m3: null,
-                    pm2_5_ug_m3: null,
-                    PM2_5_AQI: null,
-                    PM10_AQI: null,
-                    SO2_AQI: null,
-                    NO2_AQI: null,
-                    O3_AQI: null,
-                    CO_AQI: null
+                    o3_ppb: undefined,
+                    co_ppm: undefined,
+                    so2_ppb: undefined,
+                    no2_ppb: undefined,
+                    pm10_ug_m3: undefined,
+                    pm2_5_ug_m3: undefined,
+                    PM2_5_AQI: undefined,
+                    PM10_AQI: undefined,
+                    SO2_AQI: undefined,
+                    NO2_AQI: undefined,
+                    O3_AQI: undefined,
+                    CO_AQI: undefined
                 };
             }
 
