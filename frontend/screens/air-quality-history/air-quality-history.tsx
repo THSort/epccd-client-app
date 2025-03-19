@@ -104,6 +104,11 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     // Initial data loading
     useEffect(() => {
+        setHistoricalData(null);
+        setHistoricalDataForSelectedTimePeriod(null);
+        setIsLoadingTimePeriodData(true);
+        setIsLoadingAllHistoricalData(true);
+
         void fetchTimePeriodData();
         // Load historical data in the background
         void fetchHistoricalData();
