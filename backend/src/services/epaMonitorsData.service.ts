@@ -1097,3 +1097,89 @@ export const getAllPollutantHistoricalData = async (location: number, currentDat
         };
     }
 };
+
+// Get pollutant summary data for a location (current value, daily avg, weekly avg)
+export const getPollutantSummaryForLocation = async (location: number): Promise<PollutantSummaryData> => {
+    try {
+        const currentDateTime = new Date();
+        
+        // Get current data
+        const currentData = await fetchCurrentEpaMonitorsDataForLocation(location);
+        
+        // Get past 24 hours data for daily average
+        const past24HoursData = await getPast24HoursEpaMonitorsDataForLocation(location, currentDateTime);
+        
+        // Get past week data for weekly average
+        const pastWeekData = await getPastWeekEpaMonitorsDataForLocation(location, currentDateTime);
+        
+        // Calculate daily averages with fallback to 0
+        const dailyAvg = {
+            o3_ppb: calculateAverage(past24HoursData.map(d => d.o3_ppb)) ?? 0,
+            co_ppm: calculateAverage(past24HoursData.map(d => d.co_ppm)) ?? 0,
+            so2_ppb: calculateAverage(past24HoursData.map(d => d.so2_ppb)) ?? 0,
+            no_ppb: calculateAverage(past24HoursData.map(d => d.no_ppb)) ?? 0,
+            no2_ppb: calculateAverage(past24HoursData.map(d => d.no2_ppb)) ?? 0,
+            nox_ppb: calculateAverage(past24HoursData.map(d => d.nox_ppb)) ?? 0,
+            pm10_ug_m3: calculateAverage(past24HoursData.map(d => d.pm10_ug_m3)) ?? 0,
+            pm2_5_ug_m3: calculateAverage(past24HoursData.map(d => d.pm2_5_ug_m3)) ?? 0,
+            
+            // AQI values
+            PM2_5_AQI: calculateAverage(past24HoursData.map(d => d.PM2_5_AQI)) ?? 0,
+            PM10_AQI: calculateAverage(past24HoursData.map(d => d.PM10_AQI)) ?? 0,
+            SO2_AQI: calculateAverage(past24HoursData.map(d => d.SO2_AQI)) ?? 0,
+            NO2_AQI: calculateAverage(past24HoursData.map(d => d.NO2_AQI)) ?? 0,
+            O3_AQI: calculateAverage(past24HoursData.map(d => d.O3_AQI)) ?? 0,
+            CO_AQI: calculateAverage(past24HoursData.map(d => d.CO_AQI)) ?? 0
+        };
+        
+        // Calculate weekly averages with fallback to 0
+        const weeklyAvg = {
+            o3_ppb: calculateAverage(pastWeekData.map(d => d.o3_ppb)) ?? 0,
+            co_ppm: calculateAverage(pastWeekData.map(d => d.co_ppm)) ?? 0,
+            so2_ppb: calculateAverage(pastWeekData.map(d => d.so2_ppb)) ?? 0,
+            no_ppb: calculateAverage(pastWeekData.map(d => d.no_ppb)) ?? 0,
+            no2_ppb: calculateAverage(pastWeekData.map(d => d.no2_ppb)) ?? 0,
+            nox_ppb: calculateAverage(pastWeekData.map(d => d.nox_ppb)) ?? 0,
+            pm10_ug_m3: calculateAverage(pastWeekData.map(d => d.pm10_ug_m3)) ?? 0,
+            pm2_5_ug_m3: calculateAverage(pastWeekData.map(d => d.pm2_5_ug_m3)) ?? 0,
+            
+            // AQI values
+            PM2_5_AQI: calculateAverage(pastWeekData.map(d => d.PM2_5_AQI)) ?? 0,
+            PM10_AQI: calculateAverage(pastWeekData.map(d => d.PM10_AQI)) ?? 0,
+            SO2_AQI: calculateAverage(pastWeekData.map(d => d.SO2_AQI)) ?? 0,
+            NO2_AQI: calculateAverage(pastWeekData.map(d => d.NO2_AQI)) ?? 0,
+            O3_AQI: calculateAverage(pastWeekData.map(d => d.O3_AQI)) ?? 0,
+            CO_AQI: calculateAverage(pastWeekData.map(d => d.CO_AQI)) ?? 0
+        };
+        
+        // Prepare and return the summary data
+        return {
+            current: {
+                o3_ppb: currentData.o3_ppb,
+                co_ppm: currentData.co_ppm,
+                so2_ppb: currentData.so2_ppb,
+                no_ppb: currentData.no_ppb,
+                no2_ppb: currentData.no2_ppb,
+                nox_ppb: currentData.nox_ppb,
+                pm10_ug_m3: currentData.pm10_ug_m3,
+                pm2_5_ug_m3: currentData.pm2_5_ug_m3,
+                
+                // AQI values
+                PM2_5_AQI: currentData.PM2_5_AQI,
+                PM10_AQI: currentData.PM10_AQI,
+                SO2_AQI: currentData.SO2_AQI,
+                NO2_AQI: currentData.NO2_AQI,
+                O3_AQI: currentData.O3_AQI,
+                CO_AQI: currentData.CO_AQI,
+                
+                // Timestamp
+                timestamp: currentData.report_date_time.toISOString()
+            },
+            daily_avg: dailyAvg,
+            weekly_avg: weeklyAvg
+        };
+    } catch (error) {
+        logger.error(`Error getting pollutant summary for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        throw new Error(`Failed to get pollutant summary for location ${location}`);
+    }
+};

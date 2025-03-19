@@ -7,7 +7,8 @@ import {
     getPollutantHistoryDataForPastMonth,
     getPollutantHistoryDataForPastThreeMonths,
     getPollutantHistoryDataForPastSixMonths,
-    getPollutantHistoryDataForPastYear
+    getPollutantHistoryDataForPastYear,
+    getPollutantSummaryForLocation as getPollutantSummaryService
 } from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
 import {PollutantBucketData} from "../types/epaMonitorsData.types";
@@ -88,8 +89,26 @@ const getHistoricalPollutantsDataForSpecificTimePeriod = async (req: Request, re
     }
 };
 
+const getPollutantSummaryForLocation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const location = Number(req.params.location);
+        
+        const summaryData = await getPollutantSummaryService(location);
+        
+        res.json(summaryData);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error(`Error fetching pollutant summary data for location ${req.params.location}: ${error.message}`);
+        } else {
+            logger.error(`Unknown error while fetching pollutant summary data for location ${req.params.location}`);
+        }
+        res.status(500).json({message: "Failed to fetch pollutant summary data"});
+    }
+};
+
 export {
     getCurrentEpaMonitorsDataForLocation,
     getHistoricalPollutantsDataForAllTimePeriods,
     getHistoricalPollutantsDataForSpecificTimePeriod,
+    getPollutantSummaryForLocation
 };
