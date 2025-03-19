@@ -460,6 +460,16 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
                             openLocationModal();
                         }}
+                        selectorStyle={{
+                            backgroundColor: '#1C1C1C',
+                            borderRadius: 10,
+                            paddingVertical: 10,
+                            paddingHorizontal: 15,
+                            marginBottom: 10,
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 3,
+                        }}
                     />
                     <PollutantSelector
                         selectedPollutant={pollutant}

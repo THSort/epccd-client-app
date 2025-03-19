@@ -5,7 +5,17 @@ import {DropdownSelector} from '../../../../components/dropdown-selector/dropdow
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.tsx';
 import {getTranslation, Language, getTranslatedLocationName} from '../../../../utils/translations';
 
-export function LocationSelector({selectedLocation, onOpenLocationModal, showLocationLabel = false, isFullWidth = false}: LocationSelectorProps): ReactElement {
+export function LocationSelector({
+    selectedLocation, 
+    onOpenLocationModal, 
+    showLocationLabel = false, 
+    isFullWidth = false,
+    containerStyle,
+    selectorStyle,
+    labelStyle,
+    textStyle,
+    iconStyle
+}: LocationSelectorProps): ReactElement {
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
     
@@ -22,6 +32,11 @@ export function LocationSelector({selectedLocation, onOpenLocationModal, showLoc
             onPress={onOpenLocationModal}
             isFullWidth={isFullWidth}
             showLabel={showLocationLabel}
+            containerStyle={containerStyle}
+            selectorStyle={selectorStyle}
+            labelStyle={labelStyle}
+            textStyle={textStyle}
+            iconStyle={iconStyle}
         />
     );
 }
