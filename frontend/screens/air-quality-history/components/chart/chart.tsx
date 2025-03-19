@@ -80,6 +80,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                 showScrollIndicator={true}
                 showVerticalLines={true}
                 verticalLinesUptoDataPoint={true}
+                verticalLinesColor={'black'}
                 scrollToEnd={true}
                 nestedScrollEnabled={true}
                 yAxisOffset={Math.max(Number(Math.min(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) - 10, 0)}
@@ -94,7 +95,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                 endFillColor="rgba(218,181,46,0.1)"
                 startOpacity={0.6}
                 endOpacity={0.2}
-                noOfSections={6}
+                noOfSections={5}
                 yAxisColor="white"
                 yAxisThickness={0}
                 rulesType="solid"
@@ -137,7 +138,6 @@ export function Chart({...props}: ChartProps): ReactElement {
                         );
                     },
                 }}
-
             />
         </View>
 
