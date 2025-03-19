@@ -3,8 +3,25 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import type {ChartProps} from './chart.types';
 import {LineChart, lineDataItem} from 'react-native-gifted-charts';
+import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext';
+import {Language} from '../../../../utils/translations';
 
 export function Chart({...props}: ChartProps): ReactElement {
+    const {selectedLanguage} = useSelectedLanguage();
+    const currentLanguage = (selectedLanguage || 'Eng') as Language;
+
+    // Function to format numbers for Urdu if needed
+    const formatNumberForLanguage = (value: number): string => {
+        if (currentLanguage === 'اردو') {
+            // Convert digits to Urdu
+            return value.toFixed(0).replace(/[0-9]/g, (digit) => {
+                const digits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                return digits[parseInt(digit)];
+            }).replace('.', '٫'); // Replace decimal point with Urdu decimal separator
+        }
+        return value.toFixed(0);
+    };
+
     const getChartFormattedData = (): lineDataItem[] => {
         const data = props.data;
 
@@ -100,6 +117,8 @@ export function Chart({...props}: ChartProps): ReactElement {
                 yAxisThickness={0}
                 rulesType="solid"
                 rulesColor="gray"
+                // Format Y-axis values based on language
+                formatYLabel={(value) => formatNumberForLanguage(Number(value))}
                 yAxisTextStyle={{color: 'white'}}
                 xAxisColor="lightgray"
                 showDataPointsForMissingValues={false}
@@ -130,8 +149,8 @@ export function Chart({...props}: ChartProps): ReactElement {
                                     <Text style={{color: 'yellow', fontSize: 12, marginBottom: 6, textAlign: 'center', fontWeight: 'bold', textDecorationLine: 'underline'}}>
                                         {items[0].label}
                                     </Text>
-                                    <Text style={{color: 'yellow', fontSize: 12, marginBottom: 6, textAlign: 'center'}}>
-                                        {(items[0]?.value ?? 0).toFixed(1)}
+                                    <Text style={{color: 'yellow', fontSize: 14, marginBottom: 6, textAlign: 'center'}}>
+                                        {formatNumberForLanguage(items[0]?.value ?? 0)}
                                     </Text>
                                 </View>
                             </View>
@@ -140,8 +159,5 @@ export function Chart({...props}: ChartProps): ReactElement {
                 }}
             />
         </View>
-
     );
-
-
 }

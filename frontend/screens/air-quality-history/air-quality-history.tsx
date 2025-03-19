@@ -241,6 +241,18 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
+    // Helper function to format numbers according to language
+    const formatNumberForLanguage = (value: number): string => {
+        if (currentLanguage === 'اردو') {
+            // Convert digits to Urdu
+            return value.toFixed(1).replace(/[0-9]/g, (digit) => {
+                const digits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                return digits[parseInt(digit)];
+            }).replace('.', '٫'); // Replace decimal point with Urdu decimal separator
+        }
+        return value.toFixed(1);
+    };
+
     // Helper function to get pollutant name
     const getPollutantName = (pollutantType: Pollutant): string => {
         switch (pollutantType) {
@@ -331,8 +343,12 @@ export function AirQualityHistory({route}: Props): ReactElement {
                         <View style={{marginBottom: 10, alignItems: 'center'}}>
                             <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>
                                 {displayMode === 'concentration'
-                                    ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
-                                    : `Average ${getPollutantName(pollutant)} AQI`}
+                                    ? currentLanguage === 'اردو'
+                                        ? `${getPollutantName(pollutant)} کا اوسط (${getPollutantUnit(pollutant)})`
+                                        : `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
+                                    : currentLanguage === 'اردو'
+                                        ? `${getPollutantName(pollutant)} اے کیو آئی کا اوسط`
+                                        : `Average ${getPollutantName(pollutant)} AQI`}
                             </Text>
                         </View>
                         <Chart selectedTimePeriod={timeRange} data={data}/>
@@ -352,9 +368,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
         if (isLoadingSummaryData) {
             return (
                 <View style={summaryCardStyles.container}>
-                    <Text style={summaryCardStyles.title}>
-                        {getPollutantName(pollutant)}
-                    </Text>
                     <View style={summaryCardStyles.cardsContainer}>
                         {/* Skeleton Loader for Current Value */}
                         <View style={summaryCardStyles.card}>
@@ -393,15 +406,12 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
         return (
             <View style={summaryCardStyles.container}>
-                <Text style={summaryCardStyles.title}>
-                    {getPollutantName(pollutant)}
-                </Text>
                 <View style={summaryCardStyles.cardsContainer}>
                     {/* Current Value Card */}
                     <View style={summaryCardStyles.card}>
                         <Text style={summaryCardStyles.cardTitle}>{getTranslation('currentValue', currentLanguage)}</Text>
                         <Text style={summaryCardStyles.cardValue}>
-                            {currentValue.toFixed(1)}{displayMode === 'concentration' ? ` ${unit}` : ''}
+                            {formatNumberForLanguage(currentValue)}{displayMode === 'concentration' ? ` ${unit}` : ''}
                         </Text>
                     </View>
 
@@ -409,7 +419,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     <View style={summaryCardStyles.card}>
                         <Text style={summaryCardStyles.cardTitle}>{getTranslation('dailyAverage', currentLanguage)}</Text>
                         <Text style={summaryCardStyles.cardValue}>
-                            {dailyAvgValue.toFixed(1)}{displayMode === 'concentration' ? ` ${unit}` : ''}
+                            {formatNumberForLanguage(dailyAvgValue)}{displayMode === 'concentration' ? ` ${unit}` : ''}
                         </Text>
                     </View>
 
@@ -417,7 +427,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     <View style={summaryCardStyles.card}>
                         <Text style={summaryCardStyles.cardTitle}>{getTranslation('weeklyAverage', currentLanguage)}</Text>
                         <Text style={summaryCardStyles.cardValue}>
-                            {weeklyAvgValue.toFixed(1)}{displayMode === 'concentration' ? ` ${unit}` : ''}
+                            {formatNumberForLanguage(weeklyAvgValue)}{displayMode === 'concentration' ? ` ${unit}` : ''}
                         </Text>
                     </View>
                 </View>
@@ -545,11 +555,13 @@ const summaryCardStyles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
+        textAlign: 'center',
     },
     cardSubtitle: {
         color: '#DDD',
         fontSize: 10,
         marginTop: 3,
+        textAlign: 'center',
     },
     // Skeleton loader styles
     skeletonTitle: {
