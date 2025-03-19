@@ -90,7 +90,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                 initialSpacing={getLeftSpacing()}
                 spacing={getPointsSpacing()}
                 color="yellow"
-                thickness={2}
+                thickness={3}
                 startFillColor="rgba(218,181,46,0.1)"
                 endFillColor="rgba(218,181,46,0.1)"
                 startOpacity={0.6}
