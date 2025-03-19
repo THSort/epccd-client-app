@@ -16,6 +16,7 @@ import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {getTranslation, Language, getTranslatedLocationName, getTranslatedNumber} from '../../utils/translations';
+import { TrackableButton, ELEMENT_NAMES, SCREEN_NAMES } from '../../components/tracking';
 
 const DEFAULT_AQI = 0;
 
@@ -133,19 +134,19 @@ const HomeScreen = () => {
     const getViewDetailedReportButton = () => {
         return (
             <View style={styles.viewDetailedReportButtonContainer}>
-                <TouchableOpacity onPress={() => {
-                    void trackButton('view_detailed_report', currentScreen, {
-                        timestamp: new Date().toISOString(),
-                    });
-                    navigation.navigate('AirQualityDetailedReport');
-                }} activeOpacity={0.7}>
-                    <View style={styles.viewDetailedReportButton}>
+                <TrackableButton
+                    buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
+                    screenName={SCREEN_NAMES.HOME}
+                    style={styles.viewDetailedReportButton}
+                    onPress={() => navigation.navigate('AirQualityDetailedReport')}
+                >
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
                         <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
                         <Text style={styles.viewDetailedReportButtonText}>
                             {getTranslation('viewDetailedReport', currentLanguage)}
                         </Text>
                     </View>
-                </TouchableOpacity>
+                </TrackableButton>
             </View>
         );
     };

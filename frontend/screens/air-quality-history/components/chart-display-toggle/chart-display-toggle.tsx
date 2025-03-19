@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import { styles } from './chart-display-toggle.styles';
 import { ChartDisplayToggleProps } from './chart-display-toggle.types';
 import { useSelectedLanguage } from '../../../../context/SelectedLanguageContext';
 import { getTranslation, Language } from '../../../../utils/translations';
+import { TrackableTouchable, ELEMENT_NAMES, SCREEN_NAMES, ACTION_TYPES } from '../../../../components/tracking';
 
 export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
   selectedMode,
@@ -14,13 +15,20 @@ export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
+      <TrackableTouchable
+        actionName={ELEMENT_NAMES.TOG_CHART_DISPLAY}
+        actionType={ACTION_TYPES.TOGGLE}
+        screenName={SCREEN_NAMES.HISTORY}
         style={[
           styles.toggleButton,
           styles.leftButton,
           selectedMode === 'concentration' && styles.selectedButton,
         ]}
         onPress={() => onModeSelected('concentration')}
+        additionalTrackingData={{
+          to_mode: 'concentration',
+          from_mode: selectedMode
+        }}
       >
         <Text
           style={[
@@ -30,14 +38,21 @@ export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
         >
           {getTranslation('concentration', currentLanguage)}
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
+      </TrackableTouchable>
+      <TrackableTouchable
+        actionName={ELEMENT_NAMES.TOG_CHART_DISPLAY}
+        actionType={ACTION_TYPES.TOGGLE}
+        screenName={SCREEN_NAMES.HISTORY}
         style={[
           styles.toggleButton,
           styles.rightButton,
           selectedMode === 'aqi' && styles.selectedButton,
         ]}
         onPress={() => onModeSelected('aqi')}
+        additionalTrackingData={{
+          to_mode: 'aqi',
+          from_mode: selectedMode
+        }}
       >
         <Text
           style={[
@@ -47,7 +62,7 @@ export const ChartDisplayToggle: React.FC<ChartDisplayToggleProps> = ({
         >
           {getTranslation('aqi', currentLanguage)}
         </Text>
-      </TouchableOpacity>
+      </TrackableTouchable>
     </View>
   );
 }; 

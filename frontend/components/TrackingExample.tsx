@@ -1,52 +1,51 @@
 import React, { useState } from 'react';
-import { View, Text, Button, TextInput, StyleSheet, Alert } from 'react-native';
-import { useUserActivity } from '../context/UserActivityContext';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { TrackableButton, TrackableInput } from './tracking';
+import { ELEMENT_NAMES, SCREEN_NAMES } from '../utils/trackingConstants';
 
 /**
  * Example component demonstrating how to use the activity tracking
  */
 const TrackingExample: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
-  const { trackButton, trackInput } = useUserActivity();
-  const currentScreen = 'TrackingExample';
+  const currentScreen = SCREEN_NAMES.HOME;
 
-  // Handle button press with tracking
+  // Handle button press
   const handleButtonPress = () => {
-    // Track the button click
-    trackButton('example_button', currentScreen, {
-      input_value: inputValue,
-      timestamp: new Date().toISOString(),
-    });
-
     // Your actual button logic here
     Alert.alert('Button Pressed', `Button pressed with input: ${inputValue}`);
   };
 
-  // Handle input change with tracking
+  // Handle input change
   const handleInputChange = (text: string) => {
     setInputValue(text);
-
-    // Track the input change
-    trackInput('example_input', currentScreen, {
-      value_length: text.length,
-      has_special_chars: /[!@#$%^&*(),.?":{}|<>]/.test(text),
-    });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Activity Tracking Example</Text>
 
-      <TextInput
+      <TrackableInput
+        inputName={ELEMENT_NAMES.INP_NAME}
+        screenName={currentScreen}
         style={styles.input}
         value={inputValue}
         onChangeText={handleInputChange}
         placeholder="Type something..."
+        additionalTrackingData={{
+          component: 'TrackingExample'
+        }}
       />
 
-      <Button
-        title="Track This Click"
+      <TrackableButton
+        buttonName={ELEMENT_NAMES.BTN_SUBMIT}
+        screenName={currentScreen}
         onPress={handleButtonPress}
+        label="Track This Click"
+        additionalTrackingData={{
+          input_value: inputValue,
+          component: 'TrackingExample'
+        }}
       />
 
       <Text style={styles.note}>
