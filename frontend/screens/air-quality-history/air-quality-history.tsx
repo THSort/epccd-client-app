@@ -1,6 +1,6 @@
 import {ReactElement, useState, useEffect, useCallback} from 'react';
 import React from 'react';
-import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler} from 'react-native';
+import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, StyleSheet} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {styles} from './air-quality-history.styles';
@@ -11,8 +11,8 @@ import {LocationModal} from '../home-screen/components/location-modal/location-m
 import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
-import {fetchHistoricalEpaMonitorsData, fetchPollutantDataForTimePeriod} from '../../services/api.service.ts';
-import {FilteredHistoricalDataResponse, PollutantChartData} from '../../types/epaMonitorsApiResponse.types.ts';
+import {fetchHistoricalEpaMonitorsData, fetchPollutantDataForTimePeriod, fetchPollutantSummary} from '../../services/api.service.ts';
+import {FilteredHistoricalDataResponse, PollutantChartData, PollutantSummaryResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {TimeRangeSelector} from './components/time-range-selector/time-range-selector.tsx';
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
 import {ChartDisplayToggle} from './components/chart-display-toggle/chart-display-toggle.tsx';
@@ -49,6 +49,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [historicalDataForSelectedTimePeriod, setHistoricalDataForSelectedTimePeriod] = useState<Record<string, PollutantChartData> | null>(null);
     const [isLoadingTimePeriodData, setIsLoadingTimePeriodData] = useState<boolean>(true);
     const [isLoadingAllHistoricalData, setIsLoadingAllHistoricalData] = useState<boolean>(true);
+    const [isLoadingSummaryData, setIsLoadingSummaryData] = useState<boolean>(true);
+    const [summaryData, setSummaryData] = useState<PollutantSummaryResponse | null>(null);
 
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1d');
@@ -92,7 +94,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
         try {
             const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
-            console.log('all data', data);
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);
@@ -102,17 +103,36 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
+    const fetchSummaryData = async (): Promise<void> => {
+        if (!selectedLocation) {
+            return;
+        }
+
+        setIsLoadingSummaryData(true);
+
+        try {
+            const data = await fetchPollutantSummary(selectedLocation);
+            setSummaryData(data);
+        } catch (error) {
+            console.error('Error fetching summary data:', error);
+            // Don't set error state here since this is supplementary data
+        } finally {
+            setIsLoadingSummaryData(false);
+        }
+    };
+
     // Initial data loading
     useEffect(() => {
         setHistoricalData(null);
         setHistoricalDataForSelectedTimePeriod(null);
+        setSummaryData(null);
         setIsLoadingTimePeriodData(true);
         setIsLoadingAllHistoricalData(true);
+        setIsLoadingSummaryData(true);
 
         void fetchTimePeriodData();
-        // Load historical data in the background
         void fetchHistoricalData();
-        // void fetchSummaryData();
+        void fetchSummaryData();
     }, [selectedLocation]);
 
     const getDataFromPeriod = (): Record<string, PollutantChartData> => {
@@ -241,6 +261,30 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
+    // Helper function to get pollutant value based on current pollutant and display mode
+    const getPollutantValue = (data: any): number => {
+        if (!data) {
+            return 0;
+        }
+
+        switch (pollutant) {
+            case Pollutant.PM2_5:
+                return displayMode === 'concentration' ? data.pm2_5_ug_m3 : data.PM2_5_AQI;
+            case Pollutant.PM10:
+                return displayMode === 'concentration' ? data.pm10_ug_m3 : data.PM10_AQI;
+            case Pollutant.CO:
+                return displayMode === 'concentration' ? data.co_ppm : data.CO_AQI;
+            case Pollutant.NO2:
+                return displayMode === 'concentration' ? data.no2_ppb : data.NO2_AQI;
+            case Pollutant.SO2:
+                return displayMode === 'concentration' ? data.so2_ppb : data.SO2_AQI;
+            case Pollutant.O3:
+                return displayMode === 'concentration' ? data.o3_ppb : data.O3_AQI;
+            default:
+                return 0;
+        }
+    };
+
     const getLoader = (): ReactElement => {
         return (
             <View style={styles.chartContainer}>
@@ -304,6 +348,83 @@ export function AirQualityHistory({route}: Props): ReactElement {
         );
     };
 
+    const getSummaryContent = (): ReactElement => {
+        if (isLoadingSummaryData) {
+            return (
+                <View style={summaryCardStyles.container}>
+                    <Text style={summaryCardStyles.title}>
+                        {getPollutantName(pollutant)}
+                    </Text>
+                    <View style={summaryCardStyles.cardsContainer}>
+                        {/* Skeleton Loader for Current Value */}
+                        <View style={summaryCardStyles.card}>
+                            <View style={summaryCardStyles.skeletonTitle}/>
+                            <View style={summaryCardStyles.skeletonValue}/>
+                            <View style={summaryCardStyles.skeletonSubtitle}/>
+                        </View>
+
+                        {/* Skeleton Loader for 24h Average */}
+                        <View style={summaryCardStyles.card}>
+                            <View style={summaryCardStyles.skeletonTitle}/>
+                            <View style={summaryCardStyles.skeletonValue}/>
+                            <View style={summaryCardStyles.skeletonSubtitle}/>
+                        </View>
+
+                        {/* Skeleton Loader for Weekly Average */}
+                        <View style={summaryCardStyles.card}>
+                            <View style={summaryCardStyles.skeletonTitle}/>
+                            <View style={summaryCardStyles.skeletonValue}/>
+                            <View style={summaryCardStyles.skeletonSubtitle}/>
+                        </View>
+                    </View>
+                </View>
+            );
+        }
+
+        if (!summaryData) {
+            return <></>;
+        }
+
+        const currentValue = getPollutantValue(summaryData.current);
+        const dailyAvgValue = getPollutantValue(summaryData.daily_avg);
+        const weeklyAvgValue = getPollutantValue(summaryData.weekly_avg);
+
+        const unit = displayMode === 'concentration' ? getPollutantUnit(pollutant) : '';
+
+        return (
+            <View style={summaryCardStyles.container}>
+                <Text style={summaryCardStyles.title}>
+                    {getPollutantName(pollutant)}
+                </Text>
+                <View style={summaryCardStyles.cardsContainer}>
+                    {/* Current Value Card */}
+                    <View style={summaryCardStyles.card}>
+                        <Text style={summaryCardStyles.cardTitle}>{getTranslation('currentValue', currentLanguage)}</Text>
+                        <Text style={summaryCardStyles.cardValue}>
+                            {currentValue.toFixed(1)}{displayMode === 'concentration' ? ` ${unit}` : ''}
+                        </Text>
+                    </View>
+
+                    {/* 24h Average Card */}
+                    <View style={summaryCardStyles.card}>
+                        <Text style={summaryCardStyles.cardTitle}>{getTranslation('dailyAverage', currentLanguage)}</Text>
+                        <Text style={summaryCardStyles.cardValue}>
+                            {dailyAvgValue.toFixed(1)}{displayMode === 'concentration' ? ` ${unit}` : ''}
+                        </Text>
+                    </View>
+
+                    {/* Weekly Average Card */}
+                    <View style={summaryCardStyles.card}>
+                        <Text style={summaryCardStyles.cardTitle}>{getTranslation('weeklyAverage', currentLanguage)}</Text>
+                        <Text style={summaryCardStyles.cardValue}>
+                            {weeklyAvgValue.toFixed(1)}{displayMode === 'concentration' ? ` ${unit}` : ''}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        );
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -361,6 +482,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             />
 
                             {getHistoricalDataContent()}
+
+                            {/* Summary Cards Section */}
+                            {getSummaryContent()}
                         </>
                     )}
                 </View>
@@ -380,3 +504,72 @@ export function AirQualityHistory({route}: Props): ReactElement {
         </View>
     );
 }
+
+// Styles for the summary cards
+const summaryCardStyles = StyleSheet.create({
+    container: {
+        marginTop: 20,
+        padding: 15,
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        borderRadius: 10,
+    },
+    title: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    cardsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    card: {
+        display: 'flex',
+        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 8,
+        padding: 10,
+        marginHorizontal: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cardTitle: {
+        color: '#FFD700',
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        textAlign: 'center',
+    },
+    cardValue: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    cardSubtitle: {
+        color: '#DDD',
+        fontSize: 10,
+        marginTop: 3,
+    },
+    // Skeleton loader styles
+    skeletonTitle: {
+        width: 60,
+        height: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 4,
+        marginBottom: 8,
+    },
+    skeletonValue: {
+        width: 40,
+        height: 18,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 4,
+        marginBottom: 5,
+    },
+    skeletonSubtitle: {
+        width: 50,
+        height: 10,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 4,
+    },
+});

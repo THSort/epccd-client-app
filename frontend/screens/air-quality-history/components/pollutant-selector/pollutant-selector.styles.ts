@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   scrollContainer: {
-    marginTop: '20%',
+    marginTop: '10%',
     alignItems: 'center',
   },
   container: {
@@ -41,4 +41,4 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-}); 
+});
