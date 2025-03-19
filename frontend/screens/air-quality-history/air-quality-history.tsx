@@ -287,13 +287,13 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
                     {/* Historical Data Chart */}
                     <View style={styles.chartWrapper}>
-                        {/*<View style={{marginBottom: 10, alignItems: 'center'}}>*/}
-                        {/*    <Text style={{color: '#FFD700', fontSize: 14, fontWeight: 'bold'}}>*/}
-                        {/*        {displayMode === 'concentration'*/}
-                        {/*            ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`*/}
-                        {/*            : `Average ${getPollutantName(pollutant)} AQI`}*/}
-                        {/*    </Text>*/}
-                        {/*</View>*/}
+                        <View style={{marginBottom: 10, alignItems: 'center'}}>
+                            <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>
+                                {displayMode === 'concentration'
+                                    ? `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
+                                    : `Average ${getPollutantName(pollutant)} AQI`}
+                            </Text>
+                        </View>
                         <Chart selectedTimePeriod={timeRange} data={data}/>
                     </View>
 

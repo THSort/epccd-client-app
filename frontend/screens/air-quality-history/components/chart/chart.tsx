@@ -23,7 +23,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                 textColor: 'yellow',
                 textShiftY: -10,
                 textFontSize: 12,
-                labelTextStyle: {color: 'yellow', fontSize: 10},
+                labelTextStyle: {color: 'white', fontSize: 10},
             };
         });
     };
@@ -95,10 +95,10 @@ export function Chart({...props}: ChartProps): ReactElement {
                 initialSpacing={getLeftSpacing()}
                 spacing={getPointsSpacing()}
                 color="yellow"
-                thickness={4}
-                startFillColor="rgba(20,105,81,0.3)"
-                endFillColor="rgba(20,85,81,0.01)"
-                startOpacity={0.9}
+                thickness={2}
+                startFillColor="rgba(218,181,46,0.1)"
+                endFillColor="rgba(218,181,46,0.1)"
+                startOpacity={0.6}
                 endOpacity={0.2}
                 noOfSections={6}
                 yAxisColor="white"
