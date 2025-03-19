@@ -78,7 +78,8 @@ export function Chart({...props}: ChartProps): ReactElement {
             width: 350,
         }}>
             <LineChart
-                height={220}
+                maxValue={Number(Math.max(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) + 20}
+                height={200}
                 curved={true}
                 adjustToWidth={true}
                 showScrollIndicator={true}
@@ -88,7 +89,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                 renderDataPointsAfterAnimationEnds={true}
                 scrollToEnd={true}
                 nestedScrollEnabled={true}
-                yAxisOffset={Number(Math.min(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) - 10}
+                yAxisOffset={Math.max(Number(Math.min(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) - 10, 0)}
                 scrollAnimation={true}
                 areaChart
                 data={getChartFormattedData()}

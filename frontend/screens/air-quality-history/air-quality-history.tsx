@@ -108,7 +108,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
         // Load historical data in the background
         void fetchHistoricalData();
         // void fetchSummaryData();
-    }, []);
+    }, [selectedLocation]);
 
     if (isLoadingTimePeriodData && !historicalDataForSelectedTimePeriod) {
         return (
