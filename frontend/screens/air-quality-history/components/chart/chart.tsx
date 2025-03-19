@@ -79,8 +79,6 @@ export function Chart({...props}: ChartProps): ReactElement {
                 showScrollIndicator={true}
                 showVerticalLines={true}
                 verticalLinesUptoDataPoint={true}
-                isAnimated={true}
-                renderDataPointsAfterAnimationEnds={true}
                 scrollToEnd={true}
                 nestedScrollEnabled={true}
                 yAxisOffset={Math.max(Number(Math.min(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) - 10, 0)}
