@@ -18,11 +18,6 @@ export function Chart({...props}: ChartProps): ReactElement {
             return {
                 value: value ?? undefined,
                 label,
-                dataPointText: `${value?.toFixed(0)}`,
-                dataPointColor: 'orange',
-                textColor: 'yellow',
-                textShiftY: -10,
-                textFontSize: 12,
                 labelTextStyle: {color: 'white', fontSize: 10},
             };
         });
@@ -77,8 +72,7 @@ export function Chart({...props}: ChartProps): ReactElement {
             overflow: 'hidden',
             width: 350,
         }}>
-            <LineChart
-                maxValue={Number(Math.max(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) + 20}
+            <LineChart dataPointsColor={'white'}
                 height={200}
                 curved={true}
                 adjustToWidth={true}
