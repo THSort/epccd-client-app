@@ -257,17 +257,17 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const getPollutantName = (pollutantType: Pollutant): string => {
         switch (pollutantType) {
             case Pollutant.PM2_5:
-                return 'PM₂.₅';
+                return getTranslation('pm25', currentLanguage);
             case Pollutant.PM10:
-                return 'PM₁₀';
+                return getTranslation('pm10', currentLanguage);
             case Pollutant.O3:
-                return 'O₃';
+                return getTranslation('o3', currentLanguage);
             case Pollutant.SO2:
-                return 'SO₂';
+                return getTranslation('so2', currentLanguage);
             case Pollutant.NO2:
-                return 'NO₂';
+                return getTranslation('no2', currentLanguage);
             case Pollutant.CO:
-                return 'CO';
+                return getTranslation('co', currentLanguage);
             default:
                 return '';
         }
