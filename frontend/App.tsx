@@ -15,6 +15,7 @@ import {RegistrationScreen} from './screens/registration-screen';
 import {getUserId} from './utils/storage.util.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNotification} from './hooks/useNotification.ts';
+import {LahoreGraph} from './screens/air-quality-detailed-report/components/lahore-graph/lahore-graph.tsx';
 
 type RootStackParamList = {
     Home: undefined;
@@ -77,21 +78,23 @@ function App(): React.JSX.Element {
 
     // Main app with user ID
     return (
-        <UserActivityProvider userId={userId}>
-            <SelectedLocationProvider>
-                <SelectedLanguageProvider>
-                    <NavigationContainer>
-                        <View style={styles.container}>
-                            <Stack.Navigator>
-                                <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
-                                <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
-                                <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
-                            </Stack.Navigator>
-                        </View>
-                    </NavigationContainer>
-                </SelectedLanguageProvider>
-            </SelectedLocationProvider>
-        </UserActivityProvider>
+        // <UserActivityProvider userId={userId}>
+        //     <SelectedLocationProvider>
+        //         <SelectedLanguageProvider>
+        //             <NavigationContainer>
+        //                 <View style={styles.container}>
+        //                     <Stack.Navigator>
+        //                         <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
+        //                         <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
+        //                         <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
+        //                     </Stack.Navigator>
+        //                 </View>
+        //             </NavigationContainer>
+        //         </SelectedLanguageProvider>
+        //     </SelectedLocationProvider>
+        // </UserActivityProvider>
+
+        <LahoreGraph/>
     );
 }
 

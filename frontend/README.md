@@ -66,7 +66,7 @@ This is one way to run your app — you can also build it directly from Android 
 
 Now that you have successfully run the app, let's make changes!
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
 
 When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
 
@@ -81,6 +81,23 @@ You've successfully run and modified your React Native App. :partying_face:
 
 - If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
 - If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+
+# API Keys Configuration
+
+For security reasons, API keys are not stored in the repository. You need to set them up locally:
+
+## Google Maps API Key
+
+1. Copy the example properties file:
+   ```sh
+   cp android/local.properties.example android/local.properties
+   ```
+
+2. Edit `android/local.properties` and replace `YOUR_GOOGLE_MAPS_API_KEY_HERE` with your actual Google Maps API key.
+
+3. Make sure your `local.properties` file is in the `.gitignore` to prevent committing sensitive information.
+
+4. The app will automatically use the API key from your local configuration when building.
 
 # Troubleshooting
 

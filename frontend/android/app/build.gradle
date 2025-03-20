@@ -79,12 +79,25 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.frontend"
+    
+    // Read API keys from local.properties
+    def localProperties = new Properties()
+    def localPropertiesFile = rootProject.file('local.properties')
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.withReader('UTF-8') { reader ->
+            localProperties.load(reader)
+        }
+    }
+    
     defaultConfig {
         applicationId "com.frontend"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        
+        // Set the Maps API key as a build config field
+        manifestPlaceholders = [MAPS_API_KEY: localProperties.getProperty('MAPS_API_KEY', '')]
     }
     signingConfigs {
         debug {
