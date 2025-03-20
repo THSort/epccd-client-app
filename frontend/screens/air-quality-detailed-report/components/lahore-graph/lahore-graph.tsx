@@ -2,12 +2,17 @@ import React from 'react';
 import type {ReactElement} from 'react';
 import type {LahoreGraphProps} from './lahore-graph.types';
 import {styles} from './lahore-graph.styles';
-import MapView, {PROVIDER_GOOGLE, Marker, Circle} from 'react-native-maps';
+import MapView, {PROVIDER_GOOGLE, Marker, Circle, Region} from 'react-native-maps';
 import {View, Text} from 'react-native';
 import {Areas} from '../../../home-screen/components/location-modal/location-modal.types';
 import {getAqiColor} from '../../../../utils/aqi-colors.util';
+import {useUserActivity} from '../../../../context/UserActivityContext';
+import {ACTION_TYPES, ELEMENT_NAMES, SCREEN_NAMES} from '../../../../utils/trackingConstants';
 
 export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
+    // Use the activity tracking context
+    const {trackActivity} = useUserActivity();
+    
     // Hardcoded AQI values for each location - these will be replaced with real data later
     const locationAqiData: Record<string, number> = {
         '1': 45,  // Good
@@ -20,6 +25,53 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
     // Function to get location name without ", Lahore" suffix
     const getLocationName = (fullName: string): string => {
         return fullName.replace(', Lahore', '');
+    };
+
+    // Handle map region change (dragging, zooming)
+    const handleRegionChange = (region: Region) => {
+        trackActivity(
+            ACTION_TYPES.NAVIGATION,
+            {
+                action_name: ELEMENT_NAMES.MAP_REGION_CHANGE,
+                screen_name: SCREEN_NAMES.DETAILED_REPORT,
+                latitude: region.latitude,
+                longitude: region.longitude,
+                latitudeDelta: region.latitudeDelta,
+                longitudeDelta: region.longitudeDelta,
+                timestamp: new Date().toISOString()
+            }
+        );
+    };
+
+    // Handle map press
+    const handleMapPress = (event: any) => {
+        trackActivity(
+            ACTION_TYPES.SELECTION,
+            {
+                action_name: ELEMENT_NAMES.MAP_PRESS,
+                screen_name: SCREEN_NAMES.DETAILED_REPORT,
+                latitude: event.nativeEvent.coordinate.latitude,
+                longitude: event.nativeEvent.coordinate.longitude,
+                timestamp: new Date().toISOString()
+            }
+        );
+    };
+
+    // Handle marker press
+    const handleMarkerPress = (location: any) => {
+        trackActivity(
+            ACTION_TYPES.SELECTION,
+            {
+                action_name: ELEMENT_NAMES.MAP_MARKER_PRESS,
+                screen_name: SCREEN_NAMES.DETAILED_REPORT,
+                location_code: location.locationCode,
+                location_name: location.locationName,
+                aqi: locationAqiData[location.locationCode],
+                latitude: location.latitude,
+                longitude: location.longitude,
+                timestamp: new Date().toISOString()
+            }
+        );
     };
 
     return (
@@ -35,6 +87,8 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
                 }}
                 zoomEnabled={true}
                 zoomControlEnabled={true}
+                onRegionChangeComplete={handleRegionChange}
+                onPress={handleMapPress}
             >
                 {/* Display circles for each location with colors based on AQI value */}
                 {Areas[0].locations.map(location => {
@@ -65,6 +119,7 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
                                     longitude: location.longitude,
                                 }}
                                 pinColor={color}
+                                onPress={() => handleMarkerPress(location)}
                             />
                         </React.Fragment>
                     );

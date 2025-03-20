@@ -46,6 +46,11 @@ export const ELEMENT_NAMES = {
   SEL_TIME_RANGE: 'sel_time_range',
   TOG_CHART_DISPLAY: 'tog_chart_display',
   
+  // Map interactions
+  MAP_REGION_CHANGE: 'map_region_change',
+  MAP_PRESS: 'map_press',
+  MAP_MARKER_PRESS: 'map_marker_press',
+  
   // Registration
   INP_NAME: 'inp_name',
   INP_EMAIL: 'inp_email',

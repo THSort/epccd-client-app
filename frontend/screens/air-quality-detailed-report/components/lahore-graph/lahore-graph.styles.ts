@@ -94,7 +94,7 @@ export const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'white',
         transform: [{
-            rotate: '45deg'
+            rotate: '45deg',
         }],
     },
     locationLabel: {
@@ -203,7 +203,7 @@ export const styles = StyleSheet.create({
     newLegend: {
         position: 'absolute',
         bottom: 5,
-        right: 5,
+        // right: 5,
         alignSelf: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         borderRadius: 20,
