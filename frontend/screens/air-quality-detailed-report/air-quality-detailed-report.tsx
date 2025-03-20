@@ -18,6 +18,7 @@ import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getTranslation, Language, getTranslatedTimeSinceUpdate, getTranslatedNumber} from '../../utils/translations';
+import {LahoreGraph} from './components/lahore-graph/lahore-graph.tsx';
 
 const currentScreen = 'AirQualityReport';
 
@@ -316,6 +317,7 @@ export function AirQualityDetailedReport(): ReactElement {
                     onOpenLocationModal={openLocationModal}
                 />
             </View>
+            <LahoreGraph/>
             {getAqiSummary()}
             <View style={styles.divider}/>
             {getPollutantLevels()}
