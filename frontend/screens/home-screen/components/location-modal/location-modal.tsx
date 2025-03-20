@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, TouchableOpacity, Modal, FlatList, Animated, Easing, TouchableWithoutFeedback} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import type {Area, LocationModalProps} from './location-modal.types';
+import {Areas, LocationModalProps} from './location-modal.types';
 import {styles} from './location-modal.styles';
 import {Location} from '../../../../App.types';
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.tsx';
@@ -13,35 +13,6 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
     const slideAnim = useRef(new Animated.Value(400)).current;
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
-
-    const getAreasForList = (): Area[] => {
-        return [
-            {
-                name: 'Lahore',
-                locations: [
-                    {locationCode: '1', locationCity: 'Lahore', locationName: 'Sagian Road, Lahore'},
-                    {locationCode: '2', locationCity: 'Lahore', locationName: 'Mahmood Booti, Lahore'},
-                    {locationCode: '3', locationCity: 'Lahore', locationName: 'WWF Ferozpur Road, Lahore'},
-                    {locationCode: '4', locationCity: 'Lahore', locationName: 'Egerton Road, Lahore'},
-                    {locationCode: '5', locationCity: 'Lahore', locationName: 'Hill Park, Lahore'},
-                ],
-            },
-            {
-                name: 'Islamabad',
-                locations: [
-                    // { locationCode: 'ISB1', locationCity: 'Islamabad', locationName: 'Islamabad location 1' },
-                    // { locationCode: 'ISB2', locationCity: 'Islamabad', locationName: 'Islamabad location 2' },
-                ],
-            },
-            {
-                name: 'Karachi',
-                locations: [
-                    // { locationCode: 'KHI1', locationCity: 'Karachi', locationName: 'Karachi location 1' },
-                    // { locationCode: 'KHI2', locationCity: 'Karachi', locationName: 'Karachi location 2' },
-                ],
-            },
-        ];
-    };
 
     useEffect(() => {
         if (visible) {
@@ -93,12 +64,12 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
 
                             {/* Areas List */}
                             <FlatList
-                                data={getAreasForList()}
+                                data={Areas}
                                 keyExtractor={(item) => item.name}
                                 renderItem={({item}) => {
                                     const isExpanded = selectedArea === item.name;
                                     const translatedCityName = getTranslatedCityName(item.name, currentLanguage);
-                                    
+
                                     return (
                                         <View>
                                             {/* Area Button */}
@@ -117,7 +88,7 @@ export function LocationModal({visible, onClose, onLocationSelected, ...props}: 
                                                     {item.locations.map((location) => {
                                                         const isSelected = isSameLocation(props.selectedLocation, location);
                                                         const translatedLocationName = getTranslatedLocationName(location.locationName, currentLanguage);
-                                                        
+
                                                         return (
                                                             <TouchableOpacity
                                                                 key={location.locationCode}

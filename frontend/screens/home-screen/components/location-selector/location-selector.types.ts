@@ -6,7 +6,7 @@ export interface LocationSelectorProps {
     selectedLocation?: Location;
     showLocationLabel?: boolean;
     isFullWidth?: boolean;
-    
+
     // New style props
     containerStyle?: StyleProp<ViewStyle>;
     selectorStyle?: StyleProp<ViewStyle>;

@@ -13,4 +13,4 @@ export enum RegistrationStep {
   Location = 1,
   MobileNumber = 2,
   Asthma = 3
-} 
+}

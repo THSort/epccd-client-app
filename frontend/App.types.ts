@@ -2,6 +2,8 @@ export interface Location {
   locationCode: string;
   locationCity: string;
   locationName: string;
+  latitude: number;
+  longitude: number;
 }
 
 // These types are no longer needed with the new Location interface

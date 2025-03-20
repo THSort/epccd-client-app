@@ -1,15 +1,15 @@
 import type { ReactElement } from 'react';
 import React from 'react';
 import { Text, View } from 'react-native';
-import type { PollutantInfoCardProps } from './pollutant-info-card.types';
-import { styles } from './pollutant-info-card.styles';
+import type { PollutantInfoCardProps } from './pollutant-info-card.types.ts';
+import { styles } from './pollutant-info-card.styles.ts';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
-import {AirQualityDetailedReportNavigationProps} from '../../../types/navigation.types.ts';
-import {Pollutant} from '../air-quality-detailed-report.types.ts';
-import {useSelectedLanguage} from '../../../context/SelectedLanguageContext.tsx';
-import {Language, getTranslatedNumber} from '../../../utils/translations';
-import { TrackableButton, ELEMENT_NAMES, SCREEN_NAMES } from '../../../components/tracking';
+import {AirQualityDetailedReportNavigationProps} from '../../../../types/navigation.types.ts';
+import {Pollutant} from '../../air-quality-detailed-report.types.ts';
+import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.tsx';
+import {Language, getTranslatedNumber} from '../../../../utils/translations.ts';
+import { TrackableButton, ELEMENT_NAMES, SCREEN_NAMES } from '../../../../components/tracking';
 
 // Define units for each pollutant type (fallback if not provided in props)
 const POLLUTANT_UNITS = {
@@ -55,11 +55,11 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
                 screenName={SCREEN_NAMES.DETAILED_REPORT}
                 style={styles.historyButton}
                 onPress={() => navigation.navigate('AirQualityHistory', {
-                    selectedLocation: props.selectedLocation, 
-                    selectedPollutant: props.pollutantName
+                    selectedLocation: props.selectedLocation,
+                    selectedPollutant: props.pollutantName,
                 })}
                 additionalTrackingData={{
-                    pollutant: props.pollutantName
+                    pollutant: props.pollutantName,
                 }}
             >
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>

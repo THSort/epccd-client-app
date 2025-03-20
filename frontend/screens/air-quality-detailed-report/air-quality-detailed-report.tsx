@@ -1,14 +1,14 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import type { ReactElement } from 'react';
+import type {ReactElement} from 'react';
 import {ScrollView, Text, TouchableOpacity, View, ActivityIndicator, BackHandler} from 'react-native';
-import { styles } from './air-quality-detailed-report.styles';
+import {styles} from './air-quality-detailed-report.styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { PollutantInfoCard } from './pollutant-info-card/pollutant-info-card';
+import {PollutantInfoCard} from './components/pollutant-info-card/pollutant-info-card';
 import {useNavigation} from '@react-navigation/native';
 import {LocationSelector} from '../home-screen/components/location-selector/location-selector.tsx';
 import {useLocationModal} from '../home-screen/components/location-modal/location-modal.types.ts';
 import {useSelectedLocation} from '../../context/SelectedLocationContext.tsx';
-import { Location } from '../../App.types.ts';
+import {Location} from '../../App.types.ts';
 import {LocationModal} from '../home-screen/components/location-modal/location-modal.tsx';
 import {Pollutant} from './air-quality-detailed-report.types.ts';
 import {fetchEpaMonitorsData} from '../../services/api.service.ts';
@@ -29,7 +29,7 @@ export function AirQualityDetailedReport(): ReactElement {
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
-    const { trackButton, trackBackButton } = useUserActivity();
+    const {trackButton, trackBackButton} = useUserActivity();
 
     // State for API data
     const [aqiData, setAqiData] = useState<EpaMonitorsApiResponse | null>(null);
@@ -41,28 +41,52 @@ export function AirQualityDetailedReport(): ReactElement {
     const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
         switch (pollutant) {
             case Pollutant.PM2_5:
-                if (type === 'name') {return getTranslation('pm25', currentLanguage);}
-                if (type === 'description') {return getTranslation('pm25Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('pm25', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('pm25Description', currentLanguage);
+                }
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.PM10:
-                if (type === 'name') {return getTranslation('pm10', currentLanguage);}
-                if (type === 'description') {return getTranslation('pm10Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('pm10', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('pm10Description', currentLanguage);
+                }
                 return getTranslation('ugm3', currentLanguage);
             case Pollutant.O3:
-                if (type === 'name') {return getTranslation('o3', currentLanguage);}
-                if (type === 'description') {return getTranslation('o3Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('o3', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('o3Description', currentLanguage);
+                }
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.SO2:
-                if (type === 'name') {return getTranslation('so2', currentLanguage);}
-                if (type === 'description') {return getTranslation('so2Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('so2', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('so2Description', currentLanguage);
+                }
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.NO2:
-                if (type === 'name') {return getTranslation('no2', currentLanguage);}
-                if (type === 'description') {return getTranslation('no2Description', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('no2', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('no2Description', currentLanguage);
+                }
                 return getTranslation('ppb', currentLanguage);
             case Pollutant.CO:
-                if (type === 'name') {return getTranslation('co', currentLanguage);}
-                if (type === 'description') {return getTranslation('coDescription', currentLanguage);}
+                if (type === 'name') {
+                    return getTranslation('co', currentLanguage);
+                }
+                if (type === 'description') {
+                    return getTranslation('coDescription', currentLanguage);
+                }
                 return getTranslation('ppm', currentLanguage);
             default:
                 return '';
@@ -118,7 +142,7 @@ export function AirQualityDetailedReport(): ReactElement {
                     // Navigate back
                     navigation.goBack();
                 }}>
-                    <Icon name="chevron-left" size={25} color="yellow" />
+                    <Icon name="chevron-left" size={25} color="yellow"/>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>{getTranslation('airQualityReport', currentLanguage)}</Text>
             </View>
@@ -132,7 +156,7 @@ export function AirQualityDetailedReport(): ReactElement {
                     <ActivityIndicator style={{
                         marginLeft: 'auto',
                         marginRight: 'auto',
-                    }} size="large" color="#FFD700" />
+                    }} size="large" color="#FFD700"/>
                 </View>
             );
         }
@@ -174,11 +198,11 @@ export function AirQualityDetailedReport(): ReactElement {
                                 timestamp: new Date().toISOString(),
                             });
                         }}>
-                            <Icon name="question-circle" size={30} color="yellow" />
+                            <Icon name="question-circle" size={30} color="yellow"/>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#FFD700" />
+                        <ActivityIndicator size="large" color="#FFD700"/>
                     </View>
                 </View>
             );
@@ -194,7 +218,7 @@ export function AirQualityDetailedReport(): ReactElement {
                                 timestamp: new Date().toISOString(),
                             });
                         }}>
-                            <Icon name="question-circle" size={30} color="yellow" />
+                            <Icon name="question-circle" size={30} color="yellow"/>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.errorContainer}>
@@ -265,7 +289,7 @@ export function AirQualityDetailedReport(): ReactElement {
                             timestamp: new Date().toISOString(),
                         });
                     }}>
-                        <Icon name="question-circle" size={30} color="yellow" />
+                        <Icon name="question-circle" size={30} color="yellow"/>
                     </TouchableOpacity>
                 </View>
                 <ScrollView style={styles.pollutantList} contentContainerStyle={styles.pollutantListContent}>
@@ -293,7 +317,7 @@ export function AirQualityDetailedReport(): ReactElement {
                 />
             </View>
             {getAqiSummary()}
-            <View style={styles.divider} />
+            <View style={styles.divider}/>
             {getPollutantLevels()}
         </View>
     );
