@@ -141,7 +141,7 @@ export function AirQualityDetailedReport(): ReactElement {
         const timer = setInterval(() => {
             setUpdateTimerKey(prev => prev + 1);
         }, 60000);
-        
+
         // Clear timer on component unmount
         return () => clearInterval(timer);
     }, []);
@@ -194,8 +194,8 @@ export function AirQualityDetailedReport(): ReactElement {
                 </View>
                 <View>
                     <Text style={styles.updateLabel}>{getTranslation('updated', currentLanguage)}</Text>
-                    <Text 
-                        key={`update-time-${updateTimerKey}`} 
+                    <Text
+                        key={`update-time-${updateTimerKey}`}
                         style={styles.updateTime}
                     >
                         {getTranslatedTimeSinceUpdate(lastUpdated, currentLanguage)}
