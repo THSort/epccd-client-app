@@ -6,7 +6,105 @@ import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 import {alertUsersInLocations} from "./notificationService";
 import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
 
+/**
+ * EPA Monitors Data Service with In-Memory Caching
+ * 
+ * This service implements a simple in-memory caching mechanism for EPA data:
+ * 
+ * 1. Four types of cache are maintained:
+ *    - currentData: Latest EPA data for each location
+ *    - historicalDataForAllPeriods: Complete historical data for all time periods
+ *    - historicalDataForSpecificPeriod: Data for specific time periods (1d, 1w, 1m, etc.)
+ *    - pollutantSummary: Summary data for each location
+ * 
+ * 2. Cache TTL is set to 5 minutes
+ * 
+ * 3. Cache invalidation:
+ *    - When new data is received via pollEpaMonitorsData(), the cache for that location is invalidated
+ *    - This ensures controllers always receive fresh data after it's updated in the database
+ * 
+ * 4. The caching mechanism is transparent to controllers, which continue to call
+ *    the same service functions without needing to know about caching logic
+ */
+
 const BASE_URL = "http://34.132.171.41:8000/api/aqms_data/";
+
+// In-memory cache for EPA monitors data
+interface EpaMonitorsDataCache {
+  currentData: { [locationId: number]: { data: EpaMonitorsData, timestamp: number } };
+  historicalDataForAllPeriods: { [locationId: number]: { data: PollutantHistoricalData, timestamp: number } };
+  historicalDataForSpecificPeriod: { 
+    [locationId: number]: { 
+      [timePeriod: string]: { data: PollutantBucketData[], timestamp: number } 
+    } 
+  };
+  pollutantSummary: { [locationId: number]: { data: PollutantSummaryData, timestamp: number } };
+}
+
+// Initialize empty cache
+const cache: EpaMonitorsDataCache = {
+  currentData: {},
+  historicalDataForAllPeriods: {},
+  historicalDataForSpecificPeriod: {},
+  pollutantSummary: {}
+};
+
+// Cache expiration time in milliseconds (5 minutes)
+const CACHE_EXPIRY = 5 * 60 * 1000;
+
+// Helper function to get cached data for a specific time period or compute and cache it
+const getCachedTimePeriodData = async (
+  location: number, 
+  timePeriod: string, 
+  fetcher: () => Promise<PollutantBucketData[]>
+): Promise<PollutantBucketData[]> => {
+  try {
+    // Initialize the location's cache if it doesn't exist
+    if (!cache.historicalDataForSpecificPeriod[location]) {
+      cache.historicalDataForSpecificPeriod[location] = {};
+    }
+    
+    // Check if data exists in cache and is not expired
+    const cachedData = cache.historicalDataForSpecificPeriod[location][timePeriod];
+    const now = Date.now();
+    
+    if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
+      logger.info(`Using cached ${timePeriod} data for location ${location}`);
+      return cachedData.data;
+    }
+
+    logger.info(`Cache miss for ${timePeriod} data for location ${location}, fetching from database`);
+    
+    // Fetch fresh data
+    const data = await fetcher();
+    
+    // Store in cache
+    cache.historicalDataForSpecificPeriod[location][timePeriod] = {
+      data,
+      timestamp: now
+    };
+    
+    return data;
+  } catch (error) {
+    logger.error(`Error getting cached data for ${timePeriod} at location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+    return [];
+  }
+};
+
+// Function to invalidate cache for a specific location
+const invalidateCacheForLocation = (location: number): void => {
+  logger.info(`Invalidating cache for location ${location}`);
+  
+  // Remove all cached data for this location
+  delete cache.currentData[location];
+  delete cache.historicalDataForAllPeriods[location];
+  delete cache.pollutantSummary[location];
+  
+  // If specific period data exists for this location, clear it
+  if (cache.historicalDataForSpecificPeriod[location]) {
+    delete cache.historicalDataForSpecificPeriod[location];
+  }
+};
 
 // Helper function to calculate average of numeric values, ignoring null/undefined
 const calculateAverage = (values: (number | null | undefined)[]): number | undefined => {
@@ -39,6 +137,9 @@ export const pollEpaMonitorsData = async () => {
             }
             // Store Data in MongoDB
             await storeEpaMonitorsData(data);
+            
+            // Invalidate cache for this location since data has been updated
+            invalidateCacheForLocation(data.location);
         }
 
         // Log locations that require an alert
@@ -130,147 +231,149 @@ const storeEpaMonitorsData = async (data: EpaMonitorsData) => {
 };
 
 export const getPollutantHistoryDataForPast24Hours = async (location: number, currentDateTime: Date): Promise<PollutantBucketData[]> => {
-    try {
-        const pastDayData = await getPast24HoursEpaMonitorsDataForLocation(location, currentDateTime);
-        
-        // Extract only the pollutant concentration/AQI fields and report_date_time
-        const pollutantHistoryData: PollutantHistoryData[] = pastDayData.map((data: EpaMonitorsData) => ({
-            report_date_time: data.report_date_time,
+    return getCachedTimePeriodData(location, '1d', async () => {
+        try {
+            const pastDayData = await getPast24HoursEpaMonitorsDataForLocation(location, currentDateTime);
             
-            // Pollutant concentration fields
-            o3_ppb: data.o3_ppb,
-            co_ppm: data.co_ppm,
-            so2_ppb: data.so2_ppb,
-            no_ppb: data.no_ppb,
-            no2_ppb: data.no2_ppb,
-            nox_ppb: data.nox_ppb,
-            pm10_ug_m3: data.pm10_ug_m3,
-            pm2_5_ug_m3: data.pm2_5_ug_m3,
-            
-            // AQI values
-            PM2_5_AQI: data.PM2_5_AQI,
-            PM10_AQI: data.PM10_AQI,
-            SO2_AQI: data.SO2_AQI,
-            NO2_AQI: data.NO2_AQI,
-            O3_AQI: data.O3_AQI,
-            CO_AQI: data.CO_AQI
-        }));
+            // Extract only the pollutant concentration/AQI fields and report_date_time
+            const pollutantHistoryData: PollutantHistoryData[] = pastDayData.map((data: EpaMonitorsData) => ({
+                report_date_time: data.report_date_time,
+                
+                // Pollutant concentration fields
+                o3_ppb: data.o3_ppb,
+                co_ppm: data.co_ppm,
+                so2_ppb: data.so2_ppb,
+                no_ppb: data.no_ppb,
+                no2_ppb: data.no2_ppb,
+                nox_ppb: data.nox_ppb,
+                pm10_ug_m3: data.pm10_ug_m3,
+                pm2_5_ug_m3: data.pm2_5_ug_m3,
+                
+                // AQI values
+                PM2_5_AQI: data.PM2_5_AQI,
+                PM10_AQI: data.PM10_AQI,
+                SO2_AQI: data.SO2_AQI,
+                NO2_AQI: data.NO2_AQI,
+                O3_AQI: data.O3_AQI,
+                CO_AQI: data.CO_AQI
+            }));
 
-        // use currentDateTime to divide pollutantHistoryData into 8 'buckets', with each representing a
-        // 3 hour time-period, with the last one being for the currentDateTime, and the first one starting 24hours back
-        const buckets: PollutantHistoryData[][] = Array(8).fill(null).map(() => []);
-        
-        // Calculate the start time for each bucket (going backward from currentDateTime)
-        const bucketStartTimes = Array(8).fill(null).map((_, index) => {
-            const bucketStart = new Date(currentDateTime);
-            bucketStart.setHours(currentDateTime.getHours() - (24 - index * 3));
-            return bucketStart;
-        });
-        
-        // Calculate the end time for each bucket
-        const bucketEndTimes = bucketStartTimes.map((startTime, index) => {
-            if (index === 7) {
-                return currentDateTime; // Last bucket ends at currentDateTime
-            }
-            const endTime = new Date(startTime);
-            endTime.setHours(startTime.getHours() + 3);
-            return endTime;
-        });
-        
-        // Distribute data points into appropriate buckets
-        pollutantHistoryData.forEach(dataPoint => {
-            const dataTime = new Date(dataPoint.report_date_time);
+            // use currentDateTime to divide pollutantHistoryData into 8 'buckets', with each representing a
+            // 3 hour time-period, with the last one being for the currentDateTime, and the first one starting 24hours back
+            const buckets: PollutantHistoryData[][] = Array(8).fill(null).map(() => []);
             
-            for (let i = 0; i < 8; i++) {
-                if (dataTime >= bucketStartTimes[i] && dataTime <= bucketEndTimes[i]) {
-                    buckets[i].push(dataPoint);
-                    break;
+            // Calculate the start time for each bucket (going backward from currentDateTime)
+            const bucketStartTimes = Array(8).fill(null).map((_, index) => {
+                const bucketStart = new Date(currentDateTime);
+                bucketStart.setHours(currentDateTime.getHours() - (24 - index * 3));
+                return bucketStart;
+            });
+            
+            // Calculate the end time for each bucket
+            const bucketEndTimes = bucketStartTimes.map((startTime, index) => {
+                if (index === 7) {
+                    return currentDateTime; // Last bucket ends at currentDateTime
                 }
-            }
-        });
+                const endTime = new Date(startTime);
+                endTime.setHours(startTime.getHours() + 3);
+                return endTime;
+            });
+            
+            // Distribute data points into appropriate buckets
+            pollutantHistoryData.forEach(dataPoint => {
+                const dataTime = new Date(dataPoint.report_date_time);
+                
+                for (let i = 0; i < 8; i++) {
+                    if (dataTime >= bucketStartTimes[i] && dataTime <= bucketEndTimes[i]) {
+                        buckets[i].push(dataPoint);
+                        break;
+                    }
+                }
+            });
 
-        // now, i want to find the average of each array/bucket --> need an array with 8 objects, where each object has the average of all keys in that bucket --> if a buckey is empty, just put undefined in the array for it
-        const bucketAverages: PollutantBucketData[] = buckets.map((bucket, index) => {
-            // If bucket is empty, return object with null values
-            if (bucket.length === 0) {
+            // now, i want to find the average of each array/bucket --> need an array with 8 objects, where each object has the average of all keys in that bucket --> if a buckey is empty, just put undefined in the array for it
+            const bucketAverages: PollutantBucketData[] = buckets.map((bucket, index) => {
+                // If bucket is empty, return object with null values
+                if (bucket.length === 0) {
+                    return {
+                        timeRange: `${bucketStartTimes[index].toISOString()} - ${bucketEndTimes[index].toISOString()}`,
+                        o3_ppb: undefined,
+                        co_ppm: undefined,
+                        so2_ppb: undefined,
+                        no2_ppb: undefined,
+                        pm10_ug_m3: undefined,
+                        pm2_5_ug_m3: undefined,
+                        PM2_5_AQI: undefined,
+                        PM10_AQI: undefined,
+                        SO2_AQI: undefined,
+                        NO2_AQI: undefined,
+                        O3_AQI: undefined,
+                        CO_AQI: undefined
+                    };
+                }
+
+                // Calculate averages for each pollutant
                 return {
                     timeRange: `${bucketStartTimes[index].toISOString()} - ${bucketEndTimes[index].toISOString()}`,
-                    o3_ppb: undefined,
-                    co_ppm: undefined,
-                    so2_ppb: undefined,
-                    no2_ppb: undefined,
-                    pm10_ug_m3: undefined,
-                    pm2_5_ug_m3: undefined,
-                    PM2_5_AQI: undefined,
-                    PM10_AQI: undefined,
-                    SO2_AQI: undefined,
-                    NO2_AQI: undefined,
-                    O3_AQI: undefined,
-                    CO_AQI: undefined
+                    o3_ppb: calculateAverage(bucket.map(d => d.o3_ppb)),
+                    co_ppm: calculateAverage(bucket.map(d => d.co_ppm)),
+                    so2_ppb: calculateAverage(bucket.map(d => d.so2_ppb)),
+                    no2_ppb: calculateAverage(bucket.map(d => d.no2_ppb)),
+                    pm10_ug_m3: calculateAverage(bucket.map(d => d.pm10_ug_m3)),
+                    pm2_5_ug_m3: calculateAverage(bucket.map(d => d.pm2_5_ug_m3)),
+                    PM2_5_AQI: calculateAverage(bucket.map(d => d.PM2_5_AQI)),
+                    PM10_AQI: calculateAverage(bucket.map(d => d.PM10_AQI)),
+                    SO2_AQI: calculateAverage(bucket.map(d => d.SO2_AQI)),
+                    NO2_AQI: calculateAverage(bucket.map(d => d.NO2_AQI)),
+                    O3_AQI: calculateAverage(bucket.map(d => d.O3_AQI)),
+                    CO_AQI: calculateAverage(bucket.map(d => d.CO_AQI))
                 };
-            }
+            });
 
-            // Calculate averages for each pollutant
-            return {
-                timeRange: `${bucketStartTimes[index].toISOString()} - ${bucketEndTimes[index].toISOString()}`,
-                o3_ppb: calculateAverage(bucket.map(d => d.o3_ppb)),
-                co_ppm: calculateAverage(bucket.map(d => d.co_ppm)),
-                so2_ppb: calculateAverage(bucket.map(d => d.so2_ppb)),
-                no2_ppb: calculateAverage(bucket.map(d => d.no2_ppb)),
-                pm10_ug_m3: calculateAverage(bucket.map(d => d.pm10_ug_m3)),
-                pm2_5_ug_m3: calculateAverage(bucket.map(d => d.pm2_5_ug_m3)),
-                PM2_5_AQI: calculateAverage(bucket.map(d => d.PM2_5_AQI)),
-                PM10_AQI: calculateAverage(bucket.map(d => d.PM10_AQI)),
-                SO2_AQI: calculateAverage(bucket.map(d => d.SO2_AQI)),
-                NO2_AQI: calculateAverage(bucket.map(d => d.NO2_AQI)),
-                O3_AQI: calculateAverage(bucket.map(d => d.O3_AQI)),
-                CO_AQI: calculateAverage(bucket.map(d => d.CO_AQI))
-            };
-        });
-
-        // now, in the array, i want to convert timeRange to a timerange in Pakistani timezone, in AM/PM format 
-        const formattedBucketAverages = bucketAverages.map(bucket => {
-            // Extract start and end times from the timeRange
-            const [startIsoString, endIsoString] = bucket.timeRange!.split(' - ');
-            
-            // Convert to Date objects
-            const startDate = new Date(startIsoString);
-            const endDate = new Date(endIsoString);
-            
-            // Format to Pakistani timezone (UTC+5) in AM/PM format
-            const formatToPakistanTime = (date: Date) => {
-                // Add 5 hours for Pakistan timezone (UTC+5)
-                const pakistanDate = new Date(date.getTime() + (5 * 60 * 60 * 1000));
+            // now, in the array, i want to convert timeRange to a timerange in Pakistani timezone, in AM/PM format 
+            const formattedBucketAverages = bucketAverages.map(bucket => {
+                // Extract start and end times from the timeRange
+                const [startIsoString, endIsoString] = bucket.timeRange!.split(' - ');
                 
-                // Format hours for 12-hour clock with AM/PM
-                let hours = pakistanDate.getUTCHours();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12;
-                hours = hours ? hours : 12; // Convert 0 to 12
+                // Convert to Date objects
+                const startDate = new Date(startIsoString);
+                const endDate = new Date(endIsoString);
                 
-                // Format minutes with leading zero if needed
-                const minutes = pakistanDate.getUTCMinutes().toString().padStart(2, '0');
+                // Format to Pakistani timezone (UTC+5) in AM/PM format
+                const formatToPakistanTime = (date: Date) => {
+                    // Add 5 hours for Pakistan timezone (UTC+5)
+                    const pakistanDate = new Date(date.getTime() + (5 * 60 * 60 * 1000));
+                    
+                    // Format hours for 12-hour clock with AM/PM
+                    let hours = pakistanDate.getUTCHours();
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // Convert 0 to 12
+                    
+                    // Format minutes with leading zero if needed
+                    const minutes = pakistanDate.getUTCMinutes().toString().padStart(2, '0');
+                    
+                    return `${hours}:${minutes} ${ampm}`;
+                };
                 
-                return `${hours}:${minutes} ${ampm}`;
-            };
-            
-            // Create the formatted timeRange
-            const formattedTimeRange = `${formatToPakistanTime(startDate)} - ${formatToPakistanTime(endDate)}`;
-            
-            // Return a new object with the formatted timeRange
-            return {
-                ...bucket,
-                label: formattedTimeRange,
-                timeRange: undefined
-            };
-        });
+                // Create the formatted timeRange
+                const formattedTimeRange = `${formatToPakistanTime(startDate)} - ${formatToPakistanTime(endDate)}`;
+                
+                // Return a new object with the formatted timeRange
+                return {
+                    ...bucket,
+                    label: formattedTimeRange,
+                    timeRange: undefined
+                };
+            });
 
-        return formattedBucketAverages;
+            return formattedBucketAverages;
 
-    } catch (error) {
-        logger.error(`Error extracting pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
-        return [];
-    }
+        } catch (error) {
+            logger.error(`Error extracting pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+            return [];
+        }
+    });
 };
 
 export const getPast24HoursEpaMonitorsDataForLocation = async (location: number, currentDateTime: Date): Promise<EpaMonitorsData[]> => {
@@ -394,126 +497,128 @@ export const getPastSixMonthsEpaMonitorsDataForLocation = async (location: numbe
 };
 
 export const getPollutantHistoryDataForPastWeek = async (location: number, currentDateTime: Date): Promise<PollutantBucketData[]> => {
-    try {
-        const pastWeekData = await getPastWeekEpaMonitorsDataForLocation(location, currentDateTime);
-        
-        // Extract only the pollutant concentration/AQI fields and report_date_time
-        const pollutantHistoryData: PollutantHistoryData[] = pastWeekData.map((data: EpaMonitorsData) => ({
-            report_date_time: data.report_date_time,
+    return getCachedTimePeriodData(location, '1w', async () => {
+        try {
+            const pastWeekData = await getPastWeekEpaMonitorsDataForLocation(location, currentDateTime);
             
-            // Pollutant concentration fields
-            o3_ppb: data.o3_ppb,
-            co_ppm: data.co_ppm,
-            so2_ppb: data.so2_ppb,
-            no_ppb: data.no_ppb,
-            no2_ppb: data.no2_ppb,
-            nox_ppb: data.nox_ppb,
-            pm10_ug_m3: data.pm10_ug_m3,
-            pm2_5_ug_m3: data.pm2_5_ug_m3,
-            
-            // AQI values
-            PM2_5_AQI: data.PM2_5_AQI,
-            PM10_AQI: data.PM10_AQI,
-            SO2_AQI: data.SO2_AQI,
-            NO2_AQI: data.NO2_AQI,
-            O3_AQI: data.O3_AQI,
-            CO_AQI: data.CO_AQI
-        }));
+            // Extract only the pollutant concentration/AQI fields and report_date_time
+            const pollutantHistoryData: PollutantHistoryData[] = pastWeekData.map((data: EpaMonitorsData) => ({
+                report_date_time: data.report_date_time,
+                
+                // Pollutant concentration fields
+                o3_ppb: data.o3_ppb,
+                co_ppm: data.co_ppm,
+                so2_ppb: data.so2_ppb,
+                no_ppb: data.no_ppb,
+                no2_ppb: data.no2_ppb,
+                nox_ppb: data.nox_ppb,
+                pm10_ug_m3: data.pm10_ug_m3,
+                pm2_5_ug_m3: data.pm2_5_ug_m3,
+                
+                // AQI values
+                PM2_5_AQI: data.PM2_5_AQI,
+                PM10_AQI: data.PM10_AQI,
+                SO2_AQI: data.SO2_AQI,
+                NO2_AQI: data.NO2_AQI,
+                O3_AQI: data.O3_AQI,
+                CO_AQI: data.CO_AQI
+            }));
 
-        // Create 7 buckets, one for each day of the week
-        const buckets: PollutantHistoryData[][] = Array(7).fill(null).map(() => []);
-        
-        // Calculate the start time for each day (going backward from currentDateTime)
-        const dayStartTimes = Array(7).fill(null).map((_, index) => {
-            const dayStart = new Date(currentDateTime);
-            dayStart.setDate(currentDateTime.getDate() - (7 - index - 1));
-            dayStart.setHours(0, 0, 0, 0); // Start of the day
-            return dayStart;
-        });
-        
-        // Calculate the end time for each day
-        const dayEndTimes = dayStartTimes.map((startTime, index) => {
-            if (index === 6) {
-                return currentDateTime; // Last day ends at currentDateTime
-            }
-            const endTime = new Date(startTime);
-            endTime.setHours(23, 59, 59, 999); // End of the day
-            return endTime;
-        });
-        
-        // Get day names for each bucket
-        const dayNames = dayStartTimes.map((date, index) => {
-            // For the last day (today)
-            if (index === 6) {
-                return "Today";
-            }
-            // For the second-to-last day (yesterday)
-            if (index === 5) {
-                return "Yesterday";
-            }
+            // Create 7 buckets, one for each day of the week
+            const buckets: PollutantHistoryData[][] = Array(7).fill(null).map(() => []);
             
-            // For other days, use the day name
-            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            return days[date.getDay()];
-        });
-        
-        // Distribute data points into appropriate day buckets
-        pollutantHistoryData.forEach(dataPoint => {
-            const dataTime = new Date(dataPoint.report_date_time);
+            // Calculate the start time for each day (going backward from currentDateTime)
+            const dayStartTimes = Array(7).fill(null).map((_, index) => {
+                const dayStart = new Date(currentDateTime);
+                dayStart.setDate(currentDateTime.getDate() - (7 - index - 1));
+                dayStart.setHours(0, 0, 0, 0); // Start of the day
+                return dayStart;
+            });
             
-            for (let i = 0; i < 7; i++) {
-                if (dataTime >= dayStartTimes[i] && dataTime <= dayEndTimes[i]) {
-                    buckets[i].push(dataPoint);
-                    break;
+            // Calculate the end time for each day
+            const dayEndTimes = dayStartTimes.map((startTime, index) => {
+                if (index === 6) {
+                    return currentDateTime; // Last day ends at currentDateTime
                 }
-            }
-        });
+                const endTime = new Date(startTime);
+                endTime.setHours(23, 59, 59, 999); // End of the day
+                return endTime;
+            });
+            
+            // Get day names for each bucket
+            const dayNames = dayStartTimes.map((date, index) => {
+                // For the last day (today)
+                if (index === 6) {
+                    return "Today";
+                }
+                // For the second-to-last day (yesterday)
+                if (index === 5) {
+                    return "Yesterday";
+                }
+                
+                // For other days, use the day name
+                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                return days[date.getDay()];
+            });
+            
+            // Distribute data points into appropriate day buckets
+            pollutantHistoryData.forEach(dataPoint => {
+                const dataTime = new Date(dataPoint.report_date_time);
+                
+                for (let i = 0; i < 7; i++) {
+                    if (dataTime >= dayStartTimes[i] && dataTime <= dayEndTimes[i]) {
+                        buckets[i].push(dataPoint);
+                        break;
+                    }
+                }
+            });
 
-        // Calculate average values for each day
-        const dayAverages: PollutantBucketData[] = buckets.map((bucket, index) => {
-            // If bucket is empty, return object with null values
-            if (bucket.length === 0) {
+            // Calculate average values for each day
+            const dayAverages: PollutantBucketData[] = buckets.map((bucket, index) => {
+                // If bucket is empty, return object with null values
+                if (bucket.length === 0) {
+                    return {
+                        label: dayNames[index],
+                        o3_ppb: undefined,
+                        co_ppm: undefined,
+                        so2_ppb: undefined,
+                        no2_ppb: undefined,
+                        pm10_ug_m3: undefined,
+                        pm2_5_ug_m3: undefined,
+                        PM2_5_AQI: undefined,
+                        PM10_AQI: undefined,
+                        SO2_AQI: undefined,
+                        NO2_AQI: undefined,
+                        O3_AQI: undefined,
+                        CO_AQI: undefined
+                    };
+                }
+
+                // Calculate averages for each pollutant
                 return {
                     label: dayNames[index],
-                    o3_ppb: undefined,
-                    co_ppm: undefined,
-                    so2_ppb: undefined,
-                    no2_ppb: undefined,
-                    pm10_ug_m3: undefined,
-                    pm2_5_ug_m3: undefined,
-                    PM2_5_AQI: undefined,
-                    PM10_AQI: undefined,
-                    SO2_AQI: undefined,
-                    NO2_AQI: undefined,
-                    O3_AQI: undefined,
-                    CO_AQI: undefined
+                    o3_ppb: calculateAverage(bucket.map(d => d.o3_ppb)),
+                    co_ppm: calculateAverage(bucket.map(d => d.co_ppm)),
+                    so2_ppb: calculateAverage(bucket.map(d => d.so2_ppb)),
+                    no2_ppb: calculateAverage(bucket.map(d => d.no2_ppb)),
+                    pm10_ug_m3: calculateAverage(bucket.map(d => d.pm10_ug_m3)),
+                    pm2_5_ug_m3: calculateAverage(bucket.map(d => d.pm2_5_ug_m3)),
+                    PM2_5_AQI: calculateAverage(bucket.map(d => d.PM2_5_AQI)),
+                    PM10_AQI: calculateAverage(bucket.map(d => d.PM10_AQI)),
+                    SO2_AQI: calculateAverage(bucket.map(d => d.SO2_AQI)),
+                    NO2_AQI: calculateAverage(bucket.map(d => d.NO2_AQI)),
+                    O3_AQI: calculateAverage(bucket.map(d => d.O3_AQI)),
+                    CO_AQI: calculateAverage(bucket.map(d => d.CO_AQI))
                 };
-            }
+            });
+            
+            return dayAverages;
 
-            // Calculate averages for each pollutant
-            return {
-                label: dayNames[index],
-                o3_ppb: calculateAverage(bucket.map(d => d.o3_ppb)),
-                co_ppm: calculateAverage(bucket.map(d => d.co_ppm)),
-                so2_ppb: calculateAverage(bucket.map(d => d.so2_ppb)),
-                no2_ppb: calculateAverage(bucket.map(d => d.no2_ppb)),
-                pm10_ug_m3: calculateAverage(bucket.map(d => d.pm10_ug_m3)),
-                pm2_5_ug_m3: calculateAverage(bucket.map(d => d.pm2_5_ug_m3)),
-                PM2_5_AQI: calculateAverage(bucket.map(d => d.PM2_5_AQI)),
-                PM10_AQI: calculateAverage(bucket.map(d => d.PM10_AQI)),
-                SO2_AQI: calculateAverage(bucket.map(d => d.SO2_AQI)),
-                NO2_AQI: calculateAverage(bucket.map(d => d.NO2_AQI)),
-                O3_AQI: calculateAverage(bucket.map(d => d.O3_AQI)),
-                CO_AQI: calculateAverage(bucket.map(d => d.CO_AQI))
-            };
-        });
-        
-        return dayAverages;
-
-    } catch (error) {
-        logger.error(`Error extracting weekly pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
-        return [];
-    }
+        } catch (error) {
+            logger.error(`Error extracting weekly pollutant history data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+            return [];
+        }
+    });
 };
 
 export const getPollutantHistoryDataForPastMonth = async (location: number, currentDateTime: Date): Promise<PollutantBucketData[]> => {
@@ -1060,6 +1165,16 @@ export const getPollutantHistoryDataForPastYear = async (location: number, curre
 
 export const getAllPollutantHistoricalData = async (location: number, currentDateTime: Date): Promise<PollutantHistoricalData> => {
     try {
+        // Check if data exists in cache and is not expired
+        const cachedData = cache.historicalDataForAllPeriods[location];
+        const now = Date.now();
+        if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
+            logger.info(`Using cached historical data for all time periods for location ${location}`);
+            return cachedData.data;
+        }
+
+        logger.info(`Cache miss for historical data (all periods) for location ${location}, fetching from database`);
+        
         // Fetch all historical data in parallel
         const [
             oneDay,
@@ -1077,7 +1192,7 @@ export const getAllPollutantHistoricalData = async (location: number, currentDat
             getPollutantHistoryDataForPastYear(location, currentDateTime)
         ]);
 
-        return {
+        const result = {
             oneDay,
             oneWeek,
             oneMonth,
@@ -1085,6 +1200,14 @@ export const getAllPollutantHistoricalData = async (location: number, currentDat
             sixMonths,
             twelveMonths
         };
+        
+        // Store in cache
+        cache.historicalDataForAllPeriods[location] = {
+            data: result,
+            timestamp: now
+        };
+        
+        return result;
     } catch (error) {
         logger.error(`Error fetching all historical pollutant data for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         return {
@@ -1101,6 +1224,17 @@ export const getAllPollutantHistoricalData = async (location: number, currentDat
 // Get pollutant summary data for a location (current value, daily avg, weekly avg)
 export const getPollutantSummaryForLocation = async (location: number): Promise<PollutantSummaryData> => {
     try {
+        // Check if data exists in cache and is not expired
+        const cachedData = cache.pollutantSummary[location];
+        const now = Date.now();
+        
+        if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
+            logger.info(`Using cached pollutant summary for location ${location}`);
+            return cachedData.data;
+        }
+
+        logger.info(`Cache miss for pollutant summary for location ${location}, fetching data`);
+        
         const currentDateTime = new Date();
         
         // Get current data
@@ -1153,7 +1287,7 @@ export const getPollutantSummaryForLocation = async (location: number): Promise<
         };
         
         // Prepare and return the summary data
-        return {
+        const result = {
             current: {
                 o3_ppb: currentData.o3_ppb,
                 co_ppm: currentData.co_ppm,
@@ -1178,6 +1312,14 @@ export const getPollutantSummaryForLocation = async (location: number): Promise<
             daily_avg: dailyAvg,
             weekly_avg: weeklyAvg
         };
+        
+        // Store result in cache
+        cache.pollutantSummary[location] = {
+            data: result,
+            timestamp: now
+        };
+        
+        return result;
     } catch (error) {
         logger.error(`Error getting pollutant summary for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         throw new Error(`Failed to get pollutant summary for location ${location}`);
@@ -1187,6 +1329,15 @@ export const getPollutantSummaryForLocation = async (location: number): Promise<
 // 🟢 Get Latest EPA Monitors Data from MongoDB for a location
 export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<EpaMonitorsData> => {
     try {
+        // Check if data exists in cache and is not expired
+        const cachedData = cache.currentData[location];
+        const now = Date.now();
+        if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
+            logger.info(`Using cached data for location ${location}`);
+            return cachedData.data;
+        }
+
+        logger.info(`Cache miss for location ${location}, fetching from database`);
         const latestRecord = await EpaMonitorsDataModel.findOne({ location })
             .sort({ report_date_time: -1 }) // Get the latest entry based on report_date_time
             .lean();
@@ -1195,7 +1346,15 @@ export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<
             throw new Error(`No EPA Monitors data found for location ${location}`);
         }
 
-        return latestRecord as EpaMonitorsData;
+        const result = latestRecord as EpaMonitorsData;
+        
+        // Store result in cache
+        cache.currentData[location] = {
+            data: result,
+            timestamp: now
+        };
+        
+        return result;
     } catch (error) {
         logger.error(`Error fetching latest EPA Monitors data from DB for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         throw new Error(`Failed to fetch latest EPA Monitors data for location ${location}`);

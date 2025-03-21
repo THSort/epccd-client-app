@@ -19,7 +19,7 @@ const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response)
     try {
         const location = Number(req.params.location);
 
-        // Fetch the latest data from database instead of from external API
+        // Service now handles caching
         const aqmsData = await getLatestEpaMonitorsDataFromDB(location);
 
         res.json(aqmsData);
@@ -38,6 +38,7 @@ const getHistoricalPollutantsDataForAllTimePeriods = async (req: Request, res: R
         const location = Number(req.params.location);
         const currentDateTime = new Date();
 
+        // Service now handles caching
         const historicalData = await getAllPollutantHistoricalData(location, currentDateTime);
 
         res.json(historicalData);
@@ -57,7 +58,7 @@ const getHistoricalPollutantsDataForSpecificTimePeriod = async (req: Request, re
         const timePeriod = req.params.timePeriod as TimeRange;
         const currentDateTime = new Date();
 
-        // Get the appropriate data based on time period
+        // Each service function now handles its own caching
         let data: PollutantBucketData[] = [];
         switch (timePeriod) {
             case '1d':
@@ -95,6 +96,7 @@ const getPollutantSummaryForLocation = async (req: Request, res: Response): Prom
     try {
         const location = Number(req.params.location);
         
+        // Service now handles caching
         const summaryData = await getPollutantSummaryService(location);
         
         res.json(summaryData);

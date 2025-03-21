@@ -1,8 +1,7 @@
 import axios from 'axios';
 import {Location} from '../App.types';
-import {EpaMonitorsApiResponse, HistoricalEpaMonitorsDataResponse, FilteredHistoricalDataResponse, PollutantSummaryResponse, PollutantChartData} from '../types/epaMonitorsApiResponse.types';
+import {EpaMonitorsApiResponse, FilteredHistoricalDataResponse, PollutantSummaryResponse, PollutantChartData} from '../types/epaMonitorsApiResponse.types';
 import {TimeRange} from '../screens/air-quality-history/components/time-range-selector/time-range-selector.types.ts';
-import {Pollutant} from '../screens/air-quality-detailed-report/air-quality-detailed-report.types.ts';
 
 // Base URL for API requests
 const API_BASE_URL = 'http://10.0.2.2:5000/api/epa-monitors'; // Change this to your actual backend URL
@@ -14,8 +13,6 @@ const API_BASE_URL = 'http://10.0.2.2:5000/api/epa-monitors'; // Change this to 
  */
 export const fetchEpaMonitorsData = async (location: Location): Promise<EpaMonitorsApiResponse> => {
     try {
-        console.log(`${API_BASE_URL}/epaMonitorsData/${location.locationCode}`);
-
         const response = await axios.get(`${API_BASE_URL}/epaMonitorsData/${location.locationCode}`);
         return response.data;
     } catch (error) {
@@ -32,8 +29,6 @@ export const fetchEpaMonitorsData = async (location: Location): Promise<EpaMonit
 export const fetchHistoricalEpaMonitorsData = async (location: Location): Promise<FilteredHistoricalDataResponse> => {
     try {
         const url = `${API_BASE_URL}/epaMonitorsData/historical/${location.locationCode}`;
-
-        console.log(`Fetching historical data from: ${url}`);
 
         const response = await axios.get(url);
         return response.data;
@@ -54,8 +49,6 @@ export const fetchPollutantDataForTimePeriod = async (location: Location, timePe
     try {
         const url = `${API_BASE_URL}/epaMonitorsData/historical/${location.locationCode}/${timePeriod}`;
 
-        console.log(`Fetching pollutant data for time period from: ${url}`);
-
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -72,8 +65,6 @@ export const fetchPollutantDataForTimePeriod = async (location: Location, timePe
 export const fetchPollutantSummary = async (location: Location): Promise<PollutantSummaryResponse> => {
     try {
         const url = `${API_BASE_URL}/epaMonitorsData/summary/${location.locationCode}`;
-
-        console.log(`Fetching pollutant summary data from: ${url}`);
 
         const response = await axios.get(url);
         return response.data;
