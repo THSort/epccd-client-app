@@ -317,7 +317,7 @@ export function AirQualityDetailedReport(): ReactElement {
                     onOpenLocationModal={openLocationModal}
                 />
             </View>
-            <LahoreGraph/>
+            <LahoreGraph selectedLocation={location}/>
             {getAqiSummary()}
             <View style={styles.divider}/>
             {getPollutantLevels()}

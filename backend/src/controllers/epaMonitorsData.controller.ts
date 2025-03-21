@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import {
     fetchCurrentEpaMonitorsDataForLocation,
+    getLatestEpaMonitorsDataFromDB,
     getAllPollutantHistoricalData,
     getPollutantHistoryDataForPast24Hours,
     getPollutantHistoryDataForPastWeek,
@@ -18,14 +19,15 @@ const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response)
     try {
         const location = Number(req.params.location);
 
-        const aqmsData = await fetchCurrentEpaMonitorsDataForLocation(location);
+        // Fetch the latest data from database instead of from external API
+        const aqmsData = await getLatestEpaMonitorsDataFromDB(location);
 
         res.json(aqmsData);
     } catch (error) {
         if (error instanceof Error) {
-            logger.error(`Error fetching EPA Monitors data for location ${req.query.location}: ${error.message}`);
+            logger.error(`Error fetching EPA Monitors data for location ${req.params.location}: ${error.message}`);
         } else {
-            logger.error(`Unknown error while fetching EPA Monitors data for location ${req.query.location}`);
+            logger.error(`Unknown error while fetching EPA Monitors data for location ${req.params.location}`);
         }
         res.status(500).json({message: "Failed to fetch EPA Monitors data"});
     }

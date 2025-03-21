@@ -1,3 +1,5 @@
+import { Location } from '../../../../App.types';
+
 export interface LahoreGraphProps {
-    // Add props here
+    selectedLocation?: Location;
 }

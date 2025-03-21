@@ -1183,3 +1183,21 @@ export const getPollutantSummaryForLocation = async (location: number): Promise<
         throw new Error(`Failed to get pollutant summary for location ${location}`);
     }
 };
+
+// 🟢 Get Latest EPA Monitors Data from MongoDB for a location
+export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<EpaMonitorsData> => {
+    try {
+        const latestRecord = await EpaMonitorsDataModel.findOne({ location })
+            .sort({ report_date_time: -1 }) // Get the latest entry based on report_date_time
+            .lean();
+
+        if (!latestRecord) {
+            throw new Error(`No EPA Monitors data found for location ${location}`);
+        }
+
+        return latestRecord as EpaMonitorsData;
+    } catch (error) {
+        logger.error(`Error fetching latest EPA Monitors data from DB for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        throw new Error(`Failed to fetch latest EPA Monitors data for location ${location}`);
+    }
+};

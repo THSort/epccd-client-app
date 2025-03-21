@@ -9,10 +9,10 @@ import {getAqiColor} from '../../../../utils/aqi-colors.util';
 import {useUserActivity} from '../../../../context/UserActivityContext';
 import {ACTION_TYPES, ELEMENT_NAMES, SCREEN_NAMES} from '../../../../utils/trackingConstants';
 
-export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
+export function LahoreGraph(props: LahoreGraphProps): ReactElement {
     // Use the activity tracking context
     const {trackActivity} = useUserActivity();
-    
+
     // Hardcoded AQI values for each location - these will be replaced with real data later
     const locationAqiData: Record<string, number> = {
         '1': 45,  // Good
@@ -38,7 +38,7 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
                 longitude: region.longitude,
                 latitudeDelta: region.latitudeDelta,
                 longitudeDelta: region.longitudeDelta,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             }
         );
     };
@@ -52,7 +52,7 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
                 screen_name: SCREEN_NAMES.DETAILED_REPORT,
                 latitude: event.nativeEvent.coordinate.latitude,
                 longitude: event.nativeEvent.coordinate.longitude,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             }
         );
     };
@@ -69,7 +69,7 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
                 aqi: locationAqiData[location.locationCode],
                 latitude: location.latitude,
                 longitude: location.longitude,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             }
         );
     };
@@ -80,10 +80,10 @@ export function LahoreGraph(_props: LahoreGraphProps): ReactElement {
                 provider={PROVIDER_GOOGLE}
                 style={styles.mapView}
                 region={{
-                    latitude: 31.5204,
-                    longitude: 74.3587,
-                    latitudeDelta: 0.2,
-                    longitudeDelta: 0.2,
+                    latitude: props.selectedLocation?.latitude ?? 31.5204,
+                    longitude: props.selectedLocation?.longitude ?? 74.3587,
+                    latitudeDelta: 0.03,
+                    longitudeDelta: 0.03,
                 }}
                 zoomEnabled={true}
                 zoomControlEnabled={true}
