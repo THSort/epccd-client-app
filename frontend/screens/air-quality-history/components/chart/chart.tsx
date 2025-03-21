@@ -100,7 +100,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                 verticalLinesColor={'black'}
                 scrollToEnd={true}
                 nestedScrollEnabled={true}
-                yAxisOffset={Math.max(Number(Math.min(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) - 10, 0)}
+                // yAxisOffset={Math.max(Number(Math.min(...props.data.values.filter((v): v is number => v !== undefined)).toFixed(0)) - 10, 0)}
                 scrollAnimation={true}
                 areaChart
                 data={getChartFormattedData()}
