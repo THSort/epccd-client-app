@@ -37,6 +37,7 @@ export function AirQualityDetailedReport(): ReactElement {
     const [isFetchingData, setIsFetchingData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [updateTimerKey, setUpdateTimerKey] = useState<number>(0); // Add state for timer refresh
 
     // Map pollutant types to translation keys
     const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
@@ -134,6 +135,17 @@ export function AirQualityDetailedReport(): ReactElement {
         void loadData();
     }, [location, currentLanguage]);
 
+    // Add timer to update the "time since update" text every minute
+    useEffect(() => {
+        // Update timer every minute (60000ms)
+        const timer = setInterval(() => {
+            setUpdateTimerKey(prev => prev + 1);
+        }, 60000);
+        
+        // Clear timer on component unmount
+        return () => clearInterval(timer);
+    }, []);
+
     const getHeader = () => {
         return (
             <View style={styles.header}>
@@ -182,7 +194,12 @@ export function AirQualityDetailedReport(): ReactElement {
                 </View>
                 <View>
                     <Text style={styles.updateLabel}>{getTranslation('updated', currentLanguage)}</Text>
-                    <Text style={styles.updateTime}>{getTranslatedTimeSinceUpdate(lastUpdated, currentLanguage)}</Text>
+                    <Text 
+                        key={`update-time-${updateTimerKey}`} 
+                        style={styles.updateTime}
+                    >
+                        {getTranslatedTimeSinceUpdate(lastUpdated, currentLanguage)}
+                    </Text>
                 </View>
             </View>
         );

@@ -8,7 +8,7 @@ export interface TranslationStrings {
   viewDetailedReport: string;
   settings: string;
   selectLocation: string;
-  
+
   // AQI descriptions
   good: string;
   satisfactory: string;
@@ -17,13 +17,13 @@ export interface TranslationStrings {
   unhealthy: string;
   veryUnhealthy: string;
   hazardous: string;
-  
+
   // Error messages
   failedToLoadAirQuality: string;
   noDataAvailable: string;
   failedToLoadHistoricalData: string;
   noHistoricalDataAvailable: string;
-  
+
   // Other common strings
   loading: string;
   updated: string;
@@ -31,12 +31,12 @@ export interface TranslationStrings {
   minAgo: string;
   minsAgo: string;
   notUpdatedYet: string;
-  
+
   // Air Quality Report screen
   airQualityReport: string;
   pollutantLevels: string;
   viewHistory: string;
-  
+
   // Air Quality History screen
   airQualityHistory: string;
   concentration: string;
@@ -46,7 +46,7 @@ export interface TranslationStrings {
   weeklyAverage: string;
   today: string;
   yesterday: string;
-  
+
   // Time ranges
   day: string;
   week: string;
@@ -54,7 +54,7 @@ export interface TranslationStrings {
   threeMonths: string;
   sixMonths: string;
   year: string;
-  
+
   // Pollutant names and descriptions
   pm25: string;
   pm25Description: string;
@@ -68,24 +68,24 @@ export interface TranslationStrings {
   no2Description: string;
   co: string;
   coDescription: string;
-  
+
   // Units
   ugm3: string;
   ppb: string;
   ppm: string;
-  
+
   // City names
   lahore: string;
   islamabad: string;
   karachi: string;
-  
+
   // Location names
   sagianRoadLahore: string;
   mahmoodBootiLahore: string;
   wwfFerozpurRoadLahore: string;
   egertonRoadLahore: string;
   hillParkLahore: string;
-  
+
   // Digits
   digit0: string;
   digit1: string;
@@ -108,7 +108,7 @@ const translations: Record<Language, TranslationStrings> = {
     viewDetailedReport: 'View Detailed Report',
     settings: 'Settings',
     selectLocation: 'Select Location',
-    
+
     // AQI descriptions
     good: 'Good',
     satisfactory: 'Satisfactory',
@@ -117,13 +117,13 @@ const translations: Record<Language, TranslationStrings> = {
     unhealthy: 'Unhealthy',
     veryUnhealthy: 'Very Unhealthy',
     hazardous: 'Hazardous',
-    
+
     // Error messages
     failedToLoadAirQuality: 'Failed to load air quality data. Please try again later.',
     noDataAvailable: 'No data available',
     failedToLoadHistoricalData: 'Failed to load historical air quality data. Please try again later.',
     noHistoricalDataAvailable: 'No historical data available',
-    
+
     // Other common strings
     loading: 'Loading...',
     updated: 'Updated',
@@ -131,12 +131,12 @@ const translations: Record<Language, TranslationStrings> = {
     minAgo: '1 min ago',
     minsAgo: '{mins} mins ago',
     notUpdatedYet: 'Not updated yet',
-    
+
     // Air Quality Report screen
     airQualityReport: 'Air Quality Report',
     pollutantLevels: 'Pollutant Levels',
     viewHistory: 'View History',
-    
+
     // Air Quality History screen
     airQualityHistory: 'Air Quality History',
     concentration: 'Concentration',
@@ -146,7 +146,7 @@ const translations: Record<Language, TranslationStrings> = {
     weeklyAverage: 'Weekly Average',
     today: 'Today',
     yesterday: 'Yesterday',
-    
+
     // Time ranges
     day: '1 Day',
     week: '1 Week',
@@ -154,7 +154,7 @@ const translations: Record<Language, TranslationStrings> = {
     threeMonths: '3 Months',
     sixMonths: '6 Months',
     year: '1 Year',
-    
+
     // Pollutant names and descriptions
     pm25: 'PM₂.₅',
     pm25Description: 'Fine Particles',
@@ -168,24 +168,24 @@ const translations: Record<Language, TranslationStrings> = {
     no2Description: 'Nitrogen Dioxide',
     co: 'CO',
     coDescription: 'Carbon Monoxide',
-    
+
     // Units
     ugm3: 'μg/m³',
     ppb: 'ppb',
     ppm: 'ppm',
-    
+
     // City names
     lahore: 'Lahore',
     islamabad: 'Islamabad',
     karachi: 'Karachi',
-    
+
     // Location names
     sagianRoadLahore: 'Sagian Road, Lahore',
     mahmoodBootiLahore: 'Mahmood Booti, Lahore',
     wwfFerozpurRoadLahore: 'WWF Ferozpur Road, Lahore',
     egertonRoadLahore: 'Egerton Road, Lahore',
     hillParkLahore: 'Hill Park, Lahore',
-    
+
     // Digits - English uses standard Arabic numerals
     digit0: '0',
     digit1: '1',
@@ -205,7 +205,7 @@ const translations: Record<Language, TranslationStrings> = {
     viewDetailedReport: 'تفصیلی رپورٹ دیکھیں',
     settings: 'ترتیبات',
     selectLocation: 'مقام منتخب کریں',
-    
+
     // AQI descriptions
     good: 'اچھا',
     satisfactory: 'تسلی بخش',
@@ -214,13 +214,13 @@ const translations: Record<Language, TranslationStrings> = {
     unhealthy: 'غیر صحت مند',
     veryUnhealthy: 'بہت غیر صحت مند',
     hazardous: 'خطرناک',
-    
+
     // Error messages
     failedToLoadAirQuality: 'ہوا کے معیار کا ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     noDataAvailable: 'کوئی ڈیٹا دستیاب نہیں ہے',
     failedToLoadHistoricalData: 'ہوا کے معیار کا تاریخی ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     noHistoricalDataAvailable: 'کوئی تاریخی ڈیٹا دستیاب نہیں ہے',
-    
+
     // Other common strings
     loading: 'لوڈ ہو رہا ہے...',
     updated: 'اپ ڈیٹ شدہ',
@@ -228,12 +228,12 @@ const translations: Record<Language, TranslationStrings> = {
     minAgo: '1 منٹ پہلے',
     minsAgo: '{mins} منٹ پہلے',
     notUpdatedYet: 'ابھی تک اپڈیٹ نہیں ہوا',
-    
+
     // Air Quality Report screen
     airQualityReport: 'ہوا کی معیار کی رپورٹ',
     pollutantLevels: 'آلودگی کی سطح',
     viewHistory: 'تاریخ دیکھیں',
-    
+
     // Air Quality History screen
     airQualityHistory: 'ہوا کے معیار کی تاریخ',
     concentration: 'ارتکاز',
@@ -243,7 +243,7 @@ const translations: Record<Language, TranslationStrings> = {
     weeklyAverage: 'ہفتہ وار اوسط',
     today: 'آج',
     yesterday: 'گذشتہ دن',
-    
+
     // Time ranges
     day: '1 دن',
     week: '1 ہفتہ',
@@ -251,7 +251,7 @@ const translations: Record<Language, TranslationStrings> = {
     threeMonths: '3 مہینے',
     sixMonths: '6 مہینے',
     year: '1 سال',
-    
+
     // Pollutant names and descriptions
     pm25: 'پی ایم₂.₅',
     pm25Description: 'باریک ذرات',
@@ -265,24 +265,24 @@ const translations: Record<Language, TranslationStrings> = {
     no2Description: 'نائٹروجن ڈائی آکسائیڈ',
     co: 'سی او',
     coDescription: 'کاربن مونو آکسائیڈ',
-    
+
     // Units
     ugm3: 'μg/m³',
     ppb: 'ppb',
     ppm: 'ppm',
-    
+
     // City names
     lahore: 'لاہور',
     islamabad: 'اسلام آباد',
     karachi: 'کراچی',
-    
+
     // Location names
     sagianRoadLahore: 'ساگیاں روڈ، لاہور',
     mahmoodBootiLahore: 'محمود بوٹی، لاہور',
     wwfFerozpurRoadLahore: 'ڈبلیو ڈبلیو ایف فیروزپور روڈ، لاہور',
     egertonRoadLahore: 'ایجرٹن روڈ، لاہور',
     hillParkLahore: 'ہل پارک، لاہور',
-    
+
     // Digits - Urdu/Eastern Arabic numerals
     digit0: '۰',
     digit1: '۱',
@@ -295,7 +295,7 @@ const translations: Record<Language, TranslationStrings> = {
     digit8: '۸',
     digit9: '۹',
     decimalPoint: '٫',
-  }
+  },
 };
 
 // Helper function to get translations based on selected language
@@ -319,14 +319,14 @@ export const getTranslatedLocationName = (locationName: string, language: Langua
     'Hill Park, Lahore': 'hillParkLahore',
     // Add more locations as needed
   };
-  
+
   const key = locationNameToKey[locationName];
-  
+
   // If we have a translation key for this location, use it
   if (key) {
     return getTranslation(key, language);
   }
-  
+
   // Otherwise return the original location name
   return locationName;
 };
@@ -340,14 +340,14 @@ export const getTranslatedCityName = (cityName: string, language: Language): str
     'Karachi': 'karachi',
     // Add more cities as needed
   };
-  
+
   const key = cityNameToKey[cityName];
-  
+
   // If we have a translation key for this city, use it
   if (key) {
     return getTranslation(key, language);
   }
-  
+
   // Otherwise return the original city name
   return cityName;
 };
@@ -375,7 +375,7 @@ export const getTranslatedTimeSinceUpdate = (lastUpdated: Date | null, language:
 export const getTranslatedNumber = (number: string | number, language: Language): string => {
   // Convert the number to a string if it's not already
   const numStr = number.toString();
-  
+
   // Replace each digit with its translated version
   let translatedNumber = '';
   for (let i = 0; i < numStr.length; i++) {
@@ -391,6 +391,6 @@ export const getTranslatedNumber = (number: string | number, language: Language)
       translatedNumber += char;
     }
   }
-  
+
   return translatedNumber;
-}; 
+};
