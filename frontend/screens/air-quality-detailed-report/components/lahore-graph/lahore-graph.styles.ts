@@ -12,6 +12,7 @@ export const styles = StyleSheet.create({
     containerWithLegend: {
         width: '100%',
         marginVertical: 10,
+        marginBottom: 0,
         borderRadius: 10,
         overflow: 'hidden',
     },

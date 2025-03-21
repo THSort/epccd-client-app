@@ -71,7 +71,7 @@ export const styles = StyleSheet.create({
         color: 'yellow',
     },
     pollutantList: {
-        height: 300,
+        height: 325,
     },
     pollutantListContent: {
         alignItems: 'center',
