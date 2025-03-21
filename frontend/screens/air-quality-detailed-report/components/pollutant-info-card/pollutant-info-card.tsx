@@ -64,7 +64,12 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
             >
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Icon name="line-chart" size={15} color="yellow" style={styles.historyIcon} />
-                    <Text style={styles.historyText}>{props.viewHistoryText || 'View History'}</Text>
+                    <Text style={[
+                        styles.historyText,
+                        currentLanguage === 'اردو' && { fontSize: 17 }  // Increase font size by 2px for Urdu
+                    ]}>
+                        {props.viewHistoryText || 'View History'}
+                    </Text>
                 </View>
             </TrackableButton>
         );

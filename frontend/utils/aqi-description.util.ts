@@ -6,11 +6,19 @@ export const getAqiDescription = (aqi: number, language: Language = 'Eng'): { le
     return {
       level: getTranslation('good', language),
       message: language === 'Eng' 
+        ? 'Air quality is good, and air pollution poses little or no risk.'
+        : 'ہوا کا معیار اچھا ہے، اور ہوا کی آلودگی کم یا کوئی خطرہ نہیں ہے۔'
+    };
+  }
+  if (aqi <= 100) {
+    return {
+      level: getTranslation('satisfactory', language),
+      message: language === 'Eng'
         ? 'Air quality is satisfactory, and air pollution poses little or no risk.'
         : 'ہوا کا معیار تسلی بخش ہے، اور ہوا کی آلودگی کم یا کوئی خطرہ نہیں ہے۔'
     };
   }
-  if (aqi <= 100) {
+  if (aqi <= 150) {
     return {
       level: getTranslation('moderate', language),
       message: language === 'Eng'
@@ -18,7 +26,7 @@ export const getAqiDescription = (aqi: number, language: Language = 'Eng'): { le
         : 'ہوا کا معیار قابل قبول ہے۔ تاہم، کچھ لوگوں کے لیے خطرہ ہو سکتا ہے۔'
     };
   }
-  if (aqi <= 150) {
+  if (aqi <= 200) {
     return {
       level: getTranslation('unhealthyForSensitive', language),
       message: language === 'Eng'
@@ -26,7 +34,7 @@ export const getAqiDescription = (aqi: number, language: Language = 'Eng'): { le
         : 'حساس گروپوں کے ممبران صحت کے اثرات کا تجربہ کر سکتے ہیں۔'
     };
   }
-  if (aqi <= 200) {
+  if (aqi <= 300) {
     return {
       level: getTranslation('unhealthy', language),
       message: language === 'Eng'
@@ -34,7 +42,7 @@ export const getAqiDescription = (aqi: number, language: Language = 'Eng'): { le
         : 'ہر کوئی صحت کے اثرات کا تجربہ کرنا شروع کر سکتا ہے۔'
     };
   }
-  if (aqi <= 300) {
+  if (aqi <= 400) {
     return {
       level: getTranslation('veryUnhealthy', language),
       message: language === 'Eng'

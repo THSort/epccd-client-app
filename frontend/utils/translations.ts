@@ -11,6 +11,7 @@ export interface TranslationStrings {
   
   // AQI descriptions
   good: string;
+  satisfactory: string;
   moderate: string;
   unhealthyForSensitive: string;
   unhealthy: string;
@@ -110,8 +111,9 @@ const translations: Record<Language, TranslationStrings> = {
     
     // AQI descriptions
     good: 'Good',
+    satisfactory: 'Satisfactory',
     moderate: 'Moderate',
-    unhealthyForSensitive: 'Unhealthy for Sensitive Groups',
+    unhealthyForSensitive: 'Unhealthy for Sensitive Group',
     unhealthy: 'Unhealthy',
     veryUnhealthy: 'Very Unhealthy',
     hazardous: 'Hazardous',
@@ -206,8 +208,9 @@ const translations: Record<Language, TranslationStrings> = {
     
     // AQI descriptions
     good: 'اچھا',
+    satisfactory: 'تسلی بخش',
     moderate: 'معتدل',
-    unhealthyForSensitive: 'حساس گروپوں کے لیے غیر صحت مند',
+    unhealthyForSensitive: 'حساس گروپ کے لیے غیر صحت مند',
     unhealthy: 'غیر صحت مند',
     veryUnhealthy: 'بہت غیر صحت مند',
     hazardous: 'خطرناک',
