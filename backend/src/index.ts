@@ -31,7 +31,7 @@ app.use("/api/user-activity", userActivityRoutes); // User activity tracking rou
 const startServer = async () => {
     try {
         await connectDB(); // Ensure DB is connected before starting the server
-        app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+        app.listen(PORT, "0.0.0.0", () => console.log(`🚀 Server running on port ${PORT}`));
 
         // // Start polling EPA Monitors Data every 5 minutes
         // const POLLING_INTERVAL_MS = 5 * 60 * 1000;
