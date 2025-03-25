@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { Location } from '../App.types';
 
 // Base URL for API requests
-const API_BASE_URL = 'http://10.0.2.2:5000/api'; // Same base URL as other services
+const API_BASE_URL = 'http://13.61.251.147/api';
 
 /**
  * Register a new user

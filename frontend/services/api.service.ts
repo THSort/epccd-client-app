@@ -4,7 +4,7 @@ import {EpaMonitorsApiResponse, FilteredHistoricalDataResponse, PollutantSummary
 import {TimeRange} from '../screens/air-quality-history/components/time-range-selector/time-range-selector.types.ts';
 
 // Base URL for API requests
-const API_BASE_URL = 'http://10.0.2.2:5000/api/epa-monitors'; // Change this to your actual backend URL
+const API_BASE_URL = 'http://13.61.251.147/api/epa-monitors';
 
 /**
  * Fetches EPA Monitors data for a specific location
