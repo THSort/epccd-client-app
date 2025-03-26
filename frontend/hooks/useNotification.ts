@@ -10,9 +10,9 @@ const requestUserPermission = async () => {
     const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
 
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Notifications permission granted');
+        // console.log('Notifications permission granted');
     } else {
-        console.log('Notifications permission denied');
+        // console.log('Notifications permission denied');
     }
 };
 
@@ -23,9 +23,9 @@ const requestUserPermission = async () => {
 export const storeFcmToken = async (token: string): Promise<void> => {
     try {
         await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
-        console.log('FCM token stored successfully');
+        // console.log('FCM token stored successfully');
     } catch (error) {
-        console.error('Error storing FCM token:', error);
+        // console.error('Error storing FCM token:', error);
         throw error;
     }
 };
@@ -53,13 +53,13 @@ export const generateFcmToken = async (): Promise<string> => {
         const storedToken = await getFcmTokenFromStorage();
 
         if (storedToken) {
-            console.log('Using existing FCM token from storage');
+            // console.log('Using existing FCM token from storage');
             return storedToken;
         }
 
         // Generate new token if not found in storage
         const newToken = await messaging().getToken();
-        console.log('New FCM token generated:', newToken);
+        // console.log('New FCM token generated:', newToken);
 
         // Store the new token
         await storeFcmToken(newToken);

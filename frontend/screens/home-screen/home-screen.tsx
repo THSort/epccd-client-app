@@ -80,7 +80,7 @@ const HomeScreen = () => {
 
         // Set up polling every 5 minutes (300000 ms)
         pollingIntervalRef.current = setInterval(() => {
-            console.log('Polling for updated AQI data...');
+            // console.log('Polling for updated AQI data...');
             loadAqi();
         }, 300000);
 
