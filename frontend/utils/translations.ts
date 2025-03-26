@@ -9,6 +9,22 @@ export interface TranslationStrings {
   settings: string;
   selectLocation: string;
 
+  // Registration screen
+  selectAreaTitle: string;
+  selectArea: string;
+  mobileNumberTitle: string;
+  mobileNumberPlaceholder: string;
+  skip: string;
+  skipAll: string;
+  asthmaTitle: string;
+  yes: string;
+  no: string;
+  settingUpAccount: string;
+  pleaseSelectLocation: string;
+  preparingNotifications: string;
+  notificationTokenError: string;
+  registrationError: string;
+
   // AQI descriptions
   good: string;
   satisfactory: string;
@@ -109,6 +125,22 @@ const translations: Record<Language, TranslationStrings> = {
     settings: 'Settings',
     selectLocation: 'Select Location',
 
+    // Registration screen
+    selectAreaTitle: 'Which area do you want to receive AQI alerts for?',
+    selectArea: 'Select Area',
+    mobileNumberTitle: 'Please enter your\nMobile Number',
+    mobileNumberPlaceholder: '3240152180',
+    skip: 'Skip',
+    skipAll: 'Skip All',
+    asthmaTitle: 'Do you have a history of\nAsthma?',
+    yes: 'Yes',
+    no: 'No',
+    settingUpAccount: 'Setting up your account...',
+    pleaseSelectLocation: 'Please select a location first',
+    preparingNotifications: 'Still preparing notification settings. Please wait a moment and try again.',
+    notificationTokenError: 'Unable to generate notification token. Please try again.',
+    registrationError: 'Failed to complete registration. Please try again.',
+
     // AQI descriptions
     good: 'Good',
     satisfactory: 'Satisfactory',
@@ -205,6 +237,22 @@ const translations: Record<Language, TranslationStrings> = {
     viewDetailedReport: 'تفصیلی رپورٹ دیکھیں',
     settings: 'ترتیبات',
     selectLocation: 'مقام منتخب کریں',
+
+    // Registration screen
+    selectAreaTitle: 'آپ کس علاقے کے لیے اے کیو آئی الرٹس حاصل کرنا چاہیں گے؟',
+    selectArea: 'علاقہ منتخب کریں',
+    mobileNumberTitle: 'براہ کرم اپنا\nموبائل نمبر درج کریں',
+    mobileNumberPlaceholder: '3240152180',
+    skip: 'چھوڑیں',
+    skipAll: 'سب چھوڑیں',
+    asthmaTitle: 'کیا آپ کو دمہ کی تاریخ ہے؟',
+    yes: 'جی ہاں',
+    no: 'نہیں',
+    settingUpAccount: 'آپ کا اکاؤنٹ سیٹ ہو رہا ہے...',
+    pleaseSelectLocation: 'براہ کرم پہلے ایک مقام منتخب کریں',
+    preparingNotifications: 'اب بھی نوٹیفیکیشن کی ترتیبات تیار ہو رہی ہیں۔ براہ کرم تھوڑی دیر انتظار کریں اور دوبارہ کوشش کریں۔',
+    notificationTokenError: 'نوٹیفیکیشن ٹوکن تیار کرنے میں ناکام۔ براہ کرم دوبارہ کوشش کریں۔',
+    registrationError: 'رجسٹریشن مکمل کرنے میں ناکام۔ براہ کرم دوبارہ کوشش کریں۔',
 
     // AQI descriptions
     good: 'اچھا',

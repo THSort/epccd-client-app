@@ -8,7 +8,9 @@ import { useSelectedLocation } from '../../context/SelectedLocationContext';
 import { RegistrationScreenProps, RegistrationStep } from './registration-screen.types';
 import { styles } from './registration-screen.styles';
 import { useNotification } from '../../hooks/useNotification';
-import {LanguageToggle} from '../../components/language-toggle/language-toggle.tsx';
+import { LanguageToggle } from '../../components/language-toggle/language-toggle.tsx';
+import { useSelectedLanguage } from '../../context/SelectedLanguageContext';
+import { getTranslation, Language } from '../../utils/translations';
 
 export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegistrationComplete }) => {
   // Step tracking
@@ -19,6 +21,10 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
   // Get FCM token using the hook
   const { fcmToken, loading: fcmTokenLoading } = useNotification();
+
+  // Get selected language
+  const { selectedLanguage } = useSelectedLanguage();
+  const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
   // Form data
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);
@@ -60,7 +66,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   const handleSkipAll = async () => {
     // Double-check that we have a location selected
     if (!selectedLocation) {
-      setError('Please select a location first');
+      setError(getTranslation('pleaseSelectLocation', currentLanguage));
       setCurrentStep(RegistrationStep.Location);
       return;
     }
@@ -84,7 +90,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
       await completeRegistration(false); // Default to "No" for asthma
     } catch (error) {
       console.error('Error in skip all flow:', error);
-      setError('Something went wrong. Please try again.');
+      setError(getTranslation('registrationError', currentLanguage));
       setIsLoading(false);
     }
   };
@@ -99,7 +105,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   // Handle skip asthma question
   const handleSkipAsthma = async () => {
     if (!selectedLocation) {
-      setError('Please select a location first');
+      setError(getTranslation('pleaseSelectLocation', currentLanguage));
       setCurrentStep(RegistrationStep.Location);
       return;
     }
@@ -114,18 +120,18 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   const completeRegistration = async (asthmaValue: boolean) => {
     // Validate required data
     if (!selectedLocation) {
-      setError('Please select a location first');
+      setError(getTranslation('pleaseSelectLocation', currentLanguage));
       setCurrentStep(RegistrationStep.Location);
       return;
     }
 
     if (fcmTokenLoading) {
-      setError('Still preparing notification settings. Please wait a moment and try again.');
+      setError(getTranslation('preparingNotifications', currentLanguage));
       return;
     }
 
     if (!fcmToken) {
-      setError('Unable to generate notification token. Please try again.');
+      setError(getTranslation('notificationTokenError', currentLanguage));
       return;
     }
 
@@ -157,7 +163,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
       onRegistrationComplete();
     } catch (err) {
       console.error('Registration error:', err);
-      setError('Failed to complete registration. Please try again.');
+      setError(getTranslation('registrationError', currentLanguage));
       setIsLoading(false);
     }
   };
@@ -220,7 +226,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
             {renderProgressIndicators()}
 
             <Text style={styles.stepTitle}>
-              Which area do you want to receive AQI alerts for?
+              {getTranslation('selectAreaTitle', currentLanguage)}
             </Text>
 
             <TouchableOpacity
@@ -228,7 +234,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
               onPress={handleOpenLocationModal}
             >
               <Text style={styles.selectAreaButtonText}>
-                {selectedLocation ? selectedLocation.locationName : 'Select Area'}
+                {selectedLocation ? selectedLocation.locationName : getTranslation('selectArea', currentLanguage)}
               </Text>
               <Text style={styles.dropdownIcon}>▼</Text>
             </TouchableOpacity>
@@ -239,7 +245,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
           <View style={styles.stepContainer}>
             {renderProgressIndicators()}
             <Text style={styles.stepTitle}>
-              Please enter your{'\n'}Mobile Number
+              {getTranslation('mobileNumberTitle', currentLanguage)}
             </Text>
 
             <View style={styles.phoneInputContainer}>
@@ -248,7 +254,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
               </View>
               <TextInput
                 style={styles.phoneInput}
-                placeholder="3240152180"
+                placeholder={getTranslation('mobileNumberPlaceholder', currentLanguage)}
                 placeholderTextColor="#666666"
                 value={mobileNumber}
                 onChangeText={setMobileNumber}
@@ -258,7 +264,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
             <TouchableOpacity style={styles.skipButton} onPress={handleMobileSubmit}>
               <Text style={styles.skipIcon}>▶</Text>
-              <Text style={styles.skipButtonText}>Skip</Text>
+              <Text style={styles.skipButtonText}>{getTranslation('skip', currentLanguage)}</Text>
             </TouchableOpacity>
           </View>
         );
@@ -267,7 +273,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
           <View style={styles.stepContainer}>
             {renderProgressIndicators()}
             <Text style={styles.stepTitle}>
-              Do you have a history of{'\n'}Asthma?
+              {getTranslation('asthmaTitle', currentLanguage)}
             </Text>
 
             <TouchableOpacity
@@ -277,7 +283,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
             >
               <View style={styles.asthmaOptionContent}>
                 <Text style={styles.checkIcon}>✓</Text>
-                <Text style={styles.asthmaOptionText}>Yes</Text>
+                <Text style={styles.asthmaOptionText}>{getTranslation('yes', currentLanguage)}</Text>
               </View>
             </TouchableOpacity>
 
@@ -288,13 +294,13 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
             >
               <View style={styles.asthmaOptionContent}>
                 <Text style={styles.xIcon}>✕</Text>
-                <Text style={styles.asthmaOptionTextNo}>No</Text>
+                <Text style={styles.asthmaOptionTextNo}>{getTranslation('no', currentLanguage)}</Text>
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.skipButton} onPress={handleSkipAsthma}>
               <Text style={styles.skipIcon}>▶</Text>
-              <Text style={styles.skipButtonText}>Skip</Text>
+              <Text style={styles.skipButtonText}>{getTranslation('skip', currentLanguage)}</Text>
             </TouchableOpacity>
           </View>
         );
@@ -308,7 +314,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFD700" />
-          <Text style={styles.loadingText}>Setting up your account...</Text>
+          <Text style={styles.loadingText}>{getTranslation('settingUpAccount', currentLanguage)}</Text>
         </View>
       ) : (
         <View style={styles.contentContainer}>
@@ -317,7 +323,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
             <View style={styles.skipAllContainer}>
               <TouchableOpacity onPress={handleSkipAll} style={styles.skipAllButton}>
                 <Text style={styles.skipAllIcon}>▶▶</Text>
-                <Text style={styles.skipAllButtonText}>Skip All</Text>
+                <Text style={styles.skipAllButtonText}>{getTranslation('skipAll', currentLanguage)}</Text>
               </TouchableOpacity>
             </View>
           )}
