@@ -1,7 +1,7 @@
 import React, { ReactElement, useEffect, useRef } from 'react';
 import { Text, TouchableOpacity, Animated } from 'react-native';
-import { styles } from './language-toggle.styles';
-import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.tsx';
+import { styles } from './language-toggle.styles.ts';
+import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 
 const VALID_LANGUAGES = ['Eng', 'اردو'] as const;
 type LanguageType = (typeof VALID_LANGUAGES)[number];

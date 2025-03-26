@@ -2,7 +2,7 @@ import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {View, Text, TouchableOpacity, ActivityIndicator, BackHandler, ScrollView, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {styles} from './home-screen.styles';
-import {LanguageToggle} from './components/language-toggle/language-toggle.tsx';
+import {LanguageToggle} from '../../components/language-toggle/language-toggle.tsx';
 import {AQISlider} from './components/aqi-slider/aqi-slider.tsx';
 import {LocationSelector} from './components/location-selector/location-selector.tsx';
 import {useLocationModal} from './components/location-modal/location-modal.types.ts';
@@ -182,7 +182,7 @@ const HomeScreen = () => {
                 />
             )}
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 refreshControl={
                     <RefreshControl

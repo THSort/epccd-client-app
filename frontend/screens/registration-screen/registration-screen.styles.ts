@@ -237,4 +237,10 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
-}); 
+  langToggleWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bottom: 20,
+  },
+});

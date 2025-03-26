@@ -8,6 +8,7 @@ import { useSelectedLocation } from '../../context/SelectedLocationContext';
 import { RegistrationScreenProps, RegistrationStep } from './registration-screen.types';
 import { styles } from './registration-screen.styles';
 import { useNotification } from '../../hooks/useNotification';
+import {LanguageToggle} from '../../components/language-toggle/language-toggle.tsx';
 
 export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegistrationComplete }) => {
   // Step tracking
@@ -330,6 +331,10 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
           )}
         </View>
       )}
+
+      <View style={styles.langToggleWrapper}>
+        <LanguageToggle/>
+      </View>
 
       <LocationModal
         visible={locationModalVisible}
