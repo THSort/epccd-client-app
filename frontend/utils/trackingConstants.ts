@@ -25,7 +25,7 @@ export const ELEMENT_NAMES = {
   NAV_BACK: 'nav_back',
   NAV_SETTINGS: 'nav_settings',
   NAV_PROFILE: 'nav_profile',
-  
+
   // Common buttons
   BTN_SUBMIT: 'btn_submit',
   BTN_CANCEL: 'btn_cancel',
@@ -35,22 +35,22 @@ export const ELEMENT_NAMES = {
   BTN_EDIT: 'btn_edit',
   BTN_ADD: 'btn_add',
   BTN_REFRESH: 'btn_refresh',
-  
+
   // Home screen
   BTN_VIEW_DETAILED_REPORT: 'btn_view_detailed_report',
   SEL_LOCATION: 'sel_location',
-  
+
   // Air quality screens
   BTN_VIEW_HISTORY: 'btn_view_history',
   SEL_POLLUTANT: 'sel_pollutant',
   SEL_TIME_RANGE: 'sel_time_range',
   TOG_CHART_DISPLAY: 'tog_chart_display',
-  
+
   // Map interactions
-  MAP_REGION_CHANGE: 'map_region_change',
+  MAP_REGION_CHANGE: 'map_drag',
   MAP_PRESS: 'map_press',
   MAP_MARKER_PRESS: 'map_marker_press',
-  
+
   // Registration
   INP_NAME: 'inp_name',
   INP_EMAIL: 'inp_email',
@@ -75,4 +75,4 @@ export const SCREEN_NAMES = {
   PROFILE: 'ProfileScreen',
   SETTINGS: 'SettingsScreen',
   LOCATION_SELECTION: 'LocationSelectionScreen',
-}; 
+};
