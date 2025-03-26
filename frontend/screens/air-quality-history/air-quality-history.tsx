@@ -1,6 +1,6 @@
 import {ReactElement, useState, useEffect, useCallback} from 'react';
 import React from 'react';
-import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, StyleSheet} from 'react-native';
+import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, StyleSheet, RefreshControl} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {styles} from './air-quality-history.styles';
@@ -55,6 +55,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1d');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
+    const [refreshing, setRefreshing] = useState(false);
 
     const handleBackButtonClick = useCallback(() => {
         trackBackButton(currentScreen);
@@ -69,71 +70,69 @@ export function AirQualityHistory({route}: Props): ReactElement {
         };
     }, [handleBackButtonClick]);
 
-    const fetchTimePeriodData = async (): Promise<void> => {
-        if (!selectedLocation) {
-            return;
-        }
+    const fetchHistoricalData = useCallback(async () => {
+        if (!selectedLocation) return;
 
+        setIsLoadingAllHistoricalData(true);
         setError(null);
-
-        try {
-            const historicalDataForSelectedTime = await fetchPollutantDataForTimePeriod(selectedLocation, timeRange);
-            setHistoricalDataForSelectedTimePeriod(historicalDataForSelectedTime);
-        } catch (error) {
-            console.error('Error fetching time period data:', error);
-            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
-        } finally {
-            setIsLoadingTimePeriodData(false);
-        }
-    };
-
-    const fetchHistoricalData = async (): Promise<void> => {
-        if (!selectedLocation) {
-            return;
-        }
 
         try {
             const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);
-            // Don't set error state here since we're loading in the background
+            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
         } finally {
             setIsLoadingAllHistoricalData(false);
         }
-    };
+    }, [selectedLocation, currentLanguage]);
 
-    const fetchSummaryData = async (): Promise<void> => {
-        if (!selectedLocation) {
-            return;
-        }
+    const fetchSummaryData = useCallback(async () => {
+        if (!selectedLocation) return;
 
         setIsLoadingSummaryData(true);
+        setError(null);
 
         try {
             const data = await fetchPollutantSummary(selectedLocation);
             setSummaryData(data);
         } catch (error) {
             console.error('Error fetching summary data:', error);
-            // Don't set error state here since this is supplementary data
+            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
         } finally {
             setIsLoadingSummaryData(false);
         }
-    };
+    }, [selectedLocation, currentLanguage]);
 
-    // Initial data loading
-    useEffect(() => {
-        setHistoricalData(null);
-        setHistoricalDataForSelectedTimePeriod(null);
-        setSummaryData(null);
+    const fetchTimePeriodData = useCallback(async () => {
+        if (!selectedLocation) return;
+
         setIsLoadingTimePeriodData(true);
-        setIsLoadingAllHistoricalData(true);
-        setIsLoadingSummaryData(true);
+        setError(null);
 
-        void fetchTimePeriodData();
-        void fetchHistoricalData();
-        void fetchSummaryData();
-    }, [selectedLocation]);
+        try {
+            const data = await fetchPollutantDataForTimePeriod(selectedLocation, timeRange);
+            setHistoricalDataForSelectedTimePeriod(data);
+        } catch (error) {
+            console.error('Error fetching time period data:', error);
+            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
+        } finally {
+            setIsLoadingTimePeriodData(false);
+        }
+    }, [selectedLocation, timeRange, currentLanguage]);
+
+    useEffect(() => {
+        if (selectedLocation) {
+            void fetchHistoricalData();
+            void fetchSummaryData();
+        }
+    }, [selectedLocation, pollutant, fetchHistoricalData, fetchSummaryData]);
+
+    useEffect(() => {
+        if (selectedLocation) {
+            void fetchTimePeriodData();
+        }
+    }, [selectedLocation, pollutant, timeRange, fetchTimePeriodData]);
 
     const getDataFromPeriod = (): Record<string, PollutantChartData> => {
         if (!historicalData) {
@@ -435,6 +434,24 @@ export function AirQualityHistory({route}: Props): ReactElement {
         );
     };
 
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        if (selectedLocation) {
+            try {
+                await Promise.all([
+                    fetchHistoricalData(),
+                    fetchSummaryData(),
+                    fetchTimePeriodData()
+                ]);
+                setError(null);
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
+            }
+        }
+        setRefreshing(false);
+    }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData, fetchTimePeriodData]);
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -447,7 +464,18 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 <Text style={styles.headerTitle}>{getTranslation('airQualityHistory', currentLanguage)}</Text>
             </View>
 
-            <ScrollView style={styles.scrollContainer}>
+            <ScrollView 
+                style={styles.scrollContainer}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={['#FFD700']}
+                        tintColor="#FFD700"
+                        progressBackgroundColor="#ffffff"
+                    />
+                }
+            >
                 <View style={styles.content}>
                     <LocationSelector
                         isFullWidth

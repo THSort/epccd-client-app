@@ -8,6 +8,10 @@ export const styles = StyleSheet.create({
         backgroundColor: 'black',
         position: 'relative',
     },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+    },
     locationDisplayContainer: {
         display: 'flex',
         flexDirection: 'row',

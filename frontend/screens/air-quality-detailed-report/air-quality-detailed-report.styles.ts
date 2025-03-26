@@ -5,6 +5,10 @@ export const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'black',
     },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+    },
     header: {
         flexDirection: 'row',
         alignItems: 'center',

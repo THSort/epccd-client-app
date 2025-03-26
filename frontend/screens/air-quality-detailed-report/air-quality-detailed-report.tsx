@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import type {ReactElement} from 'react';
-import {ScrollView, Text, TouchableOpacity, View, ActivityIndicator, BackHandler} from 'react-native';
+import {ScrollView, Text, TouchableOpacity, View, ActivityIndicator, BackHandler, RefreshControl} from 'react-native';
 import {styles} from './air-quality-detailed-report.styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {PollutantInfoCard} from './components/pollutant-info-card/pollutant-info-card';
@@ -38,6 +38,7 @@ export function AirQualityDetailedReport(): ReactElement {
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [updateTimerKey, setUpdateTimerKey] = useState<number>(0); // Add state for timer refresh
+    const [refreshing, setRefreshing] = useState(false);
 
     // Map pollutant types to translation keys
     const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
@@ -319,6 +320,22 @@ export function AirQualityDetailedReport(): ReactElement {
         );
     };
 
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        if (location) {
+            try {
+                const data = await fetchEpaMonitorsData(location);
+                setAqiData(data);
+                setLastUpdated(new Date());
+                setError(null);
+            } catch (error) {
+                console.error('Error fetching AQI data:', error);
+                setError(getTranslation('failedToLoadAirQuality', currentLanguage));
+            }
+        }
+        setRefreshing(false);
+    }, [location, currentLanguage]);
+
     return (
         <View style={styles.container}>
             {getHeader()}
@@ -326,18 +343,31 @@ export function AirQualityDetailedReport(): ReactElement {
                 setLocation(locationToSelect);
                 closeLocationModal();
             }}/> : null}
-            <View style={styles.locationSelector}>
-                <LocationSelector
-                    isFullWidth
-                    showLocationLabel
-                    selectedLocation={location}
-                    onOpenLocationModal={openLocationModal}
-                />
-            </View>
-            <LahoreGraph selectedLocation={location}/>
-            {getAqiSummary()}
-            <View style={styles.divider}/>
-            {getPollutantLevels()}
+            <ScrollView 
+                style={styles.scrollView}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={['#FFD700']}
+                        tintColor="#FFD700"
+                        progressBackgroundColor="#ffffff"
+                    />
+                }
+            >
+                <View style={styles.locationSelector}>
+                    <LocationSelector
+                        isFullWidth
+                        showLocationLabel
+                        selectedLocation={location}
+                        onOpenLocationModal={openLocationModal}
+                    />
+                </View>
+                <LahoreGraph selectedLocation={location}/>
+                {getAqiSummary()}
+                <View style={styles.divider}/>
+                {getPollutantLevels()}
+            </ScrollView>
         </View>
     );
 }
