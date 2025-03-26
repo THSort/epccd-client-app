@@ -35,6 +35,9 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Add state to track registration completion
+  const [isRegistrationComplete, setIsRegistrationComplete] = useState<boolean>(false);
+
   // Wrapper for setCurrentStep to clear errors when changing steps
   const setCurrentStep = (step: number) => {
     // Clear any error messages when changing steps
@@ -159,7 +162,10 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
       // Step 3: Store user ID in local storage
       await storeUserId(userData.id_user);
 
-      // Step 4: Complete registration
+      // Step 4: Set registration as complete
+      setIsRegistrationComplete(true);
+
+      // Step 5: Complete registration
       onRegistrationComplete();
     } catch (err) {
       console.error('Registration error:', err);
@@ -338,9 +344,12 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
         </View>
       )}
 
-      <View style={styles.langToggleWrapper}>
-        <LanguageToggle/>
-      </View>
+      {/* Only show language toggle if registration is not complete and not loading */}
+      {!isRegistrationComplete && !isLoading && (
+        <View style={styles.langToggleWrapper}>
+          <LanguageToggle/>
+        </View>
+      )}
 
       <LocationModal
         visible={locationModalVisible}

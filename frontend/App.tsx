@@ -45,6 +45,7 @@ function App(): React.JSX.Element {
             }
         };
 
+        AsyncStorage.removeItem('user_id');
         loadUserId();
     }, []);
 
