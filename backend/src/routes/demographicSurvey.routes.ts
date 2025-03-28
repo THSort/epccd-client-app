@@ -1,5 +1,5 @@
 import express from "express";
-import {submitDemographicSurvey, getSurveyByUserId} from "../controllers/demographicSurvey.controller";
+import {submitDemographicSurvey, getSurveyByUserId, updateLanguagePreference} from "../controllers/demographicSurvey.controller";
 
 const router = express.Router();
 
@@ -8,5 +8,8 @@ router.post("/", submitDemographicSurvey);
 
 // Route to get survey info by user ID
 router.get("/:id_user", getSurveyByUserId);
+
+// Route to update language preference
+router.post("/language", updateLanguagePreference);
 
 export default router;

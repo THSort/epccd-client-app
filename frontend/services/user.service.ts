@@ -55,20 +55,45 @@ export const registerUser = async (
  * Submit demographic survey information
  * @param id_user - User ID
  * @param asthma - Whether the user has asthma
+ * @param language_preference - User's preferred language
  * @returns The submitted survey data
  */
 export const submitDemographicSurvey = async (
   id_user: string,
-  asthma?: boolean
+  asthma?: boolean,
+  language_preference?: string
 ): Promise<any> => {
   try {
     const response = await axios.post(`${API_BASE_URL}/demographics`, {
       id_user,
       asthma,
+      language_preference
     });
     return response.data;
   } catch (error) {
     console.error('Error submitting demographic survey:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update the user's language preference
+ * @param id_user - User ID
+ * @param language_preference - The preferred language
+ * @returns The updated survey data
+ */
+export const updateLanguagePreference = async (
+  id_user: string,
+  language_preference: string
+): Promise<any> => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/demographics/language`, {
+      id_user,
+      language_preference,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating language preference:', error);
     throw error;
   }
 };

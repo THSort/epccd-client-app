@@ -10,7 +10,8 @@ import { styles } from './registration-screen.styles';
 import { useNotification } from '../../hooks/useNotification';
 import { LanguageToggle } from '../../components/language-toggle/language-toggle.tsx';
 import { useSelectedLanguage } from '../../context/SelectedLanguageContext';
-import { getTranslation, Language } from '../../utils/translations';
+import { getTranslation } from '../../utils/translations';
+import { getDefaultLanguage } from '../../utils/language.util';
 
 export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegistrationComplete }) => {
   // Step tracking
@@ -24,7 +25,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
   // Get selected language
   const { selectedLanguage } = useSelectedLanguage();
-  const currentLanguage = (selectedLanguage || 'Eng') as Language;
+  const currentLanguage = getDefaultLanguage(selectedLanguage);
 
   // Form data
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);
@@ -156,8 +157,12 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
         mobileNumber || undefined
       );
 
-      // Step 2: Submit demographic survey
-      await submitDemographicSurvey(userData.id_user, asthmaValue);
+      // Step 2: Submit demographic survey with language preference
+      await submitDemographicSurvey(
+        userData.id_user, 
+        asthmaValue, 
+        selectedLanguage || 'اردو'  // Include selected language, defaulting to Urdu
+      );
 
       // Step 3: Store user ID in local storage
       await storeUserId(userData.id_user);

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateLanguagePreference } from '../services/user.service';
+import { getUserId } from '../utils/storage.util';
 
 // Define types
 type LanguageContextType = {
@@ -44,6 +46,17 @@ export const SelectedLanguageProvider: React.FC<{ children: React.ReactNode }> =
     const setSelectedLanguage = async (language: string) => {
         setSelectedLanguageState(language);
         await AsyncStorage.setItem('selected_language', language);
+        
+        // Update language preference in the database if user is logged in
+        try {
+            const userId = await getUserId();
+            if (userId) {
+                await updateLanguagePreference(userId, language);
+            }
+        } catch (error) {
+            console.error('Error updating language preference in database:', error);
+            // Continue even if this fails - the local setting is more important
+        }
     };
 
     return (
