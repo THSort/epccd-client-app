@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+import {hp} from './utils/responsive.util';
 
 export const styles = StyleSheet.create({
     backgroundStyle: {
@@ -7,10 +8,10 @@ export const styles = StyleSheet.create({
         height: '100%',
     },
     container: {
-        paddingTop: 25,
+        paddingTop: hp(25),
         width: '100%',
         height: '100%',
         backgroundColor: 'black',
-        paddingBottom: 25,
+        paddingBottom: hp(25),
     },
 });

@@ -1,102 +1,103 @@
 import { StyleSheet } from 'react-native';
+import { wp, hp, fontScale } from '../../utils/responsive.util';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'black',
     },
-    scrollView: {
+    contentContainer: {
         flex: 1,
-        width: '100%',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 15,
+        padding: wp(15),
     },
     headerTitle: {
-        fontSize: 25,
+        fontSize: fontScale(25),
         fontWeight: 'bold',
         color: 'yellow',
-        marginLeft: 10,
+        marginLeft: wp(10),
     },
     locationSelector: {
-        paddingHorizontal: 24,
+        paddingHorizontal: wp(24),
     },
     aqiContainer: {
-        paddingHorizontal: 24,
-        paddingTop: 20,
+        paddingHorizontal: wp(24),
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
-        minHeight: 60,
+        marginBottom: hp(10),
+        minHeight: hp(60),
     },
     aqiDetails: {
         flexDirection: 'column',
     },
     aqiValue: {
-        fontSize: 20,
+        fontSize: fontScale(20),
         fontWeight: 'bold',
         color: 'yellow',
     },
     aqiStatus: {
-        fontSize: 14,
+        fontSize: fontScale(14),
         color: 'yellow',
     },
     updateLabel: {
-        fontSize: 14,
+        fontSize: fontScale(14),
         fontWeight: 'bold',
         color: 'yellow',
         textAlign: 'center',
     },
     updateTime: {
-        fontSize: 12,
+        fontSize: fontScale(12),
         color: 'yellow',
         textAlign: 'center',
     },
     divider: {
         height: 1,
         backgroundColor: 'yellow',
-        marginVertical: 10,
+        marginVertical: hp(10),
     },
     pollutantContainer: {
-        paddingHorizontal: 25,
+        flex: 1,
+        paddingHorizontal: wp(25),
     },
     pollutantHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 10,
+        marginBottom: hp(10),
     },
     pollutantTitle: {
-        fontSize: 18,
+        fontSize: fontScale(18),
         fontWeight: 'bold',
         color: 'yellow',
     },
     pollutantList: {
-        height: 325,
+        flex: 1,
     },
     pollutantListContent: {
         alignItems: 'center',
-        gap: 10,
+        paddingVertical: hp(10),
+        width: '100%',
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: 200,
+        minHeight: hp(200),
     },
     errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: 200,
+        minHeight: hp(200),
     },
     errorText: {
         color: 'red',
-        fontSize: 16,
+        fontSize: fontScale(16),
         textAlign: 'center',
-        padding: 20,
+        padding: wp(20),
     },
 });

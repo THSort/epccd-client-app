@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: 'rgba(0, 0, 0, 0.9)',
         paddingVertical: 8,
-        paddingHorizontal: 5,
+        paddingHorizontal: 20,
         flexDirection: 'column',
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10,

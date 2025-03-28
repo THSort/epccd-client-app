@@ -16,7 +16,8 @@ import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {getTranslation, Language, getTranslatedLocationName, getTranslatedNumber} from '../../utils/translations';
-import { TrackableButton, ELEMENT_NAMES, SCREEN_NAMES } from '../../components/tracking';
+import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../components/tracking';
+import {useResponsiveDimensions} from '../../utils/responsive.util';
 
 const currentScreen = 'HomeScreen';
 
@@ -29,13 +30,16 @@ const HomeScreen = () => {
     // Default to English if no language is selected
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
-    const { trackButton, trackBackButton } = useUserActivity();
+    const {trackButton, trackBackButton} = useUserActivity();
 
     const [aqiValue, setAqiValue] = useState<number | null>(null);
     const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Get responsive dimensions
+    const {isSmallScreen, fontScaleDynamic} = useResponsiveDimensions();
 
     const handleBackButtonClick = useCallback(() => {
         trackBackButton(currentScreen);
@@ -96,62 +100,15 @@ const HomeScreen = () => {
     }, [loadAqi]);
 
     const aqiColor = aqiValue !== null ? getAqiColor(aqiValue) : '#808080';
-    const aqiDescription = aqiValue !== null ? getAqiDescription(aqiValue, currentLanguage) : { level: '', message: '' };
+    const aqiDescription = aqiValue !== null ? getAqiDescription(aqiValue, currentLanguage) : {level: '', message: ''};
 
     if (isFetchingAqi || isLoadingLanguage || isLoadingLocation || aqiValue === null) {
         return (
             <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color="#0000ff"/>
             </View>
         );
     }
-
-    const getFooter = () => {
-        return (
-            <View style={styles.homeScreenFooter}>
-                <LocationSelector
-                    selectedLocation={selectedLocation}
-                    onOpenLocationModal={() => {
-                        openLocationModal();
-                        void trackButton('location_selector', currentScreen, {
-                            timestamp: new Date().toISOString(),
-                        });
-                    }}
-                />
-                <LanguageToggle/>
-            </View>
-        );
-    };
-
-    const getSettingsButton = () => {
-        return (
-            <View style={styles.settingsIconContainer}>
-                <TouchableOpacity activeOpacity={0.7}>
-                    <Icon name="cog" size={40} color="#FFD700"/>
-                </TouchableOpacity>
-            </View>
-        );
-    };
-
-    const getViewDetailedReportButton = () => {
-        return (
-            <View style={styles.viewDetailedReportButtonContainer}>
-                <TrackableButton
-                    buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
-                    screenName={SCREEN_NAMES.HOME}
-                    style={styles.viewDetailedReportButton}
-                    onPress={() => navigation.navigate('AirQualityDetailedReport')}
-                >
-                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                        <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
-                        <Text style={styles.viewDetailedReportButtonText}>
-                            {getTranslation('viewDetailedReport', currentLanguage)}
-                        </Text>
-                    </View>
-                </TrackableButton>
-            </View>
-        );
-    };
 
     const getLocationDisplay = () => {
         const locationDisplayName = selectedLocation
@@ -164,6 +121,20 @@ const HomeScreen = () => {
                 <Text style={styles.locationDisplayText}>
                     {locationDisplayName}
                 </Text>
+            </View>
+        );
+    };
+
+    const renderAQILevelInfo = () => {
+        // If on a small screen, apply additional adjustments for better readability
+        const messageStyle = isSmallScreen 
+            ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(20), color: aqiColor} 
+            : {...styles.aqiLevelInfoMessageText, color: aqiColor};
+            
+        return (
+            <View style={styles.aqiLevelInfoContainer}>
+                <Text style={[styles.aqiLevelInfoText, {color: aqiColor}]}>{aqiDescription.level}</Text>
+                <Text style={messageStyle}>{aqiDescription.message}</Text>
             </View>
         );
     };
@@ -202,30 +173,58 @@ const HomeScreen = () => {
                     </View>
                 ) : (
                     <>
-                        <View style={[styles.aqiValueContainer, {marginTop: '35%'}]}>
+                        <View style={styles.aqiValueContainer}>
                             <Text style={[styles.aqiValueText, {color: aqiColor}]}>{getTranslatedNumber(aqiValue, currentLanguage)}</Text>
                             <Text style={[styles.aqiText, {color: aqiColor}]}>
                                 {getTranslation('airQualityIndex', currentLanguage)}
                             </Text>
                         </View>
 
-                        <View style={[styles.aqiGradientMeter, {marginTop: 40}]}>
+                        <View style={styles.aqiGradientMeter}>
                             <AQISlider aqi={aqiValue}/>
                         </View>
 
-                        <View style={[styles.aqiLevelInfoContainer, {marginTop: 30}]}>
-                            <Text style={[styles.aqiLevelInfoText, {color: aqiColor}]}>{aqiDescription.level}</Text>
-                            <Text style={[styles.aqiLevelInfoMessageText, {color: aqiColor}]}>
-                                {aqiDescription.message}
-                            </Text>
+                        {renderAQILevelInfo()}
+
+                        <View style={styles.viewDetailedReportButtonContainer}>
+                            <TrackableButton
+                                buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
+                                screenName={SCREEN_NAMES.HOME}
+                                style={styles.viewDetailedReportButton}
+                                onPress={() => navigation.navigate('AirQualityDetailedReport')}
+                            >
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                    <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
+                                    <Text style={styles.viewDetailedReportButtonText}>
+                                        {getTranslation('viewDetailedReport', currentLanguage)}
+                                    </Text>
+                                </View>
+                            </TrackableButton>
                         </View>
                     </>
                 )}
             </ScrollView>
 
-            {getViewDetailedReportButton()}
-            {getSettingsButton()}
-            {getFooter()}
+            <View style={styles.bottomContainer}>
+                <View style={styles.settingsIconContainer}>
+                    <TouchableOpacity activeOpacity={0.7}>
+                        <Icon name="cog" size={40} color="#FFD700"/>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.homeScreenFooter}>
+                    <LocationSelector
+                        selectedLocation={selectedLocation}
+                        onOpenLocationModal={() => {
+                            openLocationModal();
+                            void trackButton('location_selector', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                            });
+                        }}
+                    />
+                    <LanguageToggle/>
+                </View>
+            </View>
         </View>
     );
 };

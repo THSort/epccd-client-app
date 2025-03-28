@@ -18,7 +18,8 @@ import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getTranslation, Language, getTranslatedTimeSinceUpdate, getTranslatedNumber} from '../../utils/translations';
-import {LahoreGraph} from './components/lahore-graph/lahore-graph.tsx';
+import {LahoreGraph} from './components/lahore-graph/lahore-graph';
+import {hp} from '../../utils/responsive.util';
 
 const currentScreen = 'AirQualityReport';
 
@@ -108,6 +109,23 @@ export function AirQualityDetailedReport(): ReactElement {
             backEvent.remove();
         };
     }, [handleBackButtonClick]);
+
+    const onRefresh = useCallback(async () => {
+        if (!location) {return;}
+
+        setRefreshing(true);
+        try {
+            const data = await fetchEpaMonitorsData(location);
+            setAqiData(data);
+            setLastUpdated(new Date());
+            setError(null);
+        } catch (error) {
+            console.error('Error fetching AQI data:', error);
+            setError(getTranslation('failedToLoadAirQuality', currentLanguage));
+        } finally {
+            setRefreshing(false);
+        }
+    }, [location, currentLanguage]);
 
     // Fetch data when location changes
     useEffect(() => {
@@ -206,168 +224,135 @@ export function AirQualityDetailedReport(): ReactElement {
         );
     };
 
-    const getPollutantLevels = () => {
-        if (isFetchingData) {
-            return (
-                <View style={styles.pollutantContainer}>
-                    <View style={styles.pollutantHeader}>
-                        <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
-                        <TouchableOpacity activeOpacity={0.7} onPress={() => {
-                            void trackButton('learn_more', currentScreen, {
-                                timestamp: new Date().toISOString(),
-                            });
-                        }}>
-                            <Icon name="question-circle" size={30} color="yellow"/>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#FFD700"/>
-                    </View>
-                </View>
-            );
-        }
-
-        if (error || !aqiData) {
-            return (
-                <View style={styles.pollutantContainer}>
-                    <View style={styles.pollutantHeader}>
-                        <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
-                        <TouchableOpacity activeOpacity={0.7} onPress={() => {
-                            void trackButton('learn_more', currentScreen, {
-                                timestamp: new Date().toISOString(),
-                            });
-                        }}>
-                            <Icon name="question-circle" size={30} color="yellow"/>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.errorContainer}>
-                        <Text style={styles.errorText}>{error || getTranslation('noDataAvailable', currentLanguage)}</Text>
-                    </View>
-                </View>
-            );
-        }
-
-        // Map API data to pollutant objects with translations
-        const pollutants = [
-            {
-                pollutantName: Pollutant.PM2_5,
-                pollutantValue: aqiData.pm2_5_ug_m3,
-                pollutantDescription: getPollutantTranslation(Pollutant.PM2_5, 'description'),
-                pollutantUnit: getPollutantTranslation(Pollutant.PM2_5, 'unit'),
-                translatedName: getPollutantTranslation(Pollutant.PM2_5, 'name'),
-                viewHistoryText: getTranslation('viewHistory', currentLanguage),
-            },
-            {
-                pollutantName: Pollutant.PM10,
-                pollutantValue: aqiData.pm10_ug_m3,
-                pollutantDescription: getPollutantTranslation(Pollutant.PM10, 'description'),
-                pollutantUnit: getPollutantTranslation(Pollutant.PM10, 'unit'),
-                translatedName: getPollutantTranslation(Pollutant.PM10, 'name'),
-                viewHistoryText: getTranslation('viewHistory', currentLanguage),
-            },
-            {
-                pollutantName: Pollutant.O3,
-                pollutantValue: aqiData.o3_ppb,
-                pollutantDescription: getPollutantTranslation(Pollutant.O3, 'description'),
-                pollutantUnit: getPollutantTranslation(Pollutant.O3, 'unit'),
-                translatedName: getPollutantTranslation(Pollutant.O3, 'name'),
-                viewHistoryText: getTranslation('viewHistory', currentLanguage),
-            },
-            {
-                pollutantName: Pollutant.SO2,
-                pollutantValue: aqiData.so2_ppb,
-                pollutantDescription: getPollutantTranslation(Pollutant.SO2, 'description'),
-                pollutantUnit: getPollutantTranslation(Pollutant.SO2, 'unit'),
-                translatedName: getPollutantTranslation(Pollutant.SO2, 'name'),
-                viewHistoryText: getTranslation('viewHistory', currentLanguage),
-            },
-            {
-                pollutantName: Pollutant.NO2,
-                pollutantValue: aqiData.no2_ppb,
-                pollutantDescription: getPollutantTranslation(Pollutant.NO2, 'description'),
-                pollutantUnit: getPollutantTranslation(Pollutant.NO2, 'unit'),
-                translatedName: getPollutantTranslation(Pollutant.NO2, 'name'),
-                viewHistoryText: getTranslation('viewHistory', currentLanguage),
-            },
-            {
-                pollutantName: Pollutant.CO,
-                pollutantValue: aqiData.co_ppm,
-                pollutantDescription: getPollutantTranslation(Pollutant.CO, 'description'),
-                pollutantUnit: getPollutantTranslation(Pollutant.CO, 'unit'),
-                translatedName: getPollutantTranslation(Pollutant.CO, 'name'),
-                viewHistoryText: getTranslation('viewHistory', currentLanguage),
-            },
-        ];
-
-        return (
-            <View style={styles.pollutantContainer}>
-                <View style={styles.pollutantHeader}>
-                    <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
-                    <TouchableOpacity activeOpacity={0.7} onPress={() => {
-                        void trackButton('learn_more', currentScreen, {
-                            timestamp: new Date().toISOString(),
-                        });
-                    }}>
-                        <Icon name="question-circle" size={30} color="yellow"/>
-                    </TouchableOpacity>
-                </View>
-                <ScrollView style={styles.pollutantList} contentContainerStyle={styles.pollutantListContent}>
-                    {pollutants.map((p, i) => (
-                        <PollutantInfoCard selectedLocation={location} key={i} {...p} />
-                    ))}
-                </ScrollView>
-            </View>
-        );
-    };
-
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        if (location) {
-            try {
-                const data = await fetchEpaMonitorsData(location);
-                setAqiData(data);
-                setLastUpdated(new Date());
-                setError(null);
-            } catch (error) {
-                console.error('Error fetching AQI data:', error);
-                setError(getTranslation('failedToLoadAirQuality', currentLanguage));
-            }
-        }
-        setRefreshing(false);
-    }, [location, currentLanguage]);
-
     return (
         <View style={styles.container}>
-            {getHeader()}
-            {isModalOpen ? <LocationModal selectedLocation={location} visible onClose={closeLocationModal} onLocationSelected={(locationToSelect) => {
-                setLocation(locationToSelect);
-                closeLocationModal();
-            }}/> : null}
-            <ScrollView 
-                style={styles.scrollView}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={['#FFD700']}
-                        tintColor="#FFD700"
-                        progressBackgroundColor="#ffffff"
-                    />
-                }
-            >
+            {isModalOpen && (
+                <LocationModal
+                    selectedLocation={location}
+                    onLocationSelected={(newLocation) => {
+                        setLocation(newLocation);
+                        closeLocationModal();
+                    }}
+                    visible={isModalOpen}
+                    onClose={closeLocationModal}
+                />
+            )}
+
+            <View style={styles.contentContainer}>
+                {getHeader()}
+
                 <View style={styles.locationSelector}>
                     <LocationSelector
                         isFullWidth
-                        showLocationLabel
                         selectedLocation={location}
-                        onOpenLocationModal={openLocationModal}
+                        onOpenLocationModal={() => {
+                            void trackButton('open_location_modal', currentScreen, {
+                                timestamp: new Date().toISOString(),
+                            });
+                            openLocationModal();
+                        }}
                     />
                 </View>
-                <LahoreGraph selectedLocation={location}/>
-                {getAqiSummary()}
-                <View style={styles.divider}/>
-                {getPollutantLevels()}
-            </ScrollView>
+
+                {/* Map outside scrollable area */}
+                <View style={{flex: 0}}>
+                    <LahoreGraph selectedLocation={location} />
+                </View>
+
+                {/* Scrollable area with pull-to-refresh */}
+                <ScrollView
+                    style={{flex: 1}}
+                    contentContainerStyle={{flexGrow: 1}}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor="#FFD700"
+                            colors={['#FFD700']}
+                        />
+                    }
+                >
+                    {getAqiSummary()}
+                    
+                    <View style={styles.pollutantContainer}>
+                        <View style={styles.pollutantHeader}>
+                            <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
+                            <TouchableOpacity activeOpacity={0.7} onPress={() => {
+                                void trackButton('learn_more', currentScreen, {
+                                    timestamp: new Date().toISOString(),
+                                });
+                            }}>
+                                <Icon name="question-circle" size={30} color="yellow"/>
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {isFetchingData ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color="#FFD700"/>
+                            </View>
+                        ) : error || !aqiData ? (
+                            <View style={styles.errorContainer}>
+                                <Text style={styles.errorText}>{error || getTranslation('noDataAvailable', currentLanguage)}</Text>
+                            </View>
+                        ) : (
+                            <View style={{paddingBottom: hp(20)}}>
+                                {[
+                                    {
+                                        pollutantName: Pollutant.PM2_5,
+                                        pollutantValue: aqiData.pm2_5_ug_m3,
+                                        pollutantDescription: getPollutantTranslation(Pollutant.PM2_5, 'description'),
+                                        pollutantUnit: getPollutantTranslation(Pollutant.PM2_5, 'unit'),
+                                        translatedName: getPollutantTranslation(Pollutant.PM2_5, 'name'),
+                                        viewHistoryText: getTranslation('viewHistory', currentLanguage),
+                                    },
+                                    {
+                                        pollutantName: Pollutant.PM10,
+                                        pollutantValue: aqiData.pm10_ug_m3,
+                                        pollutantDescription: getPollutantTranslation(Pollutant.PM10, 'description'),
+                                        pollutantUnit: getPollutantTranslation(Pollutant.PM10, 'unit'),
+                                        translatedName: getPollutantTranslation(Pollutant.PM10, 'name'),
+                                        viewHistoryText: getTranslation('viewHistory', currentLanguage),
+                                    },
+                                    {
+                                        pollutantName: Pollutant.O3,
+                                        pollutantValue: aqiData.o3_ppb,
+                                        pollutantDescription: getPollutantTranslation(Pollutant.O3, 'description'),
+                                        pollutantUnit: getPollutantTranslation(Pollutant.O3, 'unit'),
+                                        translatedName: getPollutantTranslation(Pollutant.O3, 'name'),
+                                        viewHistoryText: getTranslation('viewHistory', currentLanguage),
+                                    },
+                                    {
+                                        pollutantName: Pollutant.SO2,
+                                        pollutantValue: aqiData.so2_ppb,
+                                        pollutantDescription: getPollutantTranslation(Pollutant.SO2, 'description'),
+                                        pollutantUnit: getPollutantTranslation(Pollutant.SO2, 'unit'),
+                                        translatedName: getPollutantTranslation(Pollutant.SO2, 'name'),
+                                        viewHistoryText: getTranslation('viewHistory', currentLanguage),
+                                    },
+                                    {
+                                        pollutantName: Pollutant.NO2,
+                                        pollutantValue: aqiData.no2_ppb,
+                                        pollutantDescription: getPollutantTranslation(Pollutant.NO2, 'description'),
+                                        pollutantUnit: getPollutantTranslation(Pollutant.NO2, 'unit'),
+                                        translatedName: getPollutantTranslation(Pollutant.NO2, 'name'),
+                                        viewHistoryText: getTranslation('viewHistory', currentLanguage),
+                                    },
+                                    {
+                                        pollutantName: Pollutant.CO,
+                                        pollutantValue: aqiData.co_ppm,
+                                        pollutantDescription: getPollutantTranslation(Pollutant.CO, 'description'),
+                                        pollutantUnit: getPollutantTranslation(Pollutant.CO, 'unit'),
+                                        translatedName: getPollutantTranslation(Pollutant.CO, 'name'),
+                                        viewHistoryText: getTranslation('viewHistory', currentLanguage),
+                                    },
+                                ].map((p, i) => (
+                                    <PollutantInfoCard selectedLocation={location} key={i} {...p} />
+                                ))}
+                            </View>
+                        )}
+                    </View>
+                </ScrollView>
+            </View>
         </View>
     );
 }

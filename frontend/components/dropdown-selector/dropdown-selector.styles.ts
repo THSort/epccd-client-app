@@ -1,17 +1,18 @@
 import {StyleSheet} from 'react-native';
+import {wp, hp, fontScale} from '../../utils/responsive.util';
 
 export const styles = StyleSheet.create({
     selector: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#1C1C1C', // Dark background
-        borderRadius: 20,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
+        borderRadius: wp(20),
+        paddingVertical: hp(8),
+        paddingHorizontal: wp(12),
         borderWidth: 1,
         borderColor: '#FFD700', // Golden border
-        width: 270,
-        height: 45,
+        width: wp(270), // Using responsive width
+        height: hp(45), // Using responsive height
         justifyContent: 'space-between',
         shadowColor: '#FFD700', // Golden glow effect
         shadowOffset: { width: 0, height: 0 },
@@ -20,7 +21,7 @@ export const styles = StyleSheet.create({
         elevation: 6, // Shadow for Android
     },
     label: {
-        fontSize: 20,
+        fontSize: fontScale(20),
         fontWeight: 'bold',
         color: '#FFD700', // Golden text
         flex: 1,
@@ -31,13 +32,13 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     selectedItemText: {
-        fontSize: 18,
+        fontSize: fontScale(18),
         color: '#FFD700', // Golden text
-        marginLeft: 5,
-        marginRight: 10,
-        maxWidth: 200,
+        marginLeft: wp(5),
+        marginRight: wp(10),
+        maxWidth: wp(200), // Using responsive width
     },
     icon: {
-        marginRight: 3,
+        marginRight: wp(3),
     },
 });

@@ -10,6 +10,7 @@ import {Pollutant} from '../../air-quality-detailed-report.types.ts';
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.tsx';
 import {Language, getTranslatedNumber} from '../../../../utils/translations.ts';
 import { TrackableButton, ELEMENT_NAMES, SCREEN_NAMES } from '../../../../components/tracking';
+import { useResponsiveDimensions, fontScale } from '../../../../utils/responsive.util';
 
 // Define units for each pollutant type (fallback if not provided in props)
 const POLLUTANT_UNITS = {
@@ -25,6 +26,7 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
     const navigation = useNavigation<AirQualityDetailedReportNavigationProps>();
     const { selectedLanguage } = useSelectedLanguage();
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
+    const { isSmallScreen, fontScaleDynamic } = useResponsiveDimensions();
 
     // Get the appropriate unit for the pollutant
     const getUnit = (pollutantName: Pollutant) => {
@@ -34,21 +36,52 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
     const getPollutantDetails = (pollutantName: Pollutant, pollutantValue: number, pollutantDescription: string) => {
         const unit = getUnit(pollutantName);
 
+        // Adjust font sizes for small screens
+        const nameStyle = isSmallScreen 
+            ? {...styles.pollutantName, fontSize: fontScaleDynamic(18)} 
+            : styles.pollutantName;
+        
+        const valueStyle = isSmallScreen 
+            ? {...styles.pollutantValue, fontSize: fontScaleDynamic(18)} 
+            : styles.pollutantValue;
+            
+        const descriptionStyle = isSmallScreen 
+            ? {...styles.pollutantDescription, fontSize: fontScaleDynamic(13)} 
+            : styles.pollutantDescription;
+            
+        const unitStyle = isSmallScreen 
+            ? {...styles.pollutantUnits, fontSize: fontScaleDynamic(13)} 
+            : styles.pollutantUnits;
+
         return (
             <View>
                 <View style={styles.row}>
-                    <Text style={styles.pollutantName}>{props.translatedName || pollutantName}</Text>
-                    <Text style={styles.pollutantValue}>{getTranslatedNumber(pollutantValue.toFixed(1), currentLanguage)}</Text>
+                    <Text style={nameStyle} numberOfLines={1} ellipsizeMode="tail">
+                        {props.translatedName || pollutantName}
+                    </Text>
+                    <Text style={valueStyle}>
+                        {getTranslatedNumber(pollutantValue.toFixed(1), currentLanguage)}
+                    </Text>
                 </View>
                 <View style={styles.row}>
-                    <Text style={styles.pollutantDescription}>{pollutantDescription}</Text>
-                    <Text style={styles.pollutantUnits}>{props.pollutantUnit || unit}</Text>
+                    <Text style={descriptionStyle} numberOfLines={1} ellipsizeMode="tail">
+                        {pollutantDescription}
+                    </Text>
+                    <Text style={unitStyle}>
+                        {props.pollutantUnit || unit}
+                    </Text>
                 </View>
             </View>
         );
     };
 
     const getHistoryButton = () => {
+        const historyTextStyle = [
+            styles.historyText,
+            currentLanguage === 'اردو' && { fontSize: fontScale(17) },  // Increase font size for Urdu
+            isSmallScreen && { fontSize: fontScaleDynamic(14) }
+        ];
+
         return (
             <TrackableButton
                 buttonName={ELEMENT_NAMES.BTN_VIEW_HISTORY}
@@ -64,10 +97,7 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
             >
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Icon name="line-chart" size={15} color="yellow" style={styles.historyIcon} />
-                    <Text style={[
-                        styles.historyText,
-                        currentLanguage === 'اردو' && { fontSize: 17 }  // Increase font size by 2px for Urdu
-                    ]}>
+                    <Text style={historyTextStyle}>
                         {props.viewHistoryText || 'View History'}
                     </Text>
                 </View>

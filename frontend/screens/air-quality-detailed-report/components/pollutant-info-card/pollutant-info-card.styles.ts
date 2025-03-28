@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { wp, hp, fontScale } from '../../../../utils/responsive.util';
 
 export const styles = StyleSheet.create({
     container: {
@@ -7,10 +8,12 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: '#40320A',
-        height: 95,
-        paddingHorizontal: 12,
-        paddingVertical: 14,
+        height: hp(95),
+        width: '100%',
+        paddingHorizontal: wp(12),
+        paddingVertical: hp(14),
         borderRadius: 8,
+        marginBottom: hp(10),
     },
     row: {
         display: 'flex',
@@ -21,38 +24,46 @@ export const styles = StyleSheet.create({
     pollutantName: {
         color: 'yellow',
         fontWeight: 'bold',
-        fontSize: 20,
-        lineHeight: 20,
+        fontSize: fontScale(20),
+        lineHeight: fontScale(22),
+        flex: 1,
     },
     pollutantValue: {
         color: 'yellow',
         fontWeight: 'bold',
-        fontSize: 20,
-        lineHeight: 20,
+        fontSize: fontScale(20),
+        lineHeight: fontScale(22),
+        textAlign: 'right',
     },
     pollutantDescription: {
         color: 'yellow',
-        fontSize: 15,
-        lineHeight: 20,
+        fontSize: fontScale(15),
+        lineHeight: fontScale(20),
         fontWeight: '300',
+        flex: 2,
+        paddingRight: wp(5),
     },
     pollutantUnits: {
         color: 'yellow',
-        fontSize: 15,
-        lineHeight: 20,
+        fontSize: fontScale(15),
+        lineHeight: fontScale(20),
         fontWeight: '300',
+        textAlign: 'right',
+        flex: 1,
     },
     historyButton: {
         display: 'flex',
         flexDirection: 'row',
-        marginTop: 6,
+        marginTop: hp(6),
+        alignSelf: 'center',
     },
     historyIcon: {
-        marginRight: 8,
+        marginRight: wp(8),
+        fontSize: fontScale(15),
     },
     historyText: {
         color: 'yellow',
-        fontSize: 15,
-        lineHeight: 15,
+        fontSize: fontScale(15),
+        lineHeight: fontScale(15),
     },
 });
