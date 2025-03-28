@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type {ReactElement} from 'react';
 import type {LahoreGraphProps} from './lahore-graph.types';
 import {styles} from './lahore-graph.styles';
-import MapView, {PROVIDER_GOOGLE, Marker, Circle, Region} from 'react-native-maps';
-import {View, Text} from 'react-native';
+import MapView, {PROVIDER_GOOGLE, Marker, Region} from 'react-native-maps';
+import {View, Text, ActivityIndicator} from 'react-native';
 import {Areas} from '../../../home-screen/components/location-modal/location-modal.types';
 import {getAqiColor} from '../../../../utils/aqi-colors.util';
 import {useUserActivity} from '../../../../context/UserActivityContext';
@@ -12,6 +12,18 @@ import {getTranslation, Language, TranslationStrings} from '../../../../utils/tr
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext';
 
 export function LahoreGraph(props: LahoreGraphProps): ReactElement {
+    // Add state for the skeleton loader
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Use effect to hide the skeleton loader after 10 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 10000); // 10 seconds
+
+        return () => clearTimeout(timer);
+    }, []);
+
     // Use the activity tracking context
     const {trackActivity} = useUserActivity();
     const {selectedLanguage} = useSelectedLanguage();
@@ -103,55 +115,67 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
     return (
         <View style={styles.containerWithLegend}>
             <View style={styles.mapContainer}>
-                <MapView
-                    provider={PROVIDER_GOOGLE}
-                    style={styles.mapView}
-                    region={{
-                        latitude: props.selectedLocation?.latitude ?? 31.5204,
-                        longitude: props.selectedLocation?.longitude ?? 74.3587,
-                        latitudeDelta: 0.03,
-                        longitudeDelta: 0.03,
-                    }}
-                    zoomEnabled={true}
-                    zoomControlEnabled={true}
-                    onRegionChangeComplete={handleRegionChange}
-                    onPress={handleMapPress}
-                >
-                    {/* Display circles for each location with colors based on AQI value */}
-                    {Areas[0].locations.map(location => {
-                        const aqi = locationAqiData[location.locationCode];
-                        const color = getAqiColor(aqi);
-                        const locationName = getLocationName(location.locationName);
+                {isLoading ? (
+                    <View style={[styles.mapView, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                        <ActivityIndicator size="large" color="black" />
+                        <Text style={[
+                            { marginTop: 10, color: '#666' },
+                            currentLanguage === 'اردو' && {fontSize: 14},
+                        ]}>
+                            {getTranslation('loading', currentLanguage)}
+                        </Text>
+                    </View>
+                ) : (
+                    <MapView
+                        provider={PROVIDER_GOOGLE}
+                        style={styles.mapView}
+                        region={{
+                            latitude: props.selectedLocation?.latitude ?? 31.5204,
+                            longitude: props.selectedLocation?.longitude ?? 74.3587,
+                            latitudeDelta: 0.03,
+                            longitudeDelta: 0.03,
+                        }}
+                        zoomEnabled={true}
+                        zoomControlEnabled={true}
+                        onRegionChangeComplete={handleRegionChange}
+                        onPress={handleMapPress}
+                    >
+                        {/* Display circles for each location with colors based on AQI value */}
+                        {Areas[0].locations.map(location => {
+                            const aqi = locationAqiData[location.locationCode];
+                            const color = getAqiColor(aqi);
+                            const locationName = getLocationName(location.locationName);
 
-                        return (
-                            <React.Fragment key={location.locationCode}>
-                                {/*/!* Colored circle for each location *!/*/}
-                                {/*<Circle*/}
-                                {/*    center={{*/}
-                                {/*        latitude: location.latitude,*/}
-                                {/*        longitude: location.longitude,*/}
-                                {/*    }}*/}
-                                {/*    radius={1000}*/}
-                                {/*    fillColor={`${color}80`} // Add transparency*/}
-                                {/*    strokeColor={color}*/}
-                                {/*    strokeWidth={2}*/}
-                                {/*/>*/}
+                            return (
+                                <React.Fragment key={location.locationCode}>
+                                    {/*/!* Colored circle for each location *!/*/}
+                                    {/*<Circle*/}
+                                    {/*    center={{*/}
+                                    {/*        latitude: location.latitude,*/}
+                                    {/*        longitude: location.longitude,*/}
+                                    {/*    }}*/}
+                                    {/*    radius={1000}*/}
+                                    {/*    fillColor={`${color}80`} // Add transparency*/}
+                                    {/*    strokeColor={color}*/}
+                                    {/*    strokeWidth={2}*/}
+                                    {/*/>*/}
 
-                                {/* Default marker */}
-                                <Marker
-                                    title={locationName}
-                                    description={`AQI: ${aqi}`}
-                                    coordinate={{
-                                        latitude: location.latitude,
-                                        longitude: location.longitude,
-                                    }}
-                                    pinColor={color}
-                                    onPress={() => handleMarkerPress(location)}
-                                />
-                            </React.Fragment>
-                        );
-                    })}
-                </MapView>
+                                    {/* Default marker */}
+                                    <Marker
+                                        title={locationName}
+                                        description={`AQI: ${aqi}`}
+                                        coordinate={{
+                                            latitude: location.latitude,
+                                            longitude: location.longitude,
+                                        }}
+                                        pinColor={color}
+                                        onPress={() => handleMarkerPress(location)}
+                                    />
+                                </React.Fragment>
+                            );
+                        })}
+                    </MapView>
+                )}
             </View>
 
             {/* Legend below the map */}
