@@ -243,6 +243,16 @@ export function AirQualityDetailedReport(): ReactElement {
 
                 <View style={styles.locationSelector}>
                     <LocationSelector
+                        selectorStyle={{
+                            backgroundColor: '#1C1C1C',
+                            borderRadius: 10,
+                            paddingVertical: 10,
+                            paddingHorizontal: 15,
+                            marginBottom: 10,
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 3,
+                        }}
                         isFullWidth
                         selectedLocation={location}
                         onOpenLocationModal={() => {
@@ -273,7 +283,7 @@ export function AirQualityDetailedReport(): ReactElement {
                     }
                 >
                     {getAqiSummary()}
-                    
+
                     <View style={styles.pollutantContainer}>
                         <View style={styles.pollutantHeader}>
                             <Text style={styles.pollutantTitle}>{getTranslation('pollutantLevels', currentLanguage)}</Text>
@@ -285,7 +295,7 @@ export function AirQualityDetailedReport(): ReactElement {
                                 <Icon name="question-circle" size={30} color="yellow"/>
                             </TouchableOpacity>
                         </View>
-                        
+
                         {isFetchingData ? (
                             <View style={styles.loadingContainer}>
                                 <ActivityIndicator size="large" color="#FFD700"/>

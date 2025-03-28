@@ -6,24 +6,24 @@ import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.t
 import {getTranslation, Language, getTranslatedLocationName} from '../../../../utils/translations';
 
 export function LocationSelector({
-    selectedLocation, 
-    onOpenLocationModal, 
-    showLocationLabel = false, 
+    selectedLocation,
+    onOpenLocationModal,
+    showLocationLabel = false,
     isFullWidth = false,
     containerStyle,
     selectorStyle,
     labelStyle,
     textStyle,
-    iconStyle
+    iconStyle,
 }: LocationSelectorProps): ReactElement {
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
-    
+
     // Get translated location name if a location is selected
-    const locationDisplayName = selectedLocation 
+    const locationDisplayName = selectedLocation
         ? getTranslatedLocationName(selectedLocation.locationName, currentLanguage)
         : getTranslation('selectLocation', currentLanguage);
-    
+
     return (
         <DropdownSelector
             label={getTranslation('selectLocation', currentLanguage)}

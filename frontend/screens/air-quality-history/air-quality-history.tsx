@@ -71,7 +71,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     }, [handleBackButtonClick]);
 
     const fetchHistoricalData = useCallback(async () => {
-        if (!selectedLocation) return;
+        if (!selectedLocation) {return;}
 
         setIsLoadingAllHistoricalData(true);
         setError(null);
@@ -88,7 +88,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     }, [selectedLocation, currentLanguage]);
 
     const fetchSummaryData = useCallback(async () => {
-        if (!selectedLocation) return;
+        if (!selectedLocation) {return;}
 
         setIsLoadingSummaryData(true);
         setError(null);
@@ -105,7 +105,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
     }, [selectedLocation, currentLanguage]);
 
     const fetchTimePeriodData = useCallback(async () => {
-        if (!selectedLocation) return;
+        if (!selectedLocation) {return;}
 
         setIsLoadingTimePeriodData(true);
         setError(null);
@@ -441,7 +441,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 await Promise.all([
                     fetchHistoricalData(),
                     fetchSummaryData(),
-                    fetchTimePeriodData()
+                    fetchTimePeriodData(),
                 ]);
                 setError(null);
             } catch (error) {
@@ -464,7 +464,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 <Text style={styles.headerTitle}>{getTranslation('airQualityHistory', currentLanguage)}</Text>
             </View>
 
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollContainer}
                 refreshControl={
                     <RefreshControl

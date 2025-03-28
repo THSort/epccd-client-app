@@ -11,14 +11,13 @@ export const styles = StyleSheet.create({
         paddingHorizontal: wp(12),
         borderWidth: 1,
         borderColor: '#FFD700', // Golden border
-        width: wp(270), // Using responsive width
+        width: wp(255), // Using responsive width
         height: hp(45), // Using responsive height
         justifyContent: 'space-between',
         shadowColor: '#FFD700', // Golden glow effect
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.5,
         shadowRadius: 6,
-        elevation: 6, // Shadow for Android
     },
     label: {
         fontSize: fontScale(20),
@@ -36,7 +35,7 @@ export const styles = StyleSheet.create({
         color: '#FFD700', // Golden text
         marginLeft: wp(5),
         marginRight: wp(10),
-        maxWidth: wp(200), // Using responsive width
+        maxWidth: wp(190), // Using responsive width
     },
     icon: {
         marginRight: wp(3),

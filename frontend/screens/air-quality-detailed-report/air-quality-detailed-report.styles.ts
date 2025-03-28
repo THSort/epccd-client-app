@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
         marginLeft: wp(10),
     },
     locationSelector: {
-        paddingHorizontal: wp(24),
+        paddingHorizontal: wp(10),
     },
     aqiContainer: {
         paddingHorizontal: wp(24),

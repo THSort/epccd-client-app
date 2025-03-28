@@ -114,7 +114,6 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-evenly',
-        width: '100%',
     },
     loaderContainer: {
         flex: 1,

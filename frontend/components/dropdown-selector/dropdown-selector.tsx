@@ -6,23 +6,23 @@ import {styles} from './dropdown-selector.styles.ts';
 import {DropdownSelectorProps} from './dropdown-selector.types.ts';
 
 export function DropdownSelector({
-    label, 
-    text, 
-    iconName, 
-    onPress, 
-    isFullWidth = false, 
+    label,
+    text,
+    iconName,
+    onPress,
+    isFullWidth = false,
     showLabel = false,
     containerStyle,
     selectorStyle,
     labelStyle,
     textStyle,
-    iconStyle
+    iconStyle,
 }: DropdownSelectorProps): ReactElement {
     return (
         <View style={containerStyle}>
-            <TouchableOpacity 
-                activeOpacity={0.7} 
-                style={[styles.selector, isFullWidth && {width: '100%'}, selectorStyle]} 
+            <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.selector, isFullWidth && {width: '100%'}, selectorStyle]}
                 onPress={onPress}
             >
                 {showLabel && <Text style={[styles.label, labelStyle]}>{label}</Text>}
