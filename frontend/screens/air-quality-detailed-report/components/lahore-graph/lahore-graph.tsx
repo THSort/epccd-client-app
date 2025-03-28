@@ -10,19 +10,13 @@ import {useUserActivity} from '../../../../context/UserActivityContext';
 import {ACTION_TYPES, ELEMENT_NAMES, SCREEN_NAMES} from '../../../../utils/trackingConstants';
 import {getTranslation, Language, TranslationStrings} from '../../../../utils/translations';
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext';
+import { fetchLahoreLocationsAqi, LahoreLocationAqiData } from '../../../../services/api.service';
 
 export function LahoreGraph(props: LahoreGraphProps): ReactElement {
-    // Add state for the skeleton loader
+    // Replace hardcoded data with state loaded from API
     const [isLoading, setIsLoading] = useState(true);
-
-    // Use effect to hide the skeleton loader after 10 seconds
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 10000); // 10 seconds
-
-        return () => clearTimeout(timer);
-    }, []);
+    const [locationsAqiData, setLocationsAqiData] = useState<Record<string, number>>({});
+    const [error, setError] = useState<string | null>(null);
 
     // Use the activity tracking context
     const {trackActivity} = useUserActivity();
@@ -31,14 +25,32 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
     // Default to English if no language is selected
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
-    // Hardcoded AQI values for each location - these will be replaced with real data later
-    const locationAqiData: Record<string, number> = {
-        '1': 45,  // Good
-        '2': 85,  // Satisfactory
-        '3': 125, // Moderate
-        '4': 175, // Unhealthy for Sensitive Group
-        '5': 250, // Unhealthy
-    };
+    // Fetch Lahore locations AQI data from the API
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                
+                const data = await fetchLahoreLocationsAqi();
+                
+                // Convert the array of location data to the record format we need
+                const aqiDataRecord: Record<string, number> = {};
+                data.forEach((location: LahoreLocationAqiData) => {
+                    aqiDataRecord[location.locationCode] = location.aqi;
+                });
+                
+                setLocationsAqiData(aqiDataRecord);
+                setIsLoading(false);
+            } catch (err) {
+                console.error('Error fetching Lahore locations AQI data:', err);
+                setError(getTranslation('failedToLoadMap', currentLanguage));
+                setIsLoading(false);
+            }
+        };
+        
+        fetchData();
+    }, [currentLanguage]);
 
     // AQI categories for the legend with translation keys
     type AqiCategory = {
@@ -104,7 +116,7 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
                 screen_name: SCREEN_NAMES.DETAILED_REPORT,
                 location_code: location.locationCode,
                 location_name: location.locationName,
-                aqi: locationAqiData[location.locationCode],
+                aqi: locationsAqiData[location.locationCode] || 0,
                 latitude: location.latitude,
                 longitude: location.longitude,
                 timestamp: new Date().toISOString(),
@@ -117,12 +129,21 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
             <View style={styles.mapContainer}>
                 {isLoading ? (
                     <View style={[styles.mapView, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
-                        <ActivityIndicator size="large" color="black" />
+                        <ActivityIndicator size="large" color="#FFEB3B" />
                         <Text style={[
                             { marginTop: 10, color: '#666' },
                             currentLanguage === 'اردو' && {fontSize: 14},
                         ]}>
                             {getTranslation('loading', currentLanguage)}
+                        </Text>
+                    </View>
+                ) : error ? (
+                    <View style={[styles.mapView, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                        <Text style={[
+                            { color: '#F44336' },
+                            currentLanguage === 'اردو' && {fontSize: 14},
+                        ]}>
+                            {getTranslation('failedToLoadMap', currentLanguage)}
                         </Text>
                     </View>
                 ) : (
@@ -140,26 +161,14 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
                         onRegionChangeComplete={handleRegionChange}
                         onPress={handleMapPress}
                     >
-                        {/* Display circles for each location with colors based on AQI value */}
+                        {/* Display markers for each location with colors based on AQI value */}
                         {Areas[0].locations.map(location => {
-                            const aqi = locationAqiData[location.locationCode];
+                            const aqi = locationsAqiData[location.locationCode] || 0;
                             const color = getAqiColor(aqi);
                             const locationName = getLocationName(location.locationName);
 
                             return (
                                 <React.Fragment key={location.locationCode}>
-                                    {/*/!* Colored circle for each location *!/*/}
-                                    {/*<Circle*/}
-                                    {/*    center={{*/}
-                                    {/*        latitude: location.latitude,*/}
-                                    {/*        longitude: location.longitude,*/}
-                                    {/*    }}*/}
-                                    {/*    radius={1000}*/}
-                                    {/*    fillColor={`${color}80`} // Add transparency*/}
-                                    {/*    strokeColor={color}*/}
-                                    {/*    strokeWidth={2}*/}
-                                    {/*/>*/}
-
                                     {/* Default marker */}
                                     <Marker
                                         title={locationName}

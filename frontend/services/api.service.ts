@@ -7,6 +7,28 @@ import {TimeRange} from '../screens/air-quality-history/components/time-range-se
 const API_BASE_URL = 'http://13.61.251.147/api/epa-monitors';
 
 /**
+ * Interface for Lahore location AQI data
+ */
+export interface LahoreLocationAqiData {
+    locationCode: string;
+    aqi: number;
+}
+
+/**
+ * Fetches AQI data for all Lahore locations
+ * @returns Array of location objects with AQI values
+ */
+export const fetchLahoreLocationsAqi = async (): Promise<LahoreLocationAqiData[]> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/epaMonitorsData/lahoreLocationsAqi`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching Lahore locations AQI data:', error);
+        throw error;
+    }
+};
+
+/**
  * Fetches EPA Monitors data for a specific location
  * @param location - The location object to fetch data for
  * @returns The EPA Monitors data including PM2.5 AQI

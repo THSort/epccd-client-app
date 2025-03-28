@@ -1,9 +1,10 @@
 import express from "express";
-import { getCurrentEpaMonitorsDataForLocation, getHistoricalPollutantsDataForAllTimePeriods, getHistoricalPollutantsDataForSpecificTimePeriod, getPollutantSummaryForLocation } from "../controllers/epaMonitorsData.controller";
+import { getCurrentEpaMonitorsDataForLocation, getHistoricalPollutantsDataForAllTimePeriods, getHistoricalPollutantsDataForSpecificTimePeriod, getPollutantSummaryForLocation, getLahoreLocationsAqi } from "../controllers/epaMonitorsData.controller";
 
 const router = express.Router();
 
 // The more specific routes should come first
+router.get("/epaMonitorsData/lahoreLocationsAqi", getLahoreLocationsAqi);
 router.get("/epaMonitorsData/summary/:location", getPollutantSummaryForLocation);
 router.get("/epaMonitorsData/historical/:location/:timePeriod", getHistoricalPollutantsDataForSpecificTimePeriod);
 router.get("/epaMonitorsData/historical/:location", getHistoricalPollutantsDataForAllTimePeriods);

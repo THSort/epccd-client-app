@@ -36,6 +36,7 @@ export interface TranslationStrings {
 
   // Error messages
   failedToLoadAirQuality: string;
+  failedToLoadMap: string;
   noDataAvailable: string;
   failedToLoadHistoricalData: string;
   noHistoricalDataAvailable: string;
@@ -152,6 +153,7 @@ const translations: Record<Language, TranslationStrings> = {
 
     // Error messages
     failedToLoadAirQuality: 'Failed to load air quality data. Please try again later.',
+    failedToLoadMap: 'Failed to load Map',
     noDataAvailable: 'No data available',
     failedToLoadHistoricalData: 'Failed to load historical air quality data. Please try again later.',
     noHistoricalDataAvailable: 'No historical data available',
@@ -248,15 +250,15 @@ const translations: Record<Language, TranslationStrings> = {
     asthmaTitle: 'کیا آپ کو دمہ کی تاریخ ہے؟',
     yes: 'جی ہاں',
     no: 'نہیں',
-    settingUpAccount: 'آپ کا اکاؤنٹ سیٹ ہو رہا ہے...',
+    settingUpAccount: 'آپ کا اکاؤنٹ سیٹ اپ کر رہے ہیں...',
     pleaseSelectLocation: 'براہ کرم پہلے ایک مقام منتخب کریں',
-    preparingNotifications: 'اب بھی نوٹیفیکیشن کی ترتیبات تیار ہو رہی ہیں۔ براہ کرم تھوڑی دیر انتظار کریں اور دوبارہ کوشش کریں۔',
-    notificationTokenError: 'نوٹیفیکیشن ٹوکن تیار کرنے میں ناکام۔ براہ کرم دوبارہ کوشش کریں۔',
-    registrationError: 'رجسٹریشن مکمل کرنے میں ناکام۔ براہ کرم دوبارہ کوشش کریں۔',
+    preparingNotifications: 'ابھی تک اطلاعات کی ترتیبات تیار کر رہے ہیں۔ براہ کرم ایک لمحہ انتظار کریں اور دوبارہ کوشش کریں۔',
+    notificationTokenError: 'اطلاع ٹوکن تیار کرنے میں ناکام۔ دوبارہ کوشش کریں۔',
+    registrationError: 'رجسٹریشن مکمل کرنے میں ناکام۔ دوبارہ کوشش کریں۔',
 
     // AQI descriptions
     good: 'اچھا',
-    satisfactory: 'تسلی بخش',
+    satisfactory: 'اطمینان بخش',
     moderate: 'معتدل',
     unhealthyForSensitive: 'حساس گروپ کے لیے غیر صحت مند',
     unhealthy: 'غیر صحت مند',
@@ -265,7 +267,8 @@ const translations: Record<Language, TranslationStrings> = {
 
     // Error messages
     failedToLoadAirQuality: 'ہوا کے معیار کا ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
-    noDataAvailable: 'کوئی ڈیٹا دستیاب نہیں ہے',
+    failedToLoadMap: 'نقشہ لوڈ کرنے میں ناکام',
+    noDataAvailable: 'کوئی ڈیٹا دستیاب نہیں',
     failedToLoadHistoricalData: 'ہوا کے معیار کا تاریخی ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     noHistoricalDataAvailable: 'کوئی تاریخی ڈیٹا دستیاب نہیں ہے',
 

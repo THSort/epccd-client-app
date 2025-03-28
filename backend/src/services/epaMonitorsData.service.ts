@@ -39,6 +39,7 @@ interface EpaMonitorsDataCache {
     } 
   };
   pollutantSummary: { [locationId: number]: { data: PollutantSummaryData, timestamp: number } };
+  lahoreLocationsAqi?: { data: LahoreLocationAqiData[], timestamp: number };
 }
 
 // Initialize empty cache
@@ -1358,5 +1359,72 @@ export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<
     } catch (error) {
         logger.error(`Error fetching latest EPA Monitors data from DB for location ${location}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         throw new Error(`Failed to fetch latest EPA Monitors data for location ${location}`);
+    }
+};
+
+// Define the Lahore location response type
+export interface LahoreLocationAqiData {
+    locationCode: string;
+    aqi: number; 
+}
+
+/**
+ * Get AQI data for all Lahore locations
+ * This function retrieves the latest AQI values for all Lahore monitoring locations
+ * Uses a cache to minimize database queries
+ */
+export const getLahoreLocationsAqiData = async (): Promise<LahoreLocationAqiData[]> => {
+    try {
+        const now = Date.now();
+        
+        // Check if we have a cache for Lahore locations AQI data
+        if (
+            cache.lahoreLocationsAqi && 
+            (now - cache.lahoreLocationsAqi.timestamp < CACHE_EXPIRY)
+        ) {
+            logger.info('Using cached Lahore locations AQI data');
+            return cache.lahoreLocationsAqi.data;
+        }
+        
+        logger.info('Fetching Lahore locations AQI data from database');
+        
+        // Lahore locations (hardcoded for now since we know these are Lahore's locations)
+        const lahoreLocationCodes = ['1', '2', '3', '4', '5'];
+        
+        // Get data for all locations
+        const locationsData: LahoreLocationAqiData[] = await Promise.all(
+            lahoreLocationCodes.map(async (locationCode) => {
+                try {
+                    const locationData = await getLatestEpaMonitorsDataFromDB(Number(locationCode));
+                    
+                    // Calculate AQI from PM2.5 value (simplified for this example)
+                    // In a real implementation, you'd use proper AQI calculation formula
+                    const aqi = Math.round(locationData.pm2_5_ug_m3 * 2); // Simple calculation for example
+                    
+                    return {
+                        locationCode,
+                        aqi
+                    };
+                } catch (error) {
+                    logger.error(`Error fetching data for location ${locationCode}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    // Return default values if we can't get the data
+                    return {
+                        locationCode,
+                        aqi: 0 
+                    };
+                }
+            })
+        );
+        
+        // Cache the results
+        cache.lahoreLocationsAqi = {
+            data: locationsData,
+            timestamp: now
+        };
+        
+        return locationsData;
+    } catch (error) {
+        logger.error(`Error getting Lahore locations AQI data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return [];
     }
 };

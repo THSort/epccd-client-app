@@ -9,7 +9,8 @@ import {
     getPollutantHistoryDataForPastThreeMonths,
     getPollutantHistoryDataForPastSixMonths,
     getPollutantHistoryDataForPastYear,
-    getPollutantSummaryForLocation as getPollutantSummaryService
+    getPollutantSummaryForLocation as getPollutantSummaryService,
+    getLahoreLocationsAqiData
 } from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
 import {PollutantBucketData} from "../types/epaMonitorsData.types";
@@ -110,9 +111,26 @@ const getPollutantSummaryForLocation = async (req: Request, res: Response): Prom
     }
 };
 
+const getLahoreLocationsAqi = async (_req: Request, res: Response): Promise<void> => {
+    try {
+        // Get AQI data for all Lahore locations
+        const locationsAqiData = await getLahoreLocationsAqiData();
+        
+        res.json(locationsAqiData);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error(`Error fetching AQI data for Lahore locations: ${error.message}`);
+        } else {
+            logger.error(`Unknown error while fetching AQI data for Lahore locations`);
+        }
+        res.status(500).json({message: "Failed to fetch AQI data for Lahore locations"});
+    }
+};
+
 export {
     getCurrentEpaMonitorsDataForLocation,
     getHistoricalPollutantsDataForAllTimePeriods,
     getHistoricalPollutantsDataForSpecificTimePeriod,
-    getPollutantSummaryForLocation
+    getPollutantSummaryForLocation,
+    getLahoreLocationsAqi
 };
