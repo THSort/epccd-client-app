@@ -37,20 +37,20 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
         const unit = getUnit(pollutantName);
 
         // Adjust font sizes for small screens
-        const nameStyle = isSmallScreen 
-            ? {...styles.pollutantName, fontSize: fontScaleDynamic(18)} 
+        const nameStyle = isSmallScreen
+            ? {...styles.pollutantName, fontSize: fontScaleDynamic(18)}
             : styles.pollutantName;
-        
-        const valueStyle = isSmallScreen 
-            ? {...styles.pollutantValue, fontSize: fontScaleDynamic(18)} 
+
+        const valueStyle = isSmallScreen
+            ? {...styles.pollutantValue, fontSize: fontScaleDynamic(18)}
             : styles.pollutantValue;
-            
-        const descriptionStyle = isSmallScreen 
-            ? {...styles.pollutantDescription, fontSize: fontScaleDynamic(13)} 
+
+        const descriptionStyle = isSmallScreen
+            ? {...styles.pollutantDescription, fontSize: fontScaleDynamic(13)}
             : styles.pollutantDescription;
-            
-        const unitStyle = isSmallScreen 
-            ? {...styles.pollutantUnits, fontSize: fontScaleDynamic(13)} 
+
+        const unitStyle = isSmallScreen
+            ? {...styles.pollutantUnits, fontSize: fontScaleDynamic(13)}
             : styles.pollutantUnits;
 
         return (
@@ -78,8 +78,7 @@ export function PollutantInfoCard({ ...props }: PollutantInfoCardProps): ReactEl
     const getHistoryButton = () => {
         const historyTextStyle = [
             styles.historyText,
-            currentLanguage === 'اردو' && { fontSize: fontScale(17) },  // Increase font size for Urdu
-            isSmallScreen && { fontSize: fontScaleDynamic(14) }
+            isSmallScreen && { fontSize: fontScaleDynamic(14) },
         ];
 
         return (
