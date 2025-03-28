@@ -17,9 +17,10 @@ import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {getAqiDescription} from '../../utils/aqi-description.util.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
-import {getTranslation, Language, getTranslatedTimeSinceUpdate, getTranslatedNumber} from '../../utils/translations';
+import {getTranslation, getTranslatedTimeSinceUpdate, getTranslatedNumber} from '../../utils/translations';
 import {LahoreGraph} from './components/lahore-graph/lahore-graph';
 import {hp} from '../../utils/responsive.util';
+import {getDefaultLanguage} from '../../utils/language.util';
 
 const currentScreen = 'AirQualityReport';
 
@@ -29,7 +30,9 @@ export function AirQualityDetailedReport(): ReactElement {
     const {selectedLocation} = useSelectedLocation();
     const [location, setLocation] = useState<Location | undefined>(selectedLocation);
     const {selectedLanguage} = useSelectedLanguage();
-    const currentLanguage = (selectedLanguage || 'Eng') as Language;
+    
+    // Use the utility function for default language as Urdu
+    const currentLanguage = getDefaultLanguage(selectedLanguage);
 
     const {trackButton, trackBackButton} = useUserActivity();
 

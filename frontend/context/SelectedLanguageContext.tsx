@@ -23,9 +23,15 @@ export const SelectedLanguageProvider: React.FC<{ children: React.ReactNode }> =
                 const storedLanguage = await AsyncStorage.getItem('selected_language');
                 if (storedLanguage) {
                     setSelectedLanguageState(storedLanguage);
+                } else {
+                    // Set Urdu as the default language
+                    setSelectedLanguageState('اردو');
+                    await AsyncStorage.setItem('selected_language', 'اردو');
                 }
             } catch (error) {
                 console.error('Error loading language:', error);
+                // Even on error, set default to Urdu
+                setSelectedLanguageState('اردو');
             } finally {
                 setIsLoadingLanguage(false);
             }

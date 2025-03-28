@@ -15,9 +15,10 @@ import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
-import {getTranslation, Language, getTranslatedLocationName, getTranslatedNumber} from '../../utils/translations';
+import {getTranslation, getTranslatedLocationName, getTranslatedNumber} from '../../utils/translations';
 import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../components/tracking';
 import {useResponsiveDimensions} from '../../utils/responsive.util';
+import {getDefaultLanguage} from '../../utils/language.util';
 
 const currentScreen = 'HomeScreen';
 
@@ -27,8 +28,8 @@ const HomeScreen = () => {
     const {selectedLocation, isLoadingLocation, setSelectedLocation} = useSelectedLocation();
     const {selectedLanguage, isLoadingLanguage} = useSelectedLanguage();
 
-    // Default to English if no language is selected
-    const currentLanguage = (selectedLanguage || 'Eng') as Language;
+    // Use the utility function to get the current language with Urdu as default
+    const currentLanguage = getDefaultLanguage(selectedLanguage);
 
     const {trackButton, trackBackButton} = useUserActivity();
 
