@@ -16,14 +16,37 @@ export const registerUser = async (
   mobile_number?: string
 ): Promise<{ id_user: string }> => {
   try {
+    console.log('Attempting to register user with:', {
+      url: `${API_BASE_URL}/users/register`,
+      fcmToken,
+      location,
+      mobile_number
+    });
+
     const response = await axios.post(`${API_BASE_URL}/users/register`, {
       fcmToken,
       location,
       mobile_number,
     });
+
+    console.log('Registration response:', response.data);
     return response.data.user;
   } catch (error) {
-    console.error('Error registering user:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Registration error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+        }
+      });
+    } else {
+      console.error('Non-Axios error during registration:', error);
+    }
     throw error;
   }
 };
