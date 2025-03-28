@@ -125,17 +125,17 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
 
                         return (
                             <React.Fragment key={location.locationCode}>
-                                {/* Colored circle for each location */}
-                                <Circle
-                                    center={{
-                                        latitude: location.latitude,
-                                        longitude: location.longitude,
-                                    }}
-                                    radius={1000}
-                                    fillColor={`${color}80`} // Add transparency
-                                    strokeColor={color}
-                                    strokeWidth={2}
-                                />
+                                {/*/!* Colored circle for each location *!/*/}
+                                {/*<Circle*/}
+                                {/*    center={{*/}
+                                {/*        latitude: location.latitude,*/}
+                                {/*        longitude: location.longitude,*/}
+                                {/*    }}*/}
+                                {/*    radius={1000}*/}
+                                {/*    fillColor={`${color}80`} // Add transparency*/}
+                                {/*    strokeColor={color}*/}
+                                {/*    strokeWidth={2}*/}
+                                {/*/>*/}
 
                                 {/* Default marker */}
                                 <Marker
