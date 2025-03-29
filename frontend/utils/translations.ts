@@ -16,6 +16,7 @@ export interface TranslationStrings {
   mobileNumberPlaceholder: string;
   skip: string;
   skipAll: string;
+  next: string;
   asthmaTitle: string;
   yes: string;
   no: string;
@@ -24,6 +25,8 @@ export interface TranslationStrings {
   preparingNotifications: string;
   notificationTokenError: string;
   registrationError: string;
+  invalidMobileNumber: string;
+  invalidMobileNumberFormat: string;
 
   // AQI descriptions
   good: string;
@@ -133,6 +136,7 @@ const translations: Record<Language, TranslationStrings> = {
     mobileNumberPlaceholder: '3240152180',
     skip: 'Skip',
     skipAll: 'Skip All',
+    next: 'Next',
     asthmaTitle: 'Do you have a history of\nAsthma?',
     yes: 'Yes',
     no: 'No',
@@ -141,6 +145,8 @@ const translations: Record<Language, TranslationStrings> = {
     preparingNotifications: 'Still preparing notification settings. Please wait a moment and try again.',
     notificationTokenError: 'Unable to generate notification token. Please try again.',
     registrationError: 'Failed to complete registration. Please try again.',
+    invalidMobileNumber: 'Please enter a valid Pakistani mobile number',
+    invalidMobileNumberFormat: 'Number should be exactly 10 digits (like 3XXXXXXXXX)',
 
     // AQI descriptions
     good: 'Good',
@@ -247,6 +253,7 @@ const translations: Record<Language, TranslationStrings> = {
     mobileNumberPlaceholder: '3240152180',
     skip: 'چھوڑیں',
     skipAll: 'سب چھوڑیں',
+    next: 'آگے',
     asthmaTitle: 'کیا آپ کو دمہ کی تاریخ ہے؟',
     yes: 'جی ہاں',
     no: 'نہیں',
@@ -255,6 +262,8 @@ const translations: Record<Language, TranslationStrings> = {
     preparingNotifications: 'ابھی تک اطلاعات کی ترتیبات تیار کر رہے ہیں۔ براہ کرم ایک لمحہ انتظار کریں اور دوبارہ کوشش کریں۔',
     notificationTokenError: 'اطلاع ٹوکن تیار کرنے میں ناکام۔ دوبارہ کوشش کریں۔',
     registrationError: 'رجسٹریشن مکمل کرنے میں ناکام۔ دوبارہ کوشش کریں۔',
+    invalidMobileNumber: 'براہ کرم درست پاکستانی موبائل نمبر درج کریں',
+    invalidMobileNumberFormat: 'نمبر بالکل 10 ہندسوں کا ہونا چاہیے (جیسے 3XXXXXXXXX)',
 
     // AQI descriptions
     good: 'اچھا',

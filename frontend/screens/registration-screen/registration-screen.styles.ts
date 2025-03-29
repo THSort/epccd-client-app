@@ -7,6 +7,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#000000',
     justifyContent: 'center',
   },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 20,
+  },
   contentContainer: {
     flex: 1,
     position: 'relative',
@@ -15,7 +20,8 @@ export const styles = StyleSheet.create({
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 60,
+    marginTop: 20,
+    marginBottom: 20,
   },
   progressIndicator: {
     width: 60,
@@ -31,6 +37,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#D4AF37', // Darker gold color
   },
   stepContainer: {
+    marginTop: 5,
     marginBottom: 20,
     paddingHorizontal: 20,
   },
@@ -39,7 +46,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFD700',
     textAlign: 'center',
-    marginBottom: 60,
+    marginBottom: 30,
   },
   stepDescription: {
     fontSize: 16,
@@ -66,11 +73,12 @@ export const styles = StyleSheet.create({
   },
   skipAllContainer: {
     position: 'absolute',
-    top: 20,
-    right: 20,
-    zIndex: 1,
+    top: 0,
+    right: 0,
+    zIndex: 10,
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 20,
   },
   skipAllButton: {
     flexDirection: 'row',
@@ -94,7 +102,7 @@ export const styles = StyleSheet.create({
     borderColor: '#FFD700',
     borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 60,
+    marginBottom: 20,
   },
   countryCodeContainer: {
     backgroundColor: 'transparent',
@@ -115,6 +123,10 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 15,
     paddingVertical: 12,
+  },
+  actionButtonContainer: {
+    marginTop: 20,
+    alignItems: 'center',
   },
   skipButton: {
     flexDirection: 'row',
@@ -144,6 +156,8 @@ export const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   buttonText: {
     color: '#000000',
