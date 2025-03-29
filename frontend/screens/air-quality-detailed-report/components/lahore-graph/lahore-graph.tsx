@@ -31,15 +31,15 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
             try {
                 setIsLoading(true);
                 setError(null);
-                
+
                 const data = await fetchLahoreLocationsAqi();
-                
+
                 // Convert the array of location data to the record format we need
                 const aqiDataRecord: Record<string, number> = {};
                 data.forEach((location: LahoreLocationAqiData) => {
                     aqiDataRecord[location.locationCode] = location.aqi;
                 });
-                
+
                 setLocationsAqiData(aqiDataRecord);
                 setIsLoading(false);
             } catch (err) {
@@ -48,7 +48,7 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
                 setIsLoading(false);
             }
         };
-        
+
         fetchData();
     }, [currentLanguage]);
 

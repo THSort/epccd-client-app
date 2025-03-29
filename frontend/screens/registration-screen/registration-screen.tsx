@@ -159,8 +159,8 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
 
       // Step 2: Submit demographic survey with language preference
       await submitDemographicSurvey(
-        userData.id_user, 
-        asthmaValue, 
+        userData.id_user,
+        asthmaValue,
         selectedLanguage || 'اردو'  // Include selected language, defaulting to Urdu
       );
 

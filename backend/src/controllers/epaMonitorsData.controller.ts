@@ -58,6 +58,7 @@ const getHistoricalPollutantsDataForSpecificTimePeriod = async (req: Request, re
         const location = Number(req.params.location);
         const timePeriod = req.params.timePeriod as TimeRange;
         const currentDateTime = new Date();
+        // I have done sudo timedatectl set-timezone Asia/Karachi on the deployment server so no need to convert to PK time here
 
         // Each service function now handles its own caching
         let data: PollutantBucketData[] = [];
@@ -96,10 +97,10 @@ const getHistoricalPollutantsDataForSpecificTimePeriod = async (req: Request, re
 const getPollutantSummaryForLocation = async (req: Request, res: Response): Promise<void> => {
     try {
         const location = Number(req.params.location);
-        
+
         // Service now handles caching
         const summaryData = await getPollutantSummaryService(location);
-        
+
         res.json(summaryData);
     } catch (error) {
         if (error instanceof Error) {
@@ -115,7 +116,7 @@ const getLahoreLocationsAqi = async (_req: Request, res: Response): Promise<void
     try {
         // Get AQI data for all Lahore locations
         const locationsAqiData = await getLahoreLocationsAqiData();
-        
+
         res.json(locationsAqiData);
     } catch (error) {
         if (error instanceof Error) {
