@@ -208,7 +208,15 @@ const HomeScreen = () => {
 
             <View style={styles.bottomContainer}>
                 <View style={styles.settingsIconContainer}>
-                    <TouchableOpacity activeOpacity={0.7}>
+                    <TouchableOpacity 
+                        activeOpacity={0.7}
+                        onPress={() => {
+                            navigation.navigate('Settings');
+                            void trackButton(ELEMENT_NAMES.NAV_SETTINGS, currentScreen, {
+                                timestamp: new Date().toISOString(),
+                            });
+                        }}
+                    >
                         <Icon name="cog" size={40} color="#FFD700"/>
                     </TouchableOpacity>
                 </View>

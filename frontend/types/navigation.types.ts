@@ -9,8 +9,10 @@ type ScreensParamList = {
         selectedLocation?: Location,
         selectedPollutant: Pollutant
     };
+    Settings: undefined;
 };
 
 export type HomeScreenNavigationProps = NativeStackNavigationProp<ScreensParamList, 'HomeScreen'>;
 export type AirQualityDetailedReportNavigationProps = NativeStackNavigationProp<ScreensParamList, 'AirQualityDetailedReport'>;
 export type AirQualityHistoryNavigationProps = NativeStackNavigationProp<ScreensParamList, 'AirQualityHistory'>;
+export type SettingsScreenNavigationProps = NativeStackNavigationProp<ScreensParamList, 'Settings'>;

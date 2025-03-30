@@ -6,6 +6,7 @@ import {PORT} from "./config/dotenv";
 import {connectDB} from "./config/db";
 import exampleRoutes from "./routes/exampleRoutes";
 import userRoutes from "./routes/user.routes";
+import settingsRoutes from "./routes/settings.routes";
 import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
 import userActivityRoutes from "./routes/userActivity.routes";
@@ -24,6 +25,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/users", userRoutes); // User-related routes
+app.use("/api/settings", settingsRoutes); // Settings-related routes
 app.use("/api/epa-monitors", epaMonitorsDataRoutes); // EPA Monitors data routes
 app.use("/api/examples", exampleRoutes); // Example routes
 app.use("/api/demographics", demographicSurveyRoutes); // Routes for demographic survey info

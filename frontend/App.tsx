@@ -6,6 +6,7 @@ import {SelectedLocationProvider} from './context/SelectedLocationContext.tsx';
 import {SelectedLanguageProvider} from './context/SelectedLanguageContext.tsx';
 import {AirQualityDetailedReport} from './screens/air-quality-detailed-report/air-quality-detailed-report.tsx';
 import {AirQualityHistory} from './screens/air-quality-history/air-quality-history.tsx';
+import SettingsScreen from './screens/settings-screen/settings-screen.tsx';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {Location} from './App.types.ts';
@@ -24,6 +25,7 @@ type RootStackParamList = {
         selectedLocation?: Location,
         selectedPollutant: Pollutant
     };
+    Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -85,6 +87,7 @@ function App(): React.JSX.Element {
                                 <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
                                 <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
                                 <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
+                                <Stack.Screen name="Settings" component={SettingsScreen} options={{headerShown: false}}/>
                             </Stack.Navigator>
                         </View>
                     </NavigationContainer>

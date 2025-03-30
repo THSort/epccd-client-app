@@ -9,6 +9,19 @@ export interface TranslationStrings {
   settings: string;
   selectLocation: string;
 
+  // Settings screen
+  locationForAlerts: string;
+  receiveAlertsWhenAqiAbove: string;
+  language: string;
+  userIdNotFound: string;
+  locationUpdateSuccess: string;
+  locationUpdateError: string;
+  thresholdUpdateSuccess: string;
+  thresholdUpdateError: string;
+  languageUpdateSuccess: string;
+  languageUpdateError: string;
+  selectAlertThreshold: string;
+
   // Registration screen
   selectAreaTitle: string;
   selectArea: string;
@@ -38,6 +51,7 @@ export interface TranslationStrings {
   hazardous: string;
 
   // Error messages
+  pleaseRetryLater: string;
   failedToLoadAirQuality: string;
   failedToLoadMap: string;
   noDataAvailable: string;
@@ -129,6 +143,19 @@ const translations: Record<Language, TranslationStrings> = {
     settings: 'Settings',
     selectLocation: 'Select Location',
 
+    // Settings screen
+    locationForAlerts: 'Location to receive alerts for',
+    receiveAlertsWhenAqiAbove: 'Receive alerts when AQI is above',
+    language: 'Language',
+    userIdNotFound: 'User ID not found. Please restart the app.',
+    locationUpdateSuccess: 'Location updated successfully',
+    locationUpdateError: 'Failed to update location',
+    thresholdUpdateSuccess: 'Alert threshold updated successfully',
+    thresholdUpdateError: 'Failed to update alert threshold',
+    languageUpdateSuccess: 'Language updated successfully',
+    languageUpdateError: 'Failed to update language',
+    selectAlertThreshold: 'Select alert threshold',
+
     // Registration screen
     selectAreaTitle: 'Which area do you want to receive AQI alerts for?',
     selectArea: 'Select Area',
@@ -158,6 +185,7 @@ const translations: Record<Language, TranslationStrings> = {
     hazardous: 'Hazardous',
 
     // Error messages
+    pleaseRetryLater: 'Please try again later',
     failedToLoadAirQuality: 'Failed to load air quality data. Please try again later.',
     failedToLoadMap: 'Failed to load Map',
     noDataAvailable: 'No data available',
@@ -246,6 +274,19 @@ const translations: Record<Language, TranslationStrings> = {
     settings: 'ترتیبات',
     selectLocation: 'مقام منتخب کریں',
 
+    // Settings screen
+    locationForAlerts: 'مقام جو اطلاعات حاصل کرے گی',
+    receiveAlertsWhenAqiAbove: 'اطلاعات حاصل کریں جب اے کیو آئی بالا ہو',
+    language: 'زبان',
+    userIdNotFound: 'یوزر آئڈ نہیں ملا ہے۔ براہ کرم اپ اپ چلائیں۔',
+    locationUpdateSuccess: 'مقام موفق طور پر اپڈیٹ شدہ',
+    locationUpdateError: 'مقام اپڈیٹ کرنے میں ناکام',
+    thresholdUpdateSuccess: 'اطلاع آپڈیٹ موفق طور پر کامیاب',
+    thresholdUpdateError: 'اطلاع آپڈیٹ کرنے میں ناکام',
+    languageUpdateSuccess: 'زبان موفق طور پر اپڈیٹ شدہ',
+    languageUpdateError: 'زبان اپڈیٹ کرنے میں ناکام',
+    selectAlertThreshold: 'اطلاع آپڈیٹ منتخب کریں',
+
     // Registration screen
     selectAreaTitle: 'آپ کس علاقے کے لیے اے کیو آئی الرٹس حاصل کرنا چاہیں گے؟',
     selectArea: 'علاقہ منتخب کریں',
@@ -275,6 +316,7 @@ const translations: Record<Language, TranslationStrings> = {
     hazardous: 'خطرناک',
 
     // Error messages
+    pleaseRetryLater: 'براہ کرم بعد میں دوبارہ کوشش کریں',
     failedToLoadAirQuality: 'ہوا کے معیار کا ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     failedToLoadMap: 'نقشہ لوڈ کرنے میں ناکام',
     noDataAvailable: 'کوئی ڈیٹا دستیاب نہیں',
