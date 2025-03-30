@@ -21,37 +21,37 @@ const SCREEN_NAME = SCREEN_NAMES.SETTINGS;
 const SettingsScreen = () => {
     const navigation = useNavigation<SettingsScreenNavigationProps>();
     const isFocused = useIsFocused();
-    
+
     // User ID - would typically come from a user context or auth state
     const [userId, setUserId] = useState<string | null>(null);
-    
+
     // Track which settings are being updated
     const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
     const [isUpdatingThreshold, setIsUpdatingThreshold] = useState(false);
     const [_isUpdatingLanguage, _setIsUpdatingLanguage] = useState(false);
-    
+
     // Toast state
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [isErrorToast, setIsErrorToast] = useState(false);
-    
+
     // Alert threshold modal
     const [showThresholdModal, setShowThresholdModal] = useState(false);
     const [selectedThreshold, setSelectedThreshold] = useState<AlertThreshold>('unhealthy');
-    
+
     // Location modal
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation, setSelectedLocation} = useSelectedLocation();
-    
+
     // Language
     const {selectedLanguage, isLoadingLanguage} = useSelectedLanguage();
-    
+
     // Tracking
     const {trackActivity} = useUserActivity();
-    
+
     // Get the current language with English as default
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
-    
+
     // Alert threshold options with colors
     const alertThresholdOptions: AlertThresholdOption[] = [
         {value: 'good', colorHex: '#4CAF50', labelKey: 'good'},
@@ -62,7 +62,7 @@ const SettingsScreen = () => {
         {value: 'veryUnhealthy', colorHex: '#9C27B0', labelKey: 'veryUnhealthy'},
         {value: 'hazardous', colorHex: '#6D4C41', labelKey: 'hazardous'},
     ];
-    
+
     // Update modal animation references
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(400)).current;
@@ -81,14 +81,14 @@ const SettingsScreen = () => {
             ]).start();
         }
     }, [showThresholdModal, overlayOpacity, slideAnim]);
-    
+
     // Load user data when the screen is focused
     useEffect(() => {
         if (isFocused) {
             loadUserData();
         }
     }, [isFocused]);
-    
+
     // Load user data from storage
     const loadUserData = async () => {
         try {
@@ -96,7 +96,7 @@ const SettingsScreen = () => {
             if (storedUserId) {
                 setUserId(storedUserId);
             }
-            
+
             // Load alert threshold from storage
             const storedThreshold = await AsyncStorage.getItem('alertThreshold');
             if (storedThreshold) {
@@ -106,7 +106,7 @@ const SettingsScreen = () => {
             console.error('Error loading user data:', error);
         }
     };
-    
+
     // Show toast message
     const showToastMessage = (key: keyof TranslationStrings, isError: boolean = false) => {
         let message = getTranslation(key, currentLanguage);
@@ -116,35 +116,35 @@ const SettingsScreen = () => {
         setToastMessage(message);
         setIsErrorToast(isError);
         setShowToast(true);
-        
+
         // Hide toast after 3 seconds
         setTimeout(() => {
             setShowToast(false);
         }, 3000);
     };
-    
+
     // Handle location change
     const handleLocationChange = async (location: any) => {
         if (!userId) {
             showToastMessage('userIdNotFound', true);
             return;
         }
-        
+
         setIsUpdatingLocation(true);
-        
+
         try {
             // Store in AsyncStorage
             await AsyncStorage.setItem('selectedLocation', JSON.stringify(location));
-            
+
             // Update location in context
             setSelectedLocation(location);
-            
+
             // Make API call to update user location
             await updateUserLocation(userId, location.locationCode);
-            
+
             // Show success message
             showToastMessage('locationUpdateSuccess');
-            
+
             // Track activity
             trackActivity(ACTION_TYPES.SELECTION, {
                 action_name: ELEMENT_NAMES.SEL_LOCATION,
@@ -161,33 +161,33 @@ const SettingsScreen = () => {
             closeLocationModal();
         }
     };
-    
+
     // Handle threshold change
     const handleThresholdChange = async (threshold: AlertThreshold) => {
         if (!userId) {
             showToastMessage('userIdNotFound', true);
             return;
         }
-        
+
         setShowThresholdModal(false);
         setIsUpdatingThreshold(true);
-        
+
         try {
             // Store in AsyncStorage
             await AsyncStorage.setItem('alertThreshold', threshold);
-            
+
             // Update state
             setSelectedThreshold(threshold);
-            
+
             // Make API call to update user alert threshold
             await updateUserAlertsThreshold(userId, threshold);
-            
+
             // Show success message
             showToastMessage('thresholdUpdateSuccess');
-            
+
             // Track activity
             trackActivity(ACTION_TYPES.SELECTION, {
-                action_name: ELEMENT_NAMES.SEL_HEALTH_CONDITION,
+                action_name: ELEMENT_NAMES.ALERT_THRESHOLD,
                 screen_name: SCREEN_NAME,
                 threshold_value: threshold,
                 timestamp: new Date().toISOString(),
@@ -199,17 +199,17 @@ const SettingsScreen = () => {
             setIsUpdatingThreshold(false);
         }
     };
-    
+
     // Get the current threshold display name
     const getThresholdDisplayName = () => {
         const option = alertThresholdOptions.find(opt => opt.value === selectedThreshold);
         return option ? getTranslation(option.labelKey as keyof TranslationStrings, currentLanguage) : '';
     };
-    
+
     // Render the threshold option
     const renderThresholdOption = ({item}: {item: AlertThresholdOption}) => {
         const isSelected = selectedThreshold === item.value;
-        
+
         return (
             <TouchableOpacity
                 activeOpacity={0.7}
@@ -221,7 +221,7 @@ const SettingsScreen = () => {
                     isSelected && {
                         backgroundColor: '#333',
                         borderRadius: 5,
-                    }
+                    },
                 ]}
                 onPress={() => handleThresholdChange(item.value)}
             >
@@ -232,8 +232,8 @@ const SettingsScreen = () => {
                             height: 30,
                             borderRadius: 15,
                             marginRight: 15,
-                        }, 
-                        {backgroundColor: item.colorHex}
+                        },
+                        {backgroundColor: item.colorHex},
                     ]} />
                     <Text style={{
                         color: item.colorHex,
@@ -245,7 +245,7 @@ const SettingsScreen = () => {
             </TouchableOpacity>
         );
     };
-    
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -256,14 +256,14 @@ const SettingsScreen = () => {
                 >
                     <Icon name="chevron-left" size={25} color="yellow" />
                 </TouchableOpacity>
-                
+
                 <Text style={styles.headerTitle}>
                     {getTranslation('settings' as keyof TranslationStrings, currentLanguage)}
                 </Text>
             </View>
-            
-            <ScrollView 
-                style={styles.content} 
+
+            <ScrollView
+                style={styles.content}
                 contentContainerStyle={{paddingBottom: 20}}
             >
                 {/* Location Setting */}
@@ -295,7 +295,7 @@ const SettingsScreen = () => {
                         <Icon name="chevron-down" size={24} color="yellow" />
                     )}
                 </TouchableOpacity>
-                
+
                 {/* Alert Threshold Setting */}
                 <TouchableOpacity
                     style={styles.settingRow}
@@ -323,7 +323,7 @@ const SettingsScreen = () => {
                         <Icon name="chevron-down" size={24} color="yellow" />
                     )}
                 </TouchableOpacity>
-                
+
                 {/* Language Setting */}
                 <View style={styles.settingRow}>
                     <View style={{flex: 1}}>
@@ -334,7 +334,7 @@ const SettingsScreen = () => {
                             </Text>
                         </View>
                         <View style={{alignItems: 'center', paddingTop: 8}}>
-                            {/* LanguageToggle component uses the SelectedLanguageContext which 
+                            {/* LanguageToggle component uses the SelectedLanguageContext which
                                automatically updates the language preference in the database */}
                             {isLoadingLanguage ? (
                                 <ActivityIndicator size="small" color="yellow" />
@@ -345,7 +345,7 @@ const SettingsScreen = () => {
                     </View>
                 </View>
             </ScrollView>
-            
+
             {/* Location Modal */}
             {isModalOpen && (
                 <LocationModal
@@ -355,7 +355,7 @@ const SettingsScreen = () => {
                     onClose={closeLocationModal}
                 />
             )}
-            
+
             {/* Alert Threshold Modal */}
             <Modal
                 visible={showThresholdModal}
@@ -384,7 +384,7 @@ const SettingsScreen = () => {
                                 borderTopRightRadius: 20,
                                 paddingVertical: 20,
                                 width: '100%',
-                                transform: [{translateY: slideAnim}]
+                                transform: [{translateY: slideAnim}],
                             }}>
                                 {/* Header */}
                                 <View style={{
@@ -403,8 +403,8 @@ const SettingsScreen = () => {
                                     }}>
                                         {getTranslation('selectAlertThreshold' as keyof TranslationStrings, currentLanguage)}
                                     </Text>
-                                    <TouchableOpacity 
-                                        activeOpacity={0.7} 
+                                    <TouchableOpacity
+                                        activeOpacity={0.7}
                                         onPress={() => setShowThresholdModal(false)}
                                         style={{
                                             position: 'absolute',
@@ -433,7 +433,7 @@ const SettingsScreen = () => {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
-            
+
             {/* Toast Message */}
             {showToast && (
                 <View style={[styles.toast, isErrorToast && styles.errorToast]}>
@@ -443,8 +443,8 @@ const SettingsScreen = () => {
                         color="white"
                     />
                     <Text style={[
-                        styles.toastText, 
-                        currentLanguage === 'اردو' && { fontSize: 16 }
+                        styles.toastText,
+                        currentLanguage === 'اردو' && { fontSize: 16 },
                     ]}>
                         {toastMessage}
                     </Text>
@@ -454,4 +454,4 @@ const SettingsScreen = () => {
     );
 };
 
-export default SettingsScreen; 
+export default SettingsScreen;

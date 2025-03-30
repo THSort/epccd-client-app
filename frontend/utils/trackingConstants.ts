@@ -51,16 +51,8 @@ export const ELEMENT_NAMES = {
   MAP_PRESS: 'map_press',
   MAP_MARKER_PRESS: 'map_marker_press',
 
-  // Registration
-  INP_NAME: 'inp_name',
-  INP_EMAIL: 'inp_email',
-  INP_AGE: 'inp_age',
-  SEL_GENDER: 'sel_gender',
-  SEL_LANGUAGE: 'sel_language',
-  SEL_HEALTH_CONDITION: 'sel_health_condition',
-  TOG_ASTHMA: 'tog_asthma',
-  BTN_SKIP: 'btn_skip',
-  BTN_NEXT: 'btn_next',
+  // Settings
+  ALERT_THRESHOLD: 'alert_threshold',
 };
 
 /**
