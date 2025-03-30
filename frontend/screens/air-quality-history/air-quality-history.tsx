@@ -11,7 +11,7 @@ import {LocationModal} from '../home-screen/components/location-modal/location-m
 import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
-import {fetchHistoricalEpaMonitorsData, fetchPollutantDataForTimePeriod, fetchPollutantSummary} from '../../services/api.service.ts';
+import {fetchHistoricalEpaMonitorsData, fetchPollutantSummary} from '../../services/api.service.ts';
 import {FilteredHistoricalDataResponse, PollutantChartData, PollutantSummaryResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {TimeRangeSelector} from './components/time-range-selector/time-range-selector.tsx';
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
@@ -46,8 +46,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [pollutant, setPollutant] = useState<Pollutant>(selectedPollutant);
 
     const [historicalData, setHistoricalData] = useState<FilteredHistoricalDataResponse | null>(null);
-    const [historicalDataForSelectedTimePeriod, setHistoricalDataForSelectedTimePeriod] = useState<Record<string, PollutantChartData> | null>(null);
-    const [isLoadingTimePeriodData, setIsLoadingTimePeriodData] = useState<boolean>(true);
     const [isLoadingAllHistoricalData, setIsLoadingAllHistoricalData] = useState<boolean>(true);
     const [isLoadingSummaryData, setIsLoadingSummaryData] = useState<boolean>(true);
     const [summaryData, setSummaryData] = useState<PollutantSummaryResponse | null>(null);
@@ -69,6 +67,29 @@ export function AirQualityHistory({route}: Props): ReactElement {
             backEvent.remove();
         };
     }, [handleBackButtonClick]);
+
+    const getDataFromPeriod = useCallback((): Record<string, PollutantChartData> | null => {
+        if (!historicalData) {
+            return null;
+        }
+
+        switch (timeRange) {
+            case '1d':
+                return historicalData.oneDay;
+            case '1w':
+                return historicalData.oneWeek;
+            case '1m':
+                return historicalData.oneMonth;
+            case '3m':
+                return historicalData.threeMonths;
+            case '6m':
+                return historicalData.sixMonths;
+            case '1y':
+                return historicalData.twelveMonths;
+            default:
+                throw new Error(`Unhandled timeRange ${timeRange}`);
+        }
+    }, [historicalData, timeRange]);
 
     const fetchHistoricalData = useCallback(async () => {
         if (!selectedLocation) {return;}
@@ -104,58 +125,12 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     }, [selectedLocation, currentLanguage]);
 
-    const fetchTimePeriodData = useCallback(async () => {
-        if (!selectedLocation) {return;}
-
-        setIsLoadingTimePeriodData(true);
-        setError(null);
-
-        try {
-            const data = await fetchPollutantDataForTimePeriod(selectedLocation, timeRange);
-            setHistoricalDataForSelectedTimePeriod(data);
-        } catch (error) {
-            console.error('Error fetching time period data:', error);
-            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
-        } finally {
-            setIsLoadingTimePeriodData(false);
-        }
-    }, [selectedLocation, timeRange, currentLanguage]);
-
     useEffect(() => {
         if (selectedLocation) {
             void fetchHistoricalData();
             void fetchSummaryData();
         }
     }, [selectedLocation, pollutant, fetchHistoricalData, fetchSummaryData]);
-
-    useEffect(() => {
-        if (selectedLocation) {
-            void fetchTimePeriodData();
-        }
-    }, [selectedLocation, pollutant, timeRange, fetchTimePeriodData]);
-
-    const getDataFromPeriod = (): Record<string, PollutantChartData> => {
-        if (!historicalData) {
-            throw new Error('historicalData is null in getDataFromPeriod');
-        }
-
-        switch (timeRange) {
-            case '1d':
-                return historicalData.oneDay;
-            case '1w':
-                return historicalData.oneWeek;
-            case '1m':
-                return historicalData.oneMonth;
-            case '3m':
-                return historicalData.threeMonths;
-            case '6m':
-                return historicalData.sixMonths;
-            case '1y':
-                return historicalData.twelveMonths;
-            default:
-                throw new Error(`Unhandled timeRange ${timeRange}`);
-        }
-    };
 
     const getLabelsForDataToUse = (dataForSelectedPeriod: Record<string, PollutantChartData>): string[] => {
         return Object.values(dataForSelectedPeriod).map((dataPoint) => {
@@ -212,10 +187,14 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
-    const getChartData = (): { labels: string[], values: (number | undefined)[] } => {
-        const dataFromPeriodToUse = historicalDataForSelectedTimePeriod ?? getDataFromPeriod();
-        const labels = getLabelsForDataToUse(dataFromPeriodToUse);
-        const dataValues = getDataForPollutant(dataFromPeriodToUse);
+    const getChartData = (): { labels: string[], values: (number | undefined)[] } | null => {
+        const dataFromPeriod = getDataFromPeriod();
+        if (!dataFromPeriod) {
+            return null;
+        }
+
+        const labels = getLabelsForDataToUse(dataFromPeriod);
+        const dataValues = getDataForPollutant(dataFromPeriod);
 
         return {
             labels,
@@ -308,18 +287,11 @@ export function AirQualityHistory({route}: Props): ReactElement {
     };
 
     const getHistoricalDataContent = (): ReactElement => {
-        if (isLoadingTimePeriodData) {
+        if (isLoadingAllHistoricalData) {
             return getLoader();
         }
 
-        if (!isLoadingTimePeriodData && !historicalDataForSelectedTimePeriod) {
-            if (isLoadingAllHistoricalData) {
-                return getLoader();
-            }
-        }
-
-        let data;
-        data = getChartData();
+        const data = getChartData();
 
         if (data) {
             return (
@@ -441,7 +413,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 await Promise.all([
                     fetchHistoricalData(),
                     fetchSummaryData(),
-                    fetchTimePeriodData(),
                 ]);
                 setError(null);
             } catch (error) {
@@ -450,7 +421,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
             }
         }
         setRefreshing(false);
-    }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData, fetchTimePeriodData]);
+    }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData]);
 
     return (
         <View style={styles.container}>
@@ -479,7 +450,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                 <View style={styles.content}>
                     <LocationSelector
                         isFullWidth
-                        showLocationLabel
                         selectedLocation={selectedLocation}
                         onOpenLocationModal={() => {
                             void trackButton('location_selector', currentScreen, {
@@ -517,9 +487,6 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             <TimeRangeSelector
                                 selectedTimeRange={timeRange}
                                 onTimeRangeSelected={(timeRangeSelected) => {
-                                    // Clear current time period data and show loading state
-                                    setHistoricalDataForSelectedTimePeriod(null);
-
                                     setTimeRange(timeRangeSelected);
 
                                     void trackButton('time_range_toggle', currentScreen, {
