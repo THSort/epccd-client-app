@@ -87,7 +87,7 @@ export function Chart({...props}: ChartProps): ReactElement {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            width: 350,
+            width: 325,
         }}>
             <LineChart
                 onlyPositive={true}
