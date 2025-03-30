@@ -15,6 +15,7 @@ import {getTranslation, getTranslatedLocationName, Language, TranslationStrings}
 import {updateUserLocation, updateUserAlertsThreshold} from '../../services/api.service';
 import {ACTION_TYPES, ELEMENT_NAMES, SCREEN_NAMES} from '../../utils/trackingConstants';
 import {useUserActivity} from '../../context/UserActivityContext';
+import {getUserId} from '../../utils/storage.util.ts';
 
 const SCREEN_NAME = SCREEN_NAMES.SETTINGS;
 
@@ -92,7 +93,7 @@ const SettingsScreen = () => {
     // Load user data from storage
     const loadUserData = async () => {
         try {
-            const storedUserId = await AsyncStorage.getItem('userId');
+            const storedUserId = await getUserId();
             if (storedUserId) {
                 setUserId(storedUserId);
             }

@@ -3,7 +3,7 @@ export interface SettingsScreenProps {
 }
 
 // AQI threshold options for alerts
-export type AlertThreshold = 
+export type AlertThreshold =
     | 'good'
     | 'satisfactory'
     | 'moderate'
@@ -17,4 +17,4 @@ export interface AlertThresholdOption {
     value: AlertThreshold;
     colorHex: string;
     labelKey: string;
-} 
+}

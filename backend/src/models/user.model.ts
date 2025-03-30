@@ -17,4 +17,4 @@ const UserSchema = new Schema<IUser>({
     alerts_threshold: { type: String, default: 'unhealthy', enum: ['good', 'satisfactory', 'moderate', 'unhealthyForSensitive', 'unhealthy', 'veryUnhealthy', 'hazardous'] },
 });
 
-export default mongoose.model<IUser>("User", UserSchema);
+export default mongoose.model<IUser>("User", UserSchema, 'users');
