@@ -280,7 +280,7 @@ const SettingsScreen = () => {
                     <View style={{flex: 1}}>
                         <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8, alignSelf: 'center'}}>
                             <Icon name="map-marker" size={20} color="yellow" style={{width: 25}}/>
-                            <Text style={[styles.sectionTitle, {marginTop: 0, marginLeft: 8, marginBottom: 0}]}>
+                            <Text style={[styles.sectionTitle, {marginTop: 0, marginBottom: 0}]}>
                                 {getTranslation('locationForAlerts' as keyof TranslationStrings, currentLanguage)}
                             </Text>
                         </View>
@@ -310,7 +310,7 @@ const SettingsScreen = () => {
                     <View style={{flex: 1}}>
                         <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8, alignSelf: 'center'}}>
                             <Icon name="exclamation-triangle" size={20} color="yellow" style={{width: 25}}/>
-                            <Text style={[styles.sectionTitle, {marginTop: 0, marginLeft: 8, marginBottom: 0}]}>
+                            <Text style={[styles.sectionTitle, {marginTop: 0, marginBottom: 0}]}>
                                 {getTranslation('receiveAlertsWhenAqiAbove' as keyof TranslationStrings, currentLanguage)}
                             </Text>
                         </View>

@@ -32,7 +32,6 @@ export const styles = StyleSheet.create({
         color: 'yellow',
         marginTop: 24,
         marginBottom: 12,
-        paddingLeft: 4,
         width: 250,
         textAlign: 'center',
     },
