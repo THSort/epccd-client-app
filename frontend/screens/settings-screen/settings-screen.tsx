@@ -208,7 +208,7 @@ const SettingsScreen = () => {
     };
 
     // Render the threshold option
-    const renderThresholdOption = ({item}: {item: AlertThresholdOption}) => {
+    const renderThresholdOption = ({item}: { item: AlertThresholdOption }) => {
         const isSelected = selectedThreshold === item.value;
 
         return (
@@ -235,7 +235,7 @@ const SettingsScreen = () => {
                             marginRight: 15,
                         },
                         {backgroundColor: item.colorHex},
-                    ]} />
+                    ]}/>
                     <Text style={{
                         color: item.colorHex,
                         fontSize: 18,
@@ -255,7 +255,7 @@ const SettingsScreen = () => {
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
-                    <Icon name="chevron-left" size={25} color="yellow" />
+                    <Icon name="chevron-left" size={25} color="yellow"/>
                 </TouchableOpacity>
 
                 <Text style={styles.headerTitle}>
@@ -278,8 +278,8 @@ const SettingsScreen = () => {
                     disabled={isUpdatingLocation}
                 >
                     <View style={{flex: 1}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
-                            <Icon name="map-marker" size={20} color="yellow" style={{width: 25}} />
+                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8, alignSelf: 'center'}}>
+                            <Icon name="map-marker" size={20} color="yellow" style={{width: 25}}/>
                             <Text style={[styles.sectionTitle, {marginTop: 0, marginLeft: 8, marginBottom: 0}]}>
                                 {getTranslation('locationForAlerts' as keyof TranslationStrings, currentLanguage)}
                             </Text>
@@ -291,9 +291,9 @@ const SettingsScreen = () => {
                         </Text>
                     </View>
                     {isUpdatingLocation ? (
-                        <ActivityIndicator size="small" color="yellow" />
+                        <ActivityIndicator size="small" color="yellow"/>
                     ) : (
-                        <Icon name="chevron-down" size={24} color="yellow" />
+                        <Icon name="chevron-down" size={24} color="yellow"/>
                     )}
                 </TouchableOpacity>
 
@@ -308,8 +308,8 @@ const SettingsScreen = () => {
                     disabled={isUpdatingThreshold}
                 >
                     <View style={{flex: 1}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
-                            <Icon name="exclamation-triangle" size={20} color="yellow" style={{width: 25}} />
+                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8, alignSelf: 'center'}}>
+                            <Icon name="exclamation-triangle" size={20} color="yellow" style={{width: 25}}/>
                             <Text style={[styles.sectionTitle, {marginTop: 0, marginLeft: 8, marginBottom: 0}]}>
                                 {getTranslation('receiveAlertsWhenAqiAbove' as keyof TranslationStrings, currentLanguage)}
                             </Text>
@@ -319,28 +319,35 @@ const SettingsScreen = () => {
                         </Text>
                     </View>
                     {isUpdatingThreshold ? (
-                        <ActivityIndicator size="small" color="yellow" />
+                        <ActivityIndicator size="small" color="yellow"/>
                     ) : (
-                        <Icon name="chevron-down" size={24} color="yellow" />
+                        <Icon name="chevron-down" size={24} color="yellow"/>
                     )}
                 </TouchableOpacity>
 
                 {/* Language Setting */}
                 <View style={styles.settingRow}>
                     <View style={{flex: 1}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
-                            <Icon name="globe" size={20} color="yellow" style={{width: 25}} />
-                            <Text style={[styles.sectionTitle, {marginTop: 0, marginLeft: 8, marginBottom: 0}]}>
-                                {getTranslation('language' as keyof TranslationStrings, currentLanguage)}
-                            </Text>
-                        </View>
-                        <View style={{alignItems: 'center', paddingTop: 8}}>
-                            {/* LanguageToggle component uses the SelectedLanguageContext which
-                               automatically updates the language preference in the database */}
+                        <View style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'center', justifyContent: 'center'}}>
+                            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginRight: 16}}>
+                                <Icon name="globe" size={20} color="yellow"/>
+                                <Text style={{
+                                    fontSize: 18,
+                                    fontWeight: 'bold',
+                                    color: 'yellow',
+                                    paddingLeft: 4,
+                                    textAlign: 'center',
+                                    marginTop: 0,
+                                    marginBottom: 0,
+                                    marginLeft: 12,
+                                }}>
+                                    {getTranslation('language' as keyof TranslationStrings, currentLanguage)}
+                                </Text>
+                            </View>
                             {isLoadingLanguage ? (
-                                <ActivityIndicator size="small" color="yellow" />
+                                <ActivityIndicator size="small" color="yellow"/>
                             ) : (
-                                <LanguageToggle />
+                                <LanguageToggle/>
                             )}
                         </View>
                     </View>
@@ -376,7 +383,7 @@ const SettingsScreen = () => {
                             height: '100%',
                             backgroundColor: 'rgba(255, 255, 255, 0.5)',
                             opacity: overlayOpacity,
-                        }} />
+                        }}/>
 
                         <TouchableWithoutFeedback>
                             <Animated.View style={{
@@ -395,7 +402,7 @@ const SettingsScreen = () => {
                                     paddingBottom: 10,
                                     position: 'relative',
                                 }}>
-                                    <Icon name="exclamation-triangle" size={20} color="#FFD700" />
+                                    <Icon name="exclamation-triangle" size={20} color="#FFD700"/>
                                     <Text style={{
                                         color: '#FFD700',
                                         fontSize: 18,
@@ -413,7 +420,7 @@ const SettingsScreen = () => {
                                             top: 0,
                                         }}
                                     >
-                                        <Icon name="close" size={22} color="#FFD700" />
+                                        <Icon name="close" size={22} color="#FFD700"/>
                                     </TouchableOpacity>
                                 </View>
 
@@ -422,7 +429,7 @@ const SettingsScreen = () => {
                                     height: 1,
                                     backgroundColor: '#FFD700',
                                     marginVertical: 10,
-                                }} />
+                                }}/>
 
                                 <FlatList
                                     data={alertThresholdOptions}
@@ -445,7 +452,7 @@ const SettingsScreen = () => {
                     />
                     <Text style={[
                         styles.toastText,
-                        currentLanguage === 'اردو' && { fontSize: 16 },
+                        currentLanguage === 'اردو' && {fontSize: 16},
                     ]}>
                         {toastMessage}
                     </Text>

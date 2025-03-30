@@ -33,6 +33,8 @@ export const styles = StyleSheet.create({
         marginTop: 24,
         marginBottom: 12,
         paddingLeft: 4,
+        width: 250,
+        textAlign: 'center',
     },
     settingRow: {
         flexDirection: 'row',
@@ -40,12 +42,13 @@ export const styles = StyleSheet.create({
         backgroundColor: '#1E1E1E',
         borderRadius: 8,
         padding: 16,
-        marginBottom: 20,
+        marginBottom: 28,
     },
     settingLabel: {
         flex: 1,
         fontSize: 17,
         color: '#FFFFFF',
+        alignSelf: 'center',
     },
     settingValue: {
         fontSize: 17,
@@ -134,4 +137,4 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
     },
-}); 
+});
