@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'black',
+        backgroundColor: 'transparent',
         position: 'relative',
     },
     scrollView: {

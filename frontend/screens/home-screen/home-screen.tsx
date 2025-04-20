@@ -19,6 +19,7 @@ import {getTranslation, getTranslatedLocationName, getTranslatedNumber} from '..
 import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../components/tracking';
 import {useResponsiveDimensions} from '../../utils/responsive.util';
 import {getDefaultLanguage} from '../../utils/language.util';
+import AnimatedGradientBackground from '../../components/animated-gradient-background/animated-gradient-background.tsx';
 
 const currentScreen = 'HomeScreen';
 
@@ -128,10 +129,10 @@ const HomeScreen = () => {
 
     const renderAQILevelInfo = () => {
         // If on a small screen, apply additional adjustments for better readability
-        const messageStyle = isSmallScreen 
-            ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(20), color: aqiColor} 
+        const messageStyle = isSmallScreen
+            ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(20), color: aqiColor}
             : {...styles.aqiLevelInfoMessageText, color: aqiColor};
-            
+
         return (
             <View style={styles.aqiLevelInfoContainer}>
                 <Text style={[styles.aqiLevelInfoText, {color: aqiColor}]}>{aqiDescription.level}</Text>
@@ -141,100 +142,102 @@ const HomeScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
-            {isModalOpen && (
-                <LocationModal
-                    selectedLocation={selectedLocation}
-                    onLocationSelected={(location) => {
-                        setSelectedLocation(location);
-                        closeLocationModal();
-                    }}
-                    visible={isModalOpen}
-                    onClose={closeLocationModal}
-                />
-            )}
-
-            <ScrollView
-                style={styles.scrollView}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={['#FFD700']}
-                        tintColor="#FFD700"
-                        progressBackgroundColor="#ffffff"
-                    />
-                }
-            >
-                {getLocationDisplay()}
-
-                {error ? (
-                    <View style={[styles.errorContainer, {marginTop: '35%'}]}>
-                        <Text style={styles.errorText}>{error}</Text>
-                    </View>
-                ) : (
-                    <>
-                        <View style={styles.aqiValueContainer}>
-                            <Text style={[styles.aqiValueText, {color: aqiColor}]}>{getTranslatedNumber(aqiValue, currentLanguage)}</Text>
-                            <Text style={[styles.aqiText, {color: aqiColor}]}>
-                                {getTranslation('airQualityIndex', currentLanguage)}
-                            </Text>
-                        </View>
-
-                        <View style={styles.aqiGradientMeter}>
-                            <AQISlider aqi={aqiValue}/>
-                        </View>
-
-                        {renderAQILevelInfo()}
-
-                        <View style={styles.viewDetailedReportButtonContainer}>
-                            <TrackableButton
-                                buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
-                                screenName={SCREEN_NAMES.HOME}
-                                style={styles.viewDetailedReportButton}
-                                onPress={() => navigation.navigate('AirQualityDetailedReport')}
-                            >
-                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                    <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
-                                    <Text style={styles.viewDetailedReportButtonText}>
-                                        {getTranslation('viewDetailedReport', currentLanguage)}
-                                    </Text>
-                                </View>
-                            </TrackableButton>
-                        </View>
-                    </>
-                )}
-            </ScrollView>
-
-            <View style={styles.bottomContainer}>
-                <View style={styles.settingsIconContainer}>
-                    <TouchableOpacity 
-                        activeOpacity={0.7}
-                        onPress={() => {
-                            navigation.navigate('Settings');
-                            void trackButton(ELEMENT_NAMES.NAV_SETTINGS, currentScreen, {
-                                timestamp: new Date().toISOString(),
-                            });
-                        }}
-                    >
-                        <Icon name="cog" size={40} color="#FFD700"/>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.homeScreenFooter}>
-                    <LocationSelector
+        <AnimatedGradientBackground color="#4CAF50">
+            <View style={styles.container}>
+                {isModalOpen && (
+                    <LocationModal
                         selectedLocation={selectedLocation}
-                        onOpenLocationModal={() => {
-                            openLocationModal();
-                            void trackButton('location_selector', currentScreen, {
-                                timestamp: new Date().toISOString(),
-                            });
+                        onLocationSelected={(location) => {
+                            setSelectedLocation(location);
+                            closeLocationModal();
                         }}
+                        visible={isModalOpen}
+                        onClose={closeLocationModal}
                     />
-                    <LanguageToggle/>
+                )}
+
+                <ScrollView
+                    style={styles.scrollView}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={['#FFD700']}
+                            tintColor="#FFD700"
+                            progressBackgroundColor="#ffffff"
+                        />
+                    }
+                >
+                    {getLocationDisplay()}
+
+                    {error ? (
+                        <View style={[styles.errorContainer, {marginTop: '35%'}]}>
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>
+                    ) : (
+                        <>
+                            <View style={styles.aqiValueContainer}>
+                                <Text style={[styles.aqiValueText, {color: aqiColor}]}>{getTranslatedNumber(aqiValue, currentLanguage)}</Text>
+                                <Text style={[styles.aqiText, {color: aqiColor}]}>
+                                    {getTranslation('airQualityIndex', currentLanguage)}
+                                </Text>
+                            </View>
+
+                            <View style={styles.aqiGradientMeter}>
+                                <AQISlider aqi={aqiValue}/>
+                            </View>
+
+                            {renderAQILevelInfo()}
+
+                            <View style={styles.viewDetailedReportButtonContainer}>
+                                <TrackableButton
+                                    buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
+                                    screenName={SCREEN_NAMES.HOME}
+                                    style={styles.viewDetailedReportButton}
+                                    onPress={() => navigation.navigate('AirQualityDetailedReport')}
+                                >
+                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                        <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
+                                        <Text style={styles.viewDetailedReportButtonText}>
+                                            {getTranslation('viewDetailedReport', currentLanguage)}
+                                        </Text>
+                                    </View>
+                                </TrackableButton>
+                            </View>
+                        </>
+                    )}
+                </ScrollView>
+
+                <View style={styles.bottomContainer}>
+                    <View style={styles.settingsIconContainer}>
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => {
+                                navigation.navigate('Settings');
+                                void trackButton(ELEMENT_NAMES.NAV_SETTINGS, currentScreen, {
+                                    timestamp: new Date().toISOString(),
+                                });
+                            }}
+                        >
+                            <Icon name="cog" size={40} color="#FFD700"/>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.homeScreenFooter}>
+                        <LocationSelector
+                            selectedLocation={selectedLocation}
+                            onOpenLocationModal={() => {
+                                openLocationModal();
+                                void trackButton('location_selector', currentScreen, {
+                                    timestamp: new Date().toISOString(),
+                                });
+                            }}
+                        />
+                        <LanguageToggle/>
+                    </View>
                 </View>
             </View>
-        </View>
+        </AnimatedGradientBackground>
     );
 };
 
