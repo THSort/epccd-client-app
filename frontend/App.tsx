@@ -17,6 +17,7 @@ import {getUserId} from './utils/storage.util.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNotification} from './hooks/useNotification.ts';
 import {LahoreGraph} from './screens/air-quality-detailed-report/components/lahore-graph/lahore-graph.tsx';
+import AnimatedGradientBackground from './components/animated-gradient-background/animated-gradient-background.tsx';
 
 type RootStackParamList = {
     Home: undefined;
@@ -78,22 +79,25 @@ function App(): React.JSX.Element {
 
     // Main app with user ID
     return (
-        <UserActivityProvider userId={userId}>
-            <SelectedLocationProvider>
-                <SelectedLanguageProvider>
-                    <NavigationContainer>
-                        <View style={styles.container}>
-                            <Stack.Navigator>
-                                <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
-                                <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
-                                <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
-                                <Stack.Screen name="Settings" component={SettingsScreen} options={{headerShown: false}}/>
-                            </Stack.Navigator>
-                        </View>
-                    </NavigationContainer>
-                </SelectedLanguageProvider>
-            </SelectedLocationProvider>
-        </UserActivityProvider>
+        // <AnimatedGradientBackground color="#4CAF50">
+            <UserActivityProvider userId={userId}>
+                <SelectedLocationProvider>
+                    <SelectedLanguageProvider>
+                        <NavigationContainer>
+                            <View style={styles.container}>
+                                <Stack.Navigator>
+                                    <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
+                                    <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
+                                    <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
+                                    <Stack.Screen name="Settings" component={SettingsScreen} options={{headerShown: false}}/>
+                                </Stack.Navigator>
+                            </View>
+                        </NavigationContainer>
+                    </SelectedLanguageProvider>
+                </SelectedLocationProvider>
+            </UserActivityProvider>
+        // </AnimatedGradientBackground>
+
     );
 }
 

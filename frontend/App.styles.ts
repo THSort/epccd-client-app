@@ -3,7 +3,6 @@ import {hp} from './utils/responsive.util';
 
 export const styles = StyleSheet.create({
     backgroundStyle: {
-        backgroundColor: 'black',
         width: '100%',
         height: '100%',
     },
@@ -11,7 +10,17 @@ export const styles = StyleSheet.create({
         paddingTop: hp(25),
         width: '100%',
         height: '100%',
-        backgroundColor: 'black',
         paddingBottom: hp(25),
+        backgroundColor: 'black',
     },
 });
+
+export const colors = {
+    primaryWithDarkBg: '#FFD700',
+    secondaryWithDarkBg: '#fcd78b',
+};
+
+export const backgrounds = {
+    dark: 'rgba(0, 0, 0, 0.6)',
+    light: 'rgba(255,255,255,0.7)',
+};

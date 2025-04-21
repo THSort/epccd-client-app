@@ -3,6 +3,11 @@ export type Language = 'Eng' | 'اردو';
 
 // Define the structure of our translations
 export interface TranslationStrings {
+  tomorrowPrediction: string;
+  tomorrowSame: string;
+  tomorrowBetter: string;
+  tomorrowWorse: string;
+
   // Home screen
   airQualityIndex: string;
   viewDetailedReport: string;
@@ -137,6 +142,10 @@ export interface TranslationStrings {
 // Define translations for each language
 const translations: Record<Language, TranslationStrings> = {
   'Eng': {
+    tomorrowPrediction: "Tomorrow's Prediction",
+    tomorrowSame: 'Similar air quality tomorrow',
+    tomorrowBetter: 'Likely to get better',
+    tomorrowWorse: 'Likely to get worse',
     // Home screen
     airQualityIndex: 'Air Quality Index',
     viewDetailedReport: 'View Detailed Report',
@@ -268,6 +277,10 @@ const translations: Record<Language, TranslationStrings> = {
     decimalPoint: '.',
   },
   'اردو': {
+    tomorrowPrediction: 'کل کی پیشن گوئی',
+    tomorrowSame: 'کل اسی طرح کی ہوا کا معیار',
+    tomorrowBetter: 'بہتر ہونے کا امکان ہے۔',
+    tomorrowWorse: 'خراب ہونے کا امکان',
     // Home screen
     airQualityIndex: 'ہوا کا معیار انڈیکس',
     viewDetailedReport: 'تفصیلی رپورٹ دیکھیں',

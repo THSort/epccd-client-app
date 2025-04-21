@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, {useEffect, useState, useRef, useCallback, ReactElement} from 'react';
 import {View, Text, TouchableOpacity, ActivityIndicator, BackHandler, ScrollView, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {styles} from './home-screen.styles';
@@ -15,11 +15,15 @@ import {fetchEpaMonitorsData} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
-import {getTranslation, getTranslatedLocationName, getTranslatedNumber} from '../../utils/translations';
+import {getTranslation, getTranslatedNumber} from '../../utils/translations';
 import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../components/tracking';
-import {useResponsiveDimensions} from '../../utils/responsive.util';
+import {fontScale, hp, useResponsiveDimensions} from '../../utils/responsive.util';
 import {getDefaultLanguage} from '../../utils/language.util';
 import AnimatedGradientBackground from '../../components/animated-gradient-background/animated-gradient-background.tsx';
+import {AqiLegend} from '../../components/aqi-legend/aqi-legend.tsx';
+import {backgrounds, colors} from '../../App.styles.ts';
+import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
+import {lightenColor} from '../../utils/colur.util.ts';
 
 const currentScreen = 'HomeScreen';
 
@@ -35,10 +39,20 @@ const HomeScreen = () => {
     const {trackButton, trackBackButton} = useUserActivity();
 
     const [aqiValue, setAqiValue] = useState<number | null>(null);
-    const [isFetchingAqi, setIsFetchingAqi] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [isFetchingCurrentAqi, setIsFetchingCurrentAqi] = useState<boolean>(true);
+    const [currentAqiValueError, setCurrentAqiValueError] = useState<string | null>(null);
+
+    const [futureAQIPrediction, setFutureAQIPrediction] = useState<number>(450);
+    const [isFetchingFutureAQIPrediction, setIsFetchingFutureAQIPrediction] = useState<boolean>(true);
+    const [futureAQIPredictionError, setFutureAQIPredictionError] = useState<string | null>(null);
+
+
     const [refreshing, setRefreshing] = useState(false);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const [isFuturePredictionSectionExpanded, setIsFuturePredictionSectionExpanded] = useState<boolean>(false);
+    const [isCurrentAqiLevelLegendExpanded, setIsCurrentAqiLevelLegendExpanded] = useState<boolean>(false);
+    const [isFuturePredictionAqiLevelLegendExpanded, setIsFuturePredictionAqiLevelLegendExpanded] = useState<boolean>(false);
 
     // Get responsive dimensions
     const {isSmallScreen, fontScaleDynamic} = useResponsiveDimensions();
@@ -58,23 +72,22 @@ const HomeScreen = () => {
 
     const loadAqi = useCallback(async () => {
         if (!selectedLocation) {
-            setIsFetchingAqi(false);
+            setIsFetchingCurrentAqi(false);
             return;
         }
 
-        setIsFetchingAqi(true);
-        setError(null);
+        setIsFetchingCurrentAqi(true);
+        setCurrentAqiValueError(null);
 
         try {
             const data = await fetchEpaMonitorsData(selectedLocation);
             setAqiValue(data.PM2_5_AQI);
-            setError(null);
         } catch (error) {
             console.error('Error fetching AQI:', error);
-            setError(getTranslation('failedToLoadAirQuality', currentLanguage));
+            setCurrentAqiValueError(getTranslation('failedToLoadAirQuality', currentLanguage));
             setAqiValue(null);
         } finally {
-            setIsFetchingAqi(false);
+            setIsFetchingCurrentAqi(false);
         }
     }, [selectedLocation, currentLanguage]);
 
@@ -103,8 +116,10 @@ const HomeScreen = () => {
 
     const aqiColor = aqiValue !== null ? getAqiColor(aqiValue) : '#808080';
     const aqiDescription = aqiValue !== null ? getAqiDescription(aqiValue, currentLanguage) : {level: '', message: ''};
+    const futurePredictionAqiColor = futureAQIPrediction !== null ? getAqiColor(futureAQIPrediction) : '#808080';
+    const futurePredictionAqiDescription = futureAQIPrediction !== null ? getAqiDescription(futureAQIPrediction, currentLanguage) : {level: '', message: ''};
 
-    if (isFetchingAqi || isLoadingLanguage || isLoadingLocation || aqiValue === null) {
+    if (isFetchingCurrentAqi || isLoadingLanguage || isLoadingLocation || aqiValue === null) {
         return (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#0000ff"/>
@@ -113,36 +128,179 @@ const HomeScreen = () => {
     }
 
     const getLocationDisplay = () => {
-        const locationDisplayName = selectedLocation
-            ? getTranslatedLocationName(selectedLocation.locationName, currentLanguage)
-            : getTranslation('selectLocation', currentLanguage);
-
         return (
             <View style={[styles.locationDisplayContainer]}>
-                <Icon name="map-marker" size={20} color="yellow" style={styles.locationDisplayIcon}/>
-                <Text style={styles.locationDisplayText}>
-                    {locationDisplayName}
-                </Text>
+                <LocationSelector
+                    selectedLocation={selectedLocation}
+                    onOpenLocationModal={() => {
+                        openLocationModal();
+                        void trackButton('location_selector', currentScreen, {
+                            timestamp: new Date().toISOString(),
+                        });
+                    }}
+                />
             </View>
         );
     };
 
-    const renderAQILevelInfo = () => {
-        // If on a small screen, apply additional adjustments for better readability
-        const messageStyle = isSmallScreen
-            ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(20), color: aqiColor}
-            : {...styles.aqiLevelInfoMessageText, color: aqiColor};
+    const getFloatingSettingsButton = (): ReactElement => {
+        return (
+            <TouchableOpacity
+                style={styles.settingsButton}
+                activeOpacity={0.7}
+                onPress={() => {
+                    navigation.navigate('Settings');
+                    void trackButton(ELEMENT_NAMES.NAV_SETTINGS, currentScreen, {
+                        timestamp: new Date().toISOString(),
+                    });
+                }}
+            >
+                <Icon name="cog" size={30} color={colors.secondaryWithDarkBg}/>
+            </TouchableOpacity>
+        );
+    };
+
+    const getAqiErrorDisplay = (): ReactElement => {
+        return (
+            <TouchableOpacity onPress={() => {
+                void onRefresh();
+            }} activeOpacity={0.7} style={[styles.errorContainer, {marginTop: '35%'}]}>
+                <Text style={styles.errorText}>{currentAqiValueError}</Text>
+            </TouchableOpacity>
+        );
+    };
+
+    const getAqiLevelAndLegendExpander = (expanded: boolean, onTouch: () => void, color: string, aqiDescriptionLevel: string): ReactElement => {
+        if (expanded) {
+            return (
+                <View style={styles.aqiLevelLegendExpanderContainer}>
+                    <TouchableOpacity onPress={onTouch}>
+                        <View style={[styles.aqiLevelLegendExpander, {borderBottomLeftRadius: 0, borderBottomRightRadius: 0}]}>
+                            <Text style={[styles.aqiLevelInfoText, {color: color}]}>{aqiDescriptionLevel}</Text>
+                            <View style={[styles.infoIconContainer, {borderColor: color}]}>
+                                <Icon name={'info'} color={color} size={16}/>
+                            </View>
+                        </View>
+
+                        <View style={styles.aqiLegend}>
+                            <AqiLegend/>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
 
         return (
-            <View style={styles.aqiLevelInfoContainer}>
-                <Text style={[styles.aqiLevelInfoText, {color: aqiColor}]}>{aqiDescription.level}</Text>
-                <Text style={messageStyle}>{aqiDescription.message}</Text>
+            <View style={styles.aqiLevelLegendExpanderContainer}>
+                <TouchableOpacity onPress={onTouch}>
+                    <View style={[styles.aqiLevelLegendExpander]}>
+                        <Text style={[styles.aqiLevelInfoText, {color: color}]}>{aqiDescriptionLevel}</Text>
+                        <View style={[styles.infoIconContainer, {borderColor: color}]}>
+                            <Icon name={'info'} color={color} size={16}/>
+                        </View>
+                    </View>
+                </TouchableOpacity>
             </View>
+        );
+    };
+
+    const getAqiDisplayV2 = () => {
+        // If on a small screen, apply additional adjustments for better readability
+        const messageStyle = isSmallScreen
+            ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(18), color: colors.secondaryWithDarkBg}
+            : {...styles.aqiLevelInfoMessageText, color: colors.secondaryWithDarkBg};
+
+        return (
+            <TrackableButton
+                buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
+                screenName={SCREEN_NAMES.HOME}
+                onPress={() => navigation.navigate('AirQualityDetailedReport')}
+                style={styles.aqiDisplay}
+            >
+                <View style={styles.aqiValueContainer}>
+                    <Text style={styles.aqiText}>
+                        {getTranslation('aqi', currentLanguage)}
+                    </Text>
+                    <Text style={[styles.aqiValueText, {color: lightenColor(aqiColor,0.2)}]}>{getTranslatedNumber(Math.floor(aqiValue), currentLanguage)}</Text>
+                </View>
+
+                <View style={styles.aqiGradientMeter}>
+                    <AQISlider aqi={aqiValue}/>
+                </View>
+
+                {getAqiLevelAndLegendExpander(
+                    isCurrentAqiLevelLegendExpanded,
+                    () => {
+                        setIsCurrentAqiLevelLegendExpanded(!isCurrentAqiLevelLegendExpanded);
+                    },
+                    lightenColor(aqiColor,0.2),
+                    aqiDescription.level)
+                }
+
+                <Text style={[messageStyle, {marginTop: hp(15)}]}>{aqiDescription.message}</Text>
+            </TrackableButton>
+        );
+    };
+
+    const getMessageForFuturePrediction = () => {
+        if(Math.floor(futureAQIPrediction) === Math.floor(aqiValue)) {
+            return getTranslation('tomorrowSame', currentLanguage);
+        }
+
+        if(Math.floor(futureAQIPrediction) > Math.floor(aqiValue)) {
+            return getTranslation('tomorrowWorse', currentLanguage);
+        }
+
+        return getTranslation('tomorrowBetter', currentLanguage);
+    };
+
+    const getFuturePredictionDisplay = (): ReactElement => {
+        const isPredictionHigher = futureAQIPrediction > aqiValue;
+        const arrowIcon = isPredictionHigher ? 'arrow-up' : 'arrow-down';
+        const arrowColor = isPredictionHigher ? 'red' : 'green';
+
+        const messageStyle = isSmallScreen
+            ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(18), color: colors.secondaryWithDarkBg}
+            : {...styles.aqiLevelInfoMessageText, color: colors.secondaryWithDarkBg};
+
+        return (
+            <TouchableOpacity onPress={() => {
+                setIsFuturePredictionSectionExpanded(!isFuturePredictionSectionExpanded);
+            }} activeOpacity={0.7} style={styles.futurePredictionContainer}>
+                <Text style={[styles.aqiText]}>
+                    {getTranslation('tomorrowPrediction', currentLanguage)}
+                </Text>
+                <View style={styles.futureAqiValue}>
+                    <Text style={[styles.aqiValueText, {color:  lightenColor(futurePredictionAqiColor,0.2)}]}>{getTranslatedNumber(futureAQIPrediction, currentLanguage)}</Text>
+                    <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: hp(5), gap: 8}}>
+                        <Icon name={arrowIcon} size={20} color={arrowColor}/>
+                        <Text style={messageStyle}>{getMessageForFuturePrediction()}</Text>
+                    </View>
+                </View>
+                {
+                    isFuturePredictionSectionExpanded ?
+                        <>
+                            <View style={styles.aqiGradientMeter}>
+                                <AQISlider aqi={futureAQIPrediction}/>
+                            </View>
+
+                            {getAqiLevelAndLegendExpander(
+                                isFuturePredictionAqiLevelLegendExpanded,
+                                () => {
+                                    setIsFuturePredictionAqiLevelLegendExpanded(!isFuturePredictionAqiLevelLegendExpanded);
+                                },
+                                lightenColor(futurePredictionAqiColor,0.2),
+                                futurePredictionAqiDescription.level
+                            )
+                            }
+                        </> : null
+                }
+            </TouchableOpacity>
         );
     };
 
     return (
-        <AnimatedGradientBackground color="#4CAF50">
+        <AnimatedGradientBackground color={currentAqiValueError ? '#808080' : aqiColor}>
             <View style={styles.container}>
                 {isModalOpen && (
                     <LocationModal
@@ -169,74 +327,12 @@ const HomeScreen = () => {
                     }
                 >
                     {getLocationDisplay()}
-
-                    {error ? (
-                        <View style={[styles.errorContainer, {marginTop: '35%'}]}>
-                            <Text style={styles.errorText}>{error}</Text>
-                        </View>
-                    ) : (
-                        <>
-                            <View style={styles.aqiValueContainer}>
-                                <Text style={[styles.aqiValueText, {color: aqiColor}]}>{getTranslatedNumber(aqiValue, currentLanguage)}</Text>
-                                <Text style={[styles.aqiText, {color: aqiColor}]}>
-                                    {getTranslation('airQualityIndex', currentLanguage)}
-                                </Text>
-                            </View>
-
-                            <View style={styles.aqiGradientMeter}>
-                                <AQISlider aqi={aqiValue}/>
-                            </View>
-
-                            {renderAQILevelInfo()}
-
-                            <View style={styles.viewDetailedReportButtonContainer}>
-                                <TrackableButton
-                                    buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
-                                    screenName={SCREEN_NAMES.HOME}
-                                    style={styles.viewDetailedReportButton}
-                                    onPress={() => navigation.navigate('AirQualityDetailedReport')}
-                                >
-                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                        <Icon name="info-circle" size={18} color="black" style={styles.viewDetailedReportButtonIcon}/>
-                                        <Text style={styles.viewDetailedReportButtonText}>
-                                            {getTranslation('viewDetailedReport', currentLanguage)}
-                                        </Text>
-                                    </View>
-                                </TrackableButton>
-                            </View>
-                        </>
-                    )}
+                    {currentAqiValueError ? getAqiErrorDisplay() : getAqiDisplayV2()}
+                    {!currentAqiValueError && !futureAQIPredictionError ? getFuturePredictionDisplay() : null}
                 </ScrollView>
-
-                <View style={styles.bottomContainer}>
-                    <View style={styles.settingsIconContainer}>
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={() => {
-                                navigation.navigate('Settings');
-                                void trackButton(ELEMENT_NAMES.NAV_SETTINGS, currentScreen, {
-                                    timestamp: new Date().toISOString(),
-                                });
-                            }}
-                        >
-                            <Icon name="cog" size={40} color="#FFD700"/>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.homeScreenFooter}>
-                        <LocationSelector
-                            selectedLocation={selectedLocation}
-                            onOpenLocationModal={() => {
-                                openLocationModal();
-                                void trackButton('location_selector', currentScreen, {
-                                    timestamp: new Date().toISOString(),
-                                });
-                            }}
-                        />
-                        <LanguageToggle/>
-                    </View>
-                </View>
             </View>
+
+            {getFloatingSettingsButton()}
         </AnimatedGradientBackground>
     );
 };

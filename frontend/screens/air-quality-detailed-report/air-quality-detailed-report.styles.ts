@@ -1,10 +1,14 @@
-import { StyleSheet } from 'react-native';
-import { wp, hp, fontScale } from '../../utils/responsive.util';
+import {StyleSheet} from 'react-native';
+import {wp, hp, fontScale} from '../../utils/responsive.util';
+import {backgrounds, colors} from '../../App.styles.ts';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'black',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'transparent',
+        position: 'relative',
     },
     contentContainer: {
         flex: 1,
@@ -13,31 +17,31 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: wp(15),
+        backgroundColor: 'black',
+        borderBottomColor: colors.secondaryWithDarkBg,
+        borderBottomWidth: 1,
+        marginBottom: hp(10),
     },
     headerTitle: {
-        fontSize: fontScale(25),
-        fontWeight: 'bold',
-        color: 'yellow',
         marginLeft: wp(10),
     },
     locationSelector: {
         paddingHorizontal: wp(10),
     },
     aqiContainer: {
+        display: 'flex',
         paddingHorizontal: wp(24),
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
         marginBottom: hp(10),
         minHeight: hp(60),
+        // backgroundColor: backgrounds.dark,
+        paddingVertical: hp(10),
+        marginHorizontal: hp(15),
     },
     aqiDetails: {
-        flexDirection: 'column',
-    },
-    aqiValue: {
-        fontSize: fontScale(20),
-        fontWeight: 'bold',
-        color: 'yellow',
+        flexDirection: 'row',
     },
     aqiStatus: {
         fontSize: fontScale(14),
@@ -95,8 +99,6 @@ export const styles = StyleSheet.create({
         minHeight: hp(200),
     },
     errorText: {
-        color: 'red',
-        fontSize: fontScale(16),
         textAlign: 'center',
         padding: wp(20),
     },

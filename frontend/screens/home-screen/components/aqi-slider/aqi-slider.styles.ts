@@ -14,7 +14,9 @@ export const styles = StyleSheet.create({
         width: '100%',
         position: 'absolute',
         top: 0,
-        height: hp(12),
+        height: hp(14),
+        borderColor: 'black',
+        borderWidth: 1,
         borderRadius: wp(10),
     },
     slider: {

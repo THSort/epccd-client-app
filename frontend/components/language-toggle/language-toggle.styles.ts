@@ -7,10 +7,12 @@ export const styles = StyleSheet.create({
         backgroundColor: '#FFD700',
         borderRadius: 100,
         width: 110,
-        height: 45,
+        height: 46,
         position: 'relative',
         justifyContent: 'space-between',
         paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: 'black',
     },
     toggleCircle: {
         width: 45,

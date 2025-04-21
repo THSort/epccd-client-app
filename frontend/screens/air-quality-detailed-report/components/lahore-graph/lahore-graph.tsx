@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import type {ReactElement} from 'react';
 import type {LahoreGraphProps} from './lahore-graph.types';
 import {styles} from './lahore-graph.styles';
@@ -8,9 +8,10 @@ import {Areas} from '../../../home-screen/components/location-modal/location-mod
 import {getAqiColor} from '../../../../utils/aqi-colors.util';
 import {useUserActivity} from '../../../../context/UserActivityContext';
 import {ACTION_TYPES, ELEMENT_NAMES, SCREEN_NAMES} from '../../../../utils/trackingConstants';
-import {getTranslation, Language, TranslationStrings} from '../../../../utils/translations';
+import {getTranslation, Language} from '../../../../utils/translations';
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext';
-import { fetchLahoreLocationsAqi, LahoreLocationAqiData } from '../../../../services/api.service';
+import {fetchLahoreLocationsAqi, LahoreLocationAqiData} from '../../../../services/api.service';
+import {AqiLegend} from '../../../../components/aqi-legend/aqi-legend.tsx';
 
 export function LahoreGraph(props: LahoreGraphProps): ReactElement {
     // Replace hardcoded data with state loaded from API
@@ -51,26 +52,6 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
 
         fetchData();
     }, [currentLanguage]);
-
-    // AQI categories for the legend with translation keys
-    type AqiCategory = {
-        key: keyof TranslationStrings;
-        color: string;
-    };
-
-    const aqiCategories: AqiCategory[] = [
-        { key: 'good', color: '#4CAF50' },
-        { key: 'satisfactory', color: '#8BC34A' },
-        { key: 'moderate', color: '#FFEB3B' },
-        { key: 'unhealthyForSensitive', color: '#FF9800' },
-        { key: 'unhealthy', color: '#F44336' },
-        { key: 'veryUnhealthy', color: '#9C27B0' },
-        { key: 'hazardous', color: '#6D4C41' },
-    ];
-
-    // Split categories into two rows for better display
-    const firstRowCategories = aqiCategories.slice(0, 4); // first 4 items
-    const secondRowCategories = aqiCategories.slice(4); // remaining items
 
     // Function to get location name without ", Lahore" suffix
     const getLocationName = (fullName: string): string => {
@@ -128,19 +109,19 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
         <View style={styles.containerWithLegend}>
             <View style={styles.mapContainer}>
                 {isLoading ? (
-                    <View style={[styles.mapView, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
-                        <ActivityIndicator size="large" color="#FFEB3B" />
+                    <View style={[styles.mapView, {backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center'}]}>
+                        <ActivityIndicator size="large" color="#FFEB3B"/>
                         <Text style={[
-                            { marginTop: 10, color: '#666' },
+                            {marginTop: 10, color: '#666'},
                             currentLanguage === 'اردو' && {fontSize: 14},
                         ]}>
                             {getTranslation('loading', currentLanguage)}
                         </Text>
                     </View>
                 ) : error ? (
-                    <View style={[styles.mapView, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                    <View style={[styles.mapView, {backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center'}]}>
                         <Text style={[
-                            { color: '#F44336' },
+                            {color: '#F44336'},
                             currentLanguage === 'اردو' && {fontSize: 14},
                         ]}>
                             {getTranslation('failedToLoadMap', currentLanguage)}
@@ -187,37 +168,8 @@ export function LahoreGraph(props: LahoreGraphProps): ReactElement {
                 )}
             </View>
 
-            {/* Legend below the map */}
-            <View style={styles.belowMapLegend}>
-                {/* First row of categories */}
-                <View style={styles.legendBelowRow}>
-                    {firstRowCategories.map((category, index) => (
-                        <View key={index} style={styles.legendBelowItem}>
-                            <View style={[styles.legendBelowDot, {backgroundColor: category.color}]} />
-                            <Text style={[
-                                styles.legendBelowText,
-                                currentLanguage === 'اردو' && {fontSize: 14},
-                            ]}>
-                                {getTranslation(category.key, currentLanguage)}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-
-                {/* Second row of categories */}
-                <View style={styles.legendBelowRow}>
-                    {secondRowCategories.map((category, index) => (
-                        <View key={index} style={styles.legendBelowItem}>
-                            <View style={[styles.legendBelowDot, {backgroundColor: category.color}]} />
-                            <Text style={[
-                                styles.legendBelowText,
-                                currentLanguage === 'اردو' && {fontSize: 14},
-                            ]}>
-                                {getTranslation(category.key, currentLanguage)}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
+            <View style={styles.legendContainer}>
+                <AqiLegend/>
             </View>
         </View>
     );

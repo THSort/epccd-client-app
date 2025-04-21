@@ -1,19 +1,19 @@
 import { StyleSheet } from 'react-native';
 import { wp, hp, fontScale } from '../../../../utils/responsive.util';
+import {backgrounds} from '../../../../App.styles.ts';
 
 export const styles = StyleSheet.create({
     container: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#40320A',
-        height: hp(95),
-        width: '100%',
+        justifyContent: 'center',
+        backgroundColor: backgrounds.dark,
+        height: hp(60),
+        width: '45%',
         paddingHorizontal: wp(12),
         paddingVertical: hp(14),
         borderRadius: 8,
-        marginBottom: hp(10),
     },
     row: {
         display: 'flex',
@@ -24,29 +24,29 @@ export const styles = StyleSheet.create({
     pollutantName: {
         color: 'yellow',
         fontWeight: 'bold',
-        fontSize: fontScale(20),
-        lineHeight: fontScale(22),
+        fontSize: fontScale(16),
+        lineHeight: fontScale(18),
         flex: 1,
     },
     pollutantValue: {
         color: 'yellow',
         fontWeight: 'bold',
-        fontSize: fontScale(20),
-        lineHeight: fontScale(22),
+        fontSize: fontScale(14),
+        lineHeight: fontScale(16),
         textAlign: 'right',
     },
     pollutantDescription: {
         color: 'yellow',
-        fontSize: fontScale(15),
-        lineHeight: fontScale(20),
+        fontSize: fontScale(12),
+        lineHeight: fontScale(14),
         fontWeight: '300',
         flex: 2,
         paddingRight: wp(5),
     },
     pollutantUnits: {
         color: 'yellow',
-        fontSize: fontScale(15),
-        lineHeight: fontScale(20),
+        fontSize: fontScale(12),
+        lineHeight: fontScale(14),
         fontWeight: '300',
         textAlign: 'right',
         flex: 1,
@@ -59,11 +59,11 @@ export const styles = StyleSheet.create({
     },
     historyIcon: {
         marginRight: wp(8),
-        fontSize: fontScale(15),
+        fontSize: fontScale(12),
     },
     historyText: {
         color: 'yellow',
-        fontSize: fontScale(15),
-        lineHeight: fontScale(15),
+        fontSize: fontScale(12),
+        lineHeight: fontScale(12),
     },
 });
