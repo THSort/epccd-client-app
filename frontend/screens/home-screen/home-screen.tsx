@@ -122,7 +122,7 @@ const HomeScreen = () => {
     if (isFetchingCurrentAqi || isLoadingLanguage || isLoadingLocation || aqiValue === null) {
         return (
             <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#0000ff"/>
+                <ActivityIndicator size="large" color={colors.primaryWithDarkBg}/>
             </View>
         );
     }

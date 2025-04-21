@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
 import {wp, hp, fontScale} from '../../utils/responsive.util';
-import {colors} from '../../App.styles.ts';
+import {backgrounds, colors} from '../../App.styles.ts';
 
 export const styles = StyleSheet.create({
     container: {
@@ -42,7 +42,6 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: hp(10),
         minHeight: hp(60),
-        // backgroundColor: backgrounds.dark,
         paddingVertical: hp(10),
         marginHorizontal: hp(15),
     },
@@ -99,13 +98,19 @@ export const styles = StyleSheet.create({
         minHeight: hp(200),
     },
     errorContainer: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: hp(200),
+        backgroundColor: backgrounds.dark,
+        height: 400,
+        marginTop: hp(30),
+        marginHorizontal: hp(15),
+        borderRadius: 20,
     },
     errorText: {
         textAlign: 'center',
         padding: wp(20),
+        fontSize: fontScale(24),
+        color: 'red',
     },
 });

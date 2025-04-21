@@ -25,7 +25,7 @@ import {AQISlider} from '../home-screen/components/aqi-slider/aqi-slider.tsx';
 import {fontScale, hp} from '../../utils/responsive.util.ts';
 import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
 import {colors} from '../../App.styles.ts';
-import {darkenColor, lightenColor} from '../../utils/colur.util.ts';
+import {lightenColor} from '../../utils/colur.util.ts';
 
 const currentScreen = 'AirQualityReport';
 
@@ -191,7 +191,7 @@ export function AirQualityDetailedReport(): ReactElement {
         );
     };
 
-    const getAqiSummary = () => {
+    const getAqiSummary = (data: EpaMonitorsApiResponse) => {
         if (isFetchingData) {
             return (
                 <View style={styles.aqiContainer}>
@@ -203,15 +203,7 @@ export function AirQualityDetailedReport(): ReactElement {
             );
         }
 
-        if (error || !aqiData) {
-            return (
-                <View style={styles.aqiContainer}>
-                    <Text style={styles.errorText}>{error || getTranslation('noDataAvailable', currentLanguage)}</Text>
-                </View>
-            );
-        }
-
-        const aqiValue = aqiData.PM2_5_AQI;
+        const aqiValue = data.PM2_5_AQI;
         const aqiColor = getAqiColor(aqiValue);
         const aqiDescription = getAqiDescription(aqiValue, currentLanguage);
 
@@ -230,19 +222,11 @@ export function AirQualityDetailedReport(): ReactElement {
         );
     };
 
-    const getPollutantInfoCards = (): ReactElement => {
+    const getPollutantInfoCards = (data: EpaMonitorsApiResponse): ReactElement => {
         if (isFetchingData) {
             return (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primaryWithDarkBg}/>
-                </View>
-            );
-        }
-
-        if (error || !aqiData) {
-            return (
-                <View style={styles.errorContainer}>
-                    <TextWithStroke text={error || getTranslation('noDataAvailable', currentLanguage)} size={fontScale(16)} color={'red'}/>
                 </View>
             );
         }
@@ -252,42 +236,42 @@ export function AirQualityDetailedReport(): ReactElement {
                 {[
                     {
                         pollutantName: Pollutant.PM2_5,
-                        pollutantValue: aqiData.pm2_5_ug_m3,
+                        pollutantValue: data.pm2_5_ug_m3,
                         pollutantDescription: getPollutantTranslation(Pollutant.PM2_5, 'description'),
                         pollutantUnit: getPollutantTranslation(Pollutant.PM2_5, 'unit'),
                         translatedName: getPollutantTranslation(Pollutant.PM2_5, 'name'),
                     },
                     {
                         pollutantName: Pollutant.PM10,
-                        pollutantValue: aqiData.pm10_ug_m3,
+                        pollutantValue: data.pm10_ug_m3,
                         pollutantDescription: getPollutantTranslation(Pollutant.PM10, 'description'),
                         pollutantUnit: getPollutantTranslation(Pollutant.PM10, 'unit'),
                         translatedName: getPollutantTranslation(Pollutant.PM10, 'name'),
                     },
                     {
                         pollutantName: Pollutant.O3,
-                        pollutantValue: aqiData.o3_ppb,
+                        pollutantValue: data.o3_ppb,
                         pollutantDescription: getPollutantTranslation(Pollutant.O3, 'description'),
                         pollutantUnit: getPollutantTranslation(Pollutant.O3, 'unit'),
                         translatedName: getPollutantTranslation(Pollutant.O3, 'name'),
                     },
                     {
                         pollutantName: Pollutant.SO2,
-                        pollutantValue: aqiData.so2_ppb,
+                        pollutantValue: data.so2_ppb,
                         pollutantDescription: getPollutantTranslation(Pollutant.SO2, 'description'),
                         pollutantUnit: getPollutantTranslation(Pollutant.SO2, 'unit'),
                         translatedName: getPollutantTranslation(Pollutant.SO2, 'name'),
                     },
                     {
                         pollutantName: Pollutant.NO2,
-                        pollutantValue: aqiData.no2_ppb,
+                        pollutantValue: data.no2_ppb,
                         pollutantDescription: getPollutantTranslation(Pollutant.NO2, 'description'),
                         pollutantUnit: getPollutantTranslation(Pollutant.NO2, 'unit'),
                         translatedName: getPollutantTranslation(Pollutant.NO2, 'name'),
                     },
                     {
                         pollutantName: Pollutant.CO,
-                        pollutantValue: aqiData.co_ppm,
+                        pollutantValue: data.co_ppm,
                         pollutantDescription: getPollutantTranslation(Pollutant.CO, 'description'),
                         pollutantUnit: getPollutantTranslation(Pollutant.CO, 'unit'),
                         translatedName: getPollutantTranslation(Pollutant.CO, 'name'),
@@ -329,25 +313,39 @@ export function AirQualityDetailedReport(): ReactElement {
                             />
                         }
                     >
-                        <View style={styles.locationSelector}>
-                            <LocationSelector
-                                selectedLocation={location}
-                                onOpenLocationModal={() => {
-                                    void trackButton('open_location_modal', currentScreen, {
-                                        timestamp: new Date().toISOString(),
-                                    });
-                                    openLocationModal();
-                                }}
-                            />
-                        </View>
+                        {
+                            isFetchingData ?
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator size="large" color={colors.primaryWithDarkBg}/>
+                                </View> :
+                                error || !aqiData ? (
+                                    <TouchableOpacity onPress={onRefresh} activeOpacity={0.7} style={styles.errorContainer}>
+                                        <Text style={styles.errorText}>{error || getTranslation('noDataAvailable', currentLanguage)}</Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <>
+                                        <View style={styles.locationSelector}>
+                                            <LocationSelector
+                                                selectedLocation={location}
+                                                onOpenLocationModal={() => {
+                                                    void trackButton('open_location_modal', currentScreen, {
+                                                        timestamp: new Date().toISOString(),
+                                                    });
+                                                    openLocationModal();
+                                                }}
+                                            />
+                                        </View>
 
-                        {getAqiSummary()}
+                                        {getAqiSummary(aqiData)}
 
-                        {getPollutantInfoCards()}
+                                        {getPollutantInfoCards(aqiData)}
 
-                        <View style={{marginTop: hp(10), paddingHorizontal: hp(15)}}>
-                            <LahoreGraph selectedLocation={location}/>
-                        </View>
+                                        <View style={{marginTop: hp(10), paddingHorizontal: hp(15)}}>
+                                            <LahoreGraph selectedLocation={location}/>
+                                        </View>
+                                    </>
+                                )
+                        }
                     </ScrollView>
                 </View>
             </View>
