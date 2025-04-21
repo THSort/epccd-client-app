@@ -89,7 +89,8 @@ export function PollutantInfoCard({...props}: PollutantInfoCardProps): ReactElem
             additionalTrackingData={{
                 pollutant: props.pollutantName,
             }}
-        >            {getPollutantDetails(props.pollutantName, props.pollutantValue, props.pollutantDescription)}
+        >
+            {getPollutantDetails(props.pollutantName, props.pollutantValue, props.pollutantDescription)}
         </TrackableButton>
     );
 }

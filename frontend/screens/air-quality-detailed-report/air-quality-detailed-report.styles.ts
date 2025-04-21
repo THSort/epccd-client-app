@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
 import {wp, hp, fontScale} from '../../utils/responsive.util';
-import {backgrounds, colors} from '../../App.styles.ts';
+import {colors} from '../../App.styles.ts';
 
 export const styles = StyleSheet.create({
     container: {
@@ -24,6 +24,12 @@ export const styles = StyleSheet.create({
     },
     headerTitle: {
         marginLeft: wp(10),
+    },
+    scrollableContent: {
+        flex: 1,
+    },
+    scrollableContentContainer: {
+        flexGrow: 1,
     },
     locationSelector: {
         paddingHorizontal: wp(10),

@@ -23,7 +23,7 @@ import AnimatedGradientBackground from '../../components/animated-gradient-backg
 import {AqiLegend} from '../../components/aqi-legend/aqi-legend.tsx';
 import {backgrounds, colors} from '../../App.styles.ts';
 import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
-import {lightenColor} from '../../utils/colur.util.ts';
+import {darkenColor, lightenColor} from '../../utils/colur.util.ts';
 
 const currentScreen = 'HomeScreen';
 
@@ -221,7 +221,7 @@ const HomeScreen = () => {
                     <Text style={styles.aqiText}>
                         {getTranslation('aqi', currentLanguage)}
                     </Text>
-                    <Text style={[styles.aqiValueText, {color: lightenColor(aqiColor,0.2)}]}>{getTranslatedNumber(Math.floor(aqiValue), currentLanguage)}</Text>
+                    <Text style={[styles.aqiValueText, {color: lightenColor(aqiColor, 0.2)}]}>{getTranslatedNumber(Math.floor(aqiValue), currentLanguage)}</Text>
                 </View>
 
                 <View style={styles.aqiGradientMeter}>
@@ -233,7 +233,7 @@ const HomeScreen = () => {
                     () => {
                         setIsCurrentAqiLevelLegendExpanded(!isCurrentAqiLevelLegendExpanded);
                     },
-                    lightenColor(aqiColor,0.2),
+                    lightenColor(aqiColor, 0.2),
                     aqiDescription.level)
                 }
 
@@ -243,11 +243,11 @@ const HomeScreen = () => {
     };
 
     const getMessageForFuturePrediction = () => {
-        if(Math.floor(futureAQIPrediction) === Math.floor(aqiValue)) {
+        if (Math.floor(futureAQIPrediction) === Math.floor(aqiValue)) {
             return getTranslation('tomorrowSame', currentLanguage);
         }
 
-        if(Math.floor(futureAQIPrediction) > Math.floor(aqiValue)) {
+        if (Math.floor(futureAQIPrediction) > Math.floor(aqiValue)) {
             return getTranslation('tomorrowWorse', currentLanguage);
         }
 
@@ -271,7 +271,7 @@ const HomeScreen = () => {
                     {getTranslation('tomorrowPrediction', currentLanguage)}
                 </Text>
                 <View style={styles.futureAqiValue}>
-                    <Text style={[styles.aqiValueText, {color:  lightenColor(futurePredictionAqiColor,0.2)}]}>{getTranslatedNumber(futureAQIPrediction, currentLanguage)}</Text>
+                    <Text style={[styles.aqiValueText, {color: lightenColor(futurePredictionAqiColor, 0.2)}]}>{getTranslatedNumber(futureAQIPrediction, currentLanguage)}</Text>
                     <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: hp(5), gap: 8}}>
                         <Icon name={arrowIcon} size={20} color={arrowColor}/>
                         <Text style={messageStyle}>{getMessageForFuturePrediction()}</Text>
@@ -289,7 +289,7 @@ const HomeScreen = () => {
                                 () => {
                                     setIsFuturePredictionAqiLevelLegendExpanded(!isFuturePredictionAqiLevelLegendExpanded);
                                 },
-                                lightenColor(futurePredictionAqiColor,0.2),
+                                lightenColor(futurePredictionAqiColor, 0.2),
                                 futurePredictionAqiDescription.level
                             )
                             }

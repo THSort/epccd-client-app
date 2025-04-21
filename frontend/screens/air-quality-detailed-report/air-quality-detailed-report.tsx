@@ -25,7 +25,7 @@ import {AQISlider} from '../home-screen/components/aqi-slider/aqi-slider.tsx';
 import {fontScale, hp} from '../../utils/responsive.util.ts';
 import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
 import {colors} from '../../App.styles.ts';
-import {lightenColor} from '../../utils/colur.util.ts';
+import {darkenColor, lightenColor} from '../../utils/colur.util.ts';
 
 const currentScreen = 'AirQualityReport';
 
@@ -211,20 +211,20 @@ export function AirQualityDetailedReport(): ReactElement {
             );
         }
 
-        const aqiValue = 200 ?? aqiData.PM2_5_AQI;
+        const aqiValue = aqiData.PM2_5_AQI;
         const aqiColor = getAqiColor(aqiValue);
         const aqiDescription = getAqiDescription(aqiValue, currentLanguage);
 
         return (
             <View style={styles.aqiContainer}>
-                <TextWithStroke text={`${getTranslatedNumber(aqiValue, currentLanguage)} ${getTranslation('aqi', currentLanguage)}`} color={lightenColor(aqiColor,0.3)} size={fontScale(24)} bold={true}/>
+                <TextWithStroke text={`${getTranslatedNumber(aqiValue, currentLanguage)} ${getTranslation('aqi', currentLanguage)}`} color={lightenColor(aqiColor, 0.3)} size={fontScale(24)} bold={true}/>
 
                 {/*<Text style={[styles.aqiStatus, {color: aqiColor}]}>{aqiDescription.level}</Text>*/}
                 <View style={{flex: 2, width: '100%', marginTop: hp(15)}}>
                     <AQISlider aqi={aqiValue}/>
                 </View>
 
-                <TextWithStroke style={{marginTop: hp(20)}} strokeWidth={0.8} text={aqiDescription.level} color={lightenColor(aqiColor,0.3)} size={fontScale(24)} bold={true}/>
+                <TextWithStroke strokeWidth={0.8} text={aqiDescription.level} color={lightenColor(aqiColor, 0.3)} size={fontScale(24)} bold={true}/>
 
             </View>
         );
@@ -300,7 +300,7 @@ export function AirQualityDetailedReport(): ReactElement {
     };
 
     return (
-        <AnimatedGradientBackground color={!aqiData ? '#808080' : getAqiColor(200 ?? aqiData.PM2_5_AQI)}>
+        <AnimatedGradientBackground color={!aqiData ? '#808080' : getAqiColor(aqiData.PM2_5_AQI)}>
             <View style={styles.container}>
                 {isModalOpen && (
                     <LocationModal
@@ -317,46 +317,38 @@ export function AirQualityDetailedReport(): ReactElement {
                 <View style={styles.contentContainer}>
                     {getHeader()}
 
-                    <ScrollView style={[styles.locationSelector, {flex: 1}]}>
-                        <LocationSelector
-                            selectorStyle={{
-                                borderRadius: 10,
-                                paddingVertical: 10,
-                                paddingHorizontal: 15,
-                                marginBottom: 10,
-                            }}
-                            selectedLocation={location}
-                            onOpenLocationModal={() => {
-                                void trackButton('open_location_modal', currentScreen, {
-                                    timestamp: new Date().toISOString(),
-                                });
-                                openLocationModal();
-                            }}
-                        />
+                    <ScrollView
+                        style={styles.scrollableContent}
+                        contentContainerStyle={styles.scrollableContentContainer}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                tintColor={colors.primaryWithDarkBg}
+                                colors={[colors.primaryWithDarkBg]}
+                            />
+                        }
+                    >
+                        <View style={styles.locationSelector}>
+                            <LocationSelector
+                                selectedLocation={location}
+                                onOpenLocationModal={() => {
+                                    void trackButton('open_location_modal', currentScreen, {
+                                        timestamp: new Date().toISOString(),
+                                    });
+                                    openLocationModal();
+                                }}
+                            />
+                        </View>
+
+                        {getAqiSummary()}
+
+                        {getPollutantInfoCards()}
+
+                        <View style={{marginTop: hp(10), paddingHorizontal: hp(15)}}>
+                            <LahoreGraph selectedLocation={location}/>
+                        </View>
                     </ScrollView>
-
-                    {getAqiSummary()}
-
-                    {getPollutantInfoCards()}
-
-                    {/* Map outside scrollable area */}
-                    <View style={{flex: 0, marginTop: hp(10), paddingHorizontal: hp(15)}}>
-                        <LahoreGraph selectedLocation={location}/>
-                    </View>
-
-                    {/*/!* Scrollable area with pull-to-refresh *!/*/}
-                    {/*<ScrollView*/}
-                    {/*    style={{flex: 1}}*/}
-                    {/*    contentContainerStyle={{flexGrow: 1}}*/}
-                    {/*    refreshControl={*/}
-                    {/*        <RefreshControl*/}
-                    {/*            refreshing={refreshing}*/}
-                    {/*            onRefresh={onRefresh}*/}
-                    {/*            tintColor="#FFD700"*/}
-                    {/*            colors={['#FFD700']}*/}
-                    {/*        />*/}
-                    {/*    }*/}
-                    {/*/>*/}
                 </View>
             </View>
         </AnimatedGradientBackground>

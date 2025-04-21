@@ -34,7 +34,7 @@ export function AqiLegend({...props}: AqiLegendProps): ReactElement {
             {aqiCategories.map((category, index) => (
                 <View style={styles.legendItem} key={index}>
                     <View style={[styles.legendItemDot, {backgroundColor: category.color}]}/>
-                    <TextWithStroke text={getTranslation(category.key, currentLanguage)} color={'white'} style={styles.legendItemText} size={currentLanguage === 'اردو' ? fontScale(14) : fontScale(12)}/>
+                    <TextWithStroke bold text={getTranslation(category.key, currentLanguage)} color={'white'} style={styles.legendItemText} size={currentLanguage === 'اردو' ? fontScale(14) : fontScale(12)}/>
                 </View>
             ))}
         </View>

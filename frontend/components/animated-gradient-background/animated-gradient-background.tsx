@@ -14,13 +14,13 @@ const AnimatedGradientBackground: React.FC<AnimatedGradientBackgroundProps> = ({
             Animated.sequence([
                 Animated.timing(animation, {
                     toValue: 1,
-                    duration: 5500,
+                    duration: 10000,
                     useNativeDriver: true,
                     easing: Easing.inOut(Easing.ease),
                 }),
                 Animated.timing(animation, {
                     toValue: 0,
-                    duration: 5500,
+                    duration: 10000,
                     useNativeDriver: true,
                     easing: Easing.inOut(Easing.ease),
                 }),
