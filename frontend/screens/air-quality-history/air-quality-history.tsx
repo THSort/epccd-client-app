@@ -22,6 +22,9 @@ import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getTranslation, Language} from '../../utils/translations';
 import {Chart} from './components/chart/chart.tsx';
+import AnimatedGradientBackground from '../../components/animated-gradient-background/animated-gradient-background.tsx';
+import {getAqiColor} from '../../utils/aqi-colors.util.ts';
+import {backgrounds, colors} from '../../App.styles.ts';
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -92,7 +95,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
     }, [historicalData, timeRange]);
 
     const fetchHistoricalData = useCallback(async () => {
-        if (!selectedLocation) {return;}
+        if (!selectedLocation) {
+            return;
+        }
 
         setIsLoadingAllHistoricalData(true);
         setError(null);
@@ -109,7 +114,9 @@ export function AirQualityHistory({route}: Props): ReactElement {
     }, [selectedLocation, currentLanguage]);
 
     const fetchSummaryData = useCallback(async () => {
-        if (!selectedLocation) {return;}
+        if (!selectedLocation) {
+            return;
+        }
 
         setIsLoadingSummaryData(true);
         setError(null);
@@ -424,99 +431,101 @@ export function AirQualityHistory({route}: Props): ReactElement {
     }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData]);
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => {
-                    void trackBackButton(currentScreen);
-                    navigation.goBack();
-                }}>
-                    <Icon name="chevron-left" size={25} color="yellow"/>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>{getTranslation('airQualityHistory', currentLanguage)}</Text>
-            </View>
-
-            <ScrollView
-                style={styles.scrollContainer}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={['#FFD700']}
-                        tintColor="#FFD700"
-                        progressBackgroundColor="#ffffff"
-                    />
-                }
-            >
-                <View style={styles.content}>
-                    <LocationSelector
-                        isFullWidth
-                        selectedLocation={selectedLocation}
-                        onOpenLocationModal={() => {
-                            void trackButton('location_selector', currentScreen, {
-                                timestamp: new Date().toISOString(),
-                            });
-
-                            openLocationModal();
-                        }}
-                        selectorStyle={{
-                            backgroundColor: '#1C1C1C',
-                            borderRadius: 10,
-                            paddingVertical: 10,
-                            paddingHorizontal: 15,
-                            marginBottom: 10,
-                            shadowOffset: { width: 0, height: 0 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 3,
-                        }}
-                    />
-                    <PollutantSelector
-                        selectedPollutant={pollutant}
-                        onPollutantSelected={(pollutantToSelect) => {
-                            setPollutant(pollutantToSelect);
-                            void trackButton('pollutant_toggle', currentScreen, {
-                                timestamp: new Date().toISOString(),
-                                selectedPollutant: pollutantToSelect,
-                            });
-                        }}
-                    />
-
-                    {error ? (
-                        <Text style={styles.errorText}>{error}</Text>
-                    ) : (
-                        <>
-                            <TimeRangeSelector
-                                selectedTimeRange={timeRange}
-                                onTimeRangeSelected={(timeRangeSelected) => {
-                                    setTimeRange(timeRangeSelected);
-
-                                    void trackButton('time_range_toggle', currentScreen, {
-                                        timestamp: new Date().toISOString(),
-                                        selectedTimeRange: timeRangeSelected,
-                                    });
-                                }}
-                            />
-
-                            {getHistoricalDataContent()}
-
-                            {/* Summary Cards Section */}
-                            {getSummaryContent()}
-                        </>
-                    )}
+        <AnimatedGradientBackground color={getAqiColor(summaryData?.current.PM2_5_AQI ?? 0)}>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => {
+                        void trackBackButton(currentScreen);
+                        navigation.goBack();
+                    }}>
+                        <Icon name="chevron-left" size={25} color="yellow"/>
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>{getTranslation('airQualityHistory', currentLanguage)}</Text>
                 </View>
-            </ScrollView>
 
-            {isModalOpen && (
-                <LocationModal
-                    selectedLocation={selectedLocation}
-                    onLocationSelected={(location) => {
-                        navigation.setParams({selectedLocation: location});
-                        closeLocationModal();
-                    }}
-                    visible={isModalOpen}
-                    onClose={closeLocationModal}
-                />
-            )}
-        </View>
+                <ScrollView
+                    style={styles.scrollContainer}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={['#FFD700']}
+                            tintColor="#FFD700"
+                            progressBackgroundColor="#ffffff"
+                        />
+                    }
+                >
+                    <View style={styles.content}>
+                        <LocationSelector
+                            isFullWidth
+                            selectedLocation={selectedLocation}
+                            onOpenLocationModal={() => {
+                                void trackButton('location_selector', currentScreen, {
+                                    timestamp: new Date().toISOString(),
+                                });
+
+                                openLocationModal();
+                            }}
+                            selectorStyle={{
+                                backgroundColor: '#1C1C1C',
+                                borderRadius: 10,
+                                paddingVertical: 10,
+                                paddingHorizontal: 15,
+                                marginBottom: 10,
+                                shadowOffset: {width: 0, height: 0},
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                            }}
+                        />
+                        <PollutantSelector
+                            selectedPollutant={pollutant}
+                            onPollutantSelected={(pollutantToSelect) => {
+                                setPollutant(pollutantToSelect);
+                                void trackButton('pollutant_toggle', currentScreen, {
+                                    timestamp: new Date().toISOString(),
+                                    selectedPollutant: pollutantToSelect,
+                                });
+                            }}
+                        />
+
+                        {error ? (
+                            <Text style={styles.errorText}>{error}</Text>
+                        ) : (
+                            <>
+                                <TimeRangeSelector
+                                    selectedTimeRange={timeRange}
+                                    onTimeRangeSelected={(timeRangeSelected) => {
+                                        setTimeRange(timeRangeSelected);
+
+                                        void trackButton('time_range_toggle', currentScreen, {
+                                            timestamp: new Date().toISOString(),
+                                            selectedTimeRange: timeRangeSelected,
+                                        });
+                                    }}
+                                />
+
+                                {getHistoricalDataContent()}
+
+                                {/* Summary Cards Section */}
+                                {getSummaryContent()}
+                            </>
+                        )}
+                    </View>
+                </ScrollView>
+
+                {isModalOpen && (
+                    <LocationModal
+                        selectedLocation={selectedLocation}
+                        onLocationSelected={(location) => {
+                            navigation.setParams({selectedLocation: location});
+                            closeLocationModal();
+                        }}
+                        visible={isModalOpen}
+                        onClose={closeLocationModal}
+                    />
+                )}
+            </View>
+        </AnimatedGradientBackground>
     );
 }
 
@@ -525,7 +534,7 @@ const summaryCardStyles = StyleSheet.create({
     container: {
         marginTop: 20,
         padding: 15,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        backgroundColor: backgrounds.dark,
         borderRadius: 10,
     },
     title: {
@@ -550,7 +559,7 @@ const summaryCardStyles = StyleSheet.create({
         justifyContent: 'center',
     },
     cardTitle: {
-        color: '#FFD700',
+        color: colors.primaryWithDarkBg,
         fontSize: 12,
         fontWeight: 'bold',
         marginBottom: 5,

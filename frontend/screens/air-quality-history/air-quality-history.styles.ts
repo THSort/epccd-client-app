@@ -3,7 +3,7 @@ import {StyleSheet} from 'react-native';
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'black',
+        // backgroundColor: 'black',
     },
     header: {
         flexDirection: 'row',
@@ -105,33 +105,5 @@ export const styles = StyleSheet.create({
         marginVertical: 8,
         borderRadius: 16,
         alignSelf: 'center',
-    },
-    statsCardsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginTop: 20,
-        marginBottom: 10,
-        paddingHorizontal: 5,
-    },
-    statCard: {
-        backgroundColor: '#111',
-        borderRadius: 10,
-        padding: 10,
-        width: '31%',
-        alignItems: 'center',
-    },
-    statCardTitle: {
-        color: 'yellow',
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        textAlign: 'center',
-    },
-    statCardValue: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
     },
 });

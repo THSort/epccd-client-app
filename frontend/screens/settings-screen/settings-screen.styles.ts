@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+import {colors} from '../../App.styles.ts';
 
 export const styles = StyleSheet.create({
     container: {
@@ -16,7 +17,7 @@ export const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 25,
         fontWeight: 'bold',
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
         marginLeft: 10,
     },
     headerRightPlaceholder: {
@@ -29,7 +30,7 @@ export const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
         marginTop: 24,
         marginBottom: 12,
         width: 200,
