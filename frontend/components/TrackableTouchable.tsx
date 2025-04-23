@@ -11,7 +11,7 @@ interface TrackableTouchableProps extends TouchableOpacityProps {
 
 /**
  * A touchable component that automatically tracks interactions
- * 
+ *
  * Usage:
  * <TrackableTouchable
  *   actionName="toggle_filter"
@@ -41,7 +41,7 @@ export const TrackableTouchable: React.FC<TrackableTouchableProps> = ({
         action_name: actionName,
         screen_name: screenName,
         timestamp: new Date().toISOString(),
-        ...additionalTrackingData
+        ...additionalTrackingData,
       }
     );
 
@@ -60,4 +60,4 @@ export const TrackableTouchable: React.FC<TrackableTouchableProps> = ({
       {children}
     </TouchableOpacity>
   );
-}; 
+};

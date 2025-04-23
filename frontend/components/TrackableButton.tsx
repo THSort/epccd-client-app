@@ -12,10 +12,10 @@ interface TrackableButtonProps extends TouchableOpacityProps {
 
 /**
  * A button component that automatically tracks clicks
- * 
+ *
  * Usage:
- * <TrackableButton 
- *   buttonName="view_detailed_report" 
+ * <TrackableButton
+ *   buttonName="view_detailed_report"
  *   screenName="HomeScreen"
  *   onPress={() => navigation.navigate('Details')}
  * >
@@ -37,11 +37,11 @@ export const TrackableButton: React.FC<TrackableButtonProps> = ({
   const handlePress = () => {
     // Track the button click with standardized naming
     void trackButton(
-      buttonName, 
+      buttonName,
       screenName,
       {
         timestamp: new Date().toISOString(),
-        ...additionalTrackingData
+        ...additionalTrackingData,
       }
     );
 
@@ -72,4 +72,4 @@ const styles = StyleSheet.create({
   label: {
     textAlign: 'center',
   },
-}); 
+});

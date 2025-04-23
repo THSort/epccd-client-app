@@ -2,7 +2,6 @@ import React, {useEffect, useState, useRef, useCallback, ReactElement} from 'rea
 import {View, Text, TouchableOpacity, ActivityIndicator, BackHandler, ScrollView, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {styles} from './home-screen.styles';
-import {LanguageToggle} from '../../components/language-toggle/language-toggle.tsx';
 import {AQISlider} from './components/aqi-slider/aqi-slider.tsx';
 import {LocationSelector} from './components/location-selector/location-selector.tsx';
 import {useLocationModal} from './components/location-modal/location-modal.types.ts';
@@ -17,13 +16,12 @@ import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {getTranslation, getTranslatedNumber} from '../../utils/translations';
 import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../components/tracking';
-import {fontScale, hp, useResponsiveDimensions} from '../../utils/responsive.util';
+import {hp, useResponsiveDimensions} from '../../utils/responsive.util';
 import {getDefaultLanguage} from '../../utils/language.util';
 import AnimatedGradientBackground from '../../components/animated-gradient-background/animated-gradient-background.tsx';
 import {AqiLegend} from '../../components/aqi-legend/aqi-legend.tsx';
-import {backgrounds, colors} from '../../App.styles.ts';
-import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
-import {darkenColor, lightenColor} from '../../utils/colur.util.ts';
+import {colors} from '../../App.styles.ts';
+import {lightenColor} from '../../utils/colur.util.ts';
 
 const currentScreen = 'HomeScreen';
 
@@ -174,7 +172,7 @@ const HomeScreen = () => {
         if (expanded) {
             return (
                 <View style={styles.aqiLevelLegendExpanderContainer}>
-                    <TouchableOpacity onPress={onTouch}>
+                    <TrackableButton buttonName={ELEMENT_NAMES.BTN_EXPAND_LEGEND} screenName={SCREEN_NAMES.HOME} onPress={onTouch}>
                         <View style={[styles.aqiLevelLegendExpander, {borderBottomLeftRadius: 0, borderBottomRightRadius: 0}]}>
                             <Text style={[styles.aqiLevelInfoText, {color: color}]}>{aqiDescriptionLevel}</Text>
                             <View style={[styles.infoIconContainer, {borderColor: color}]}>
@@ -185,21 +183,21 @@ const HomeScreen = () => {
                         <View style={styles.aqiLegend}>
                             <AqiLegend/>
                         </View>
-                    </TouchableOpacity>
+                    </TrackableButton>
                 </View>
             );
         }
 
         return (
             <View style={styles.aqiLevelLegendExpanderContainer}>
-                <TouchableOpacity onPress={onTouch}>
+                <TrackableButton buttonName={ELEMENT_NAMES.BTN_EXPAND_LEGEND} screenName={SCREEN_NAMES.HOME} onPress={onTouch}>
                     <View style={[styles.aqiLevelLegendExpander]}>
                         <Text style={[styles.aqiLevelInfoText, {color: color}]}>{aqiDescriptionLevel}</Text>
                         <View style={[styles.infoIconContainer, {borderColor: color}]}>
                             <Icon name={'info'} color={color} size={16}/>
                         </View>
                     </View>
-                </TouchableOpacity>
+                </TrackableButton>
             </View>
         );
     };
@@ -264,7 +262,7 @@ const HomeScreen = () => {
             : {...styles.aqiLevelInfoMessageText, color: colors.secondaryWithDarkBg};
 
         return (
-            <TouchableOpacity onPress={() => {
+            <TrackableButton buttonName={ELEMENT_NAMES.BTN_FUTURE_PREDICTION} screenName={SCREEN_NAMES.HOME} onPress={() => {
                 setIsFuturePredictionSectionExpanded(!isFuturePredictionSectionExpanded);
             }} activeOpacity={0.7} style={styles.futurePredictionContainer}>
                 <Text style={[styles.aqiText]}>
@@ -295,7 +293,7 @@ const HomeScreen = () => {
                             }
                         </> : null
                 }
-            </TouchableOpacity>
+            </TrackableButton>
         );
     };
 

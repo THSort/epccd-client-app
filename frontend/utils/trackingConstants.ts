@@ -39,6 +39,8 @@ export const ELEMENT_NAMES = {
   // Home screen
   BTN_VIEW_DETAILED_REPORT: 'btn_view_detailed_report',
   SEL_LOCATION: 'sel_location',
+  BTN_EXPAND_LEGEND: 'btn_expand_legend',
+  BTN_FUTURE_PREDICTION: 'btn_future_prediction',
 
   // Air quality screens
   BTN_VIEW_HISTORY: 'btn_view_history',
