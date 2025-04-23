@@ -25,6 +25,8 @@ import {Chart} from './components/chart/chart.tsx';
 import AnimatedGradientBackground from '../../components/animated-gradient-background/animated-gradient-background.tsx';
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {backgrounds, colors} from '../../App.styles.ts';
+import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
+import {fontScale} from '../../utils/responsive.util.ts';
 
 type RootStackParamList = {
     AirQualityHistory: {
@@ -286,7 +288,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
         return (
             <View style={styles.chartContainer}>
                 <ActivityIndicator size="large" color="#FFD700"/>
-                <Text style={{color: 'white', textAlign: 'center', marginTop: 10}}>
+                <Text style={{color: colors.secondaryWithDarkBg, textAlign: 'center', marginTop: 10}}>
                     {getTranslation('loading', currentLanguage)}
                 </Text>
             </View>
@@ -319,7 +321,7 @@ export function AirQualityHistory({route}: Props): ReactElement {
                     {/* Historical Data Chart */}
                     <View style={styles.chartWrapper}>
                         <View style={{marginBottom: 10, alignItems: 'center'}}>
-                            <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>
+                            <Text style={{color: colors.secondaryWithDarkBg, fontSize: 14, fontWeight: 'bold'}}>
                                 {displayMode === 'concentration'
                                     ? currentLanguage === 'اردو'
                                         ? `${getPollutantName(pollutant)} کا اوسط (${getPollutantUnit(pollutant)})`
@@ -430,18 +432,24 @@ export function AirQualityHistory({route}: Props): ReactElement {
         setRefreshing(false);
     }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData]);
 
+    const getHeader = (): ReactElement => {
+        return (
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => {
+                    void trackBackButton(currentScreen);
+                    navigation.goBack();
+                }}>
+                    <Icon name="chevron-left" size={25} color={colors.primaryWithDarkBg}/>
+                </TouchableOpacity>
+                <TextWithStroke strokeWidth={1.2} style={styles.headerTitle} text={getTranslation('airQualityHistory', currentLanguage)} color={colors.primaryWithDarkBg} size={fontScale(25)} bold={true}/>
+            </View>
+        );
+    };
+
     return (
-        <AnimatedGradientBackground color={getAqiColor(summaryData?.current.PM2_5_AQI ?? 0)}>
+        <AnimatedGradientBackground color={summaryData?.current.PM2_5_AQI ? getAqiColor(summaryData.current.PM2_5_AQI) : '#808080'}>
             <View style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => {
-                        void trackBackButton(currentScreen);
-                        navigation.goBack();
-                    }}>
-                        <Icon name="chevron-left" size={25} color="yellow"/>
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{getTranslation('airQualityHistory', currentLanguage)}</Text>
-                </View>
+                {getHeader()}
 
                 <ScrollView
                     style={styles.scrollContainer}
@@ -538,7 +546,7 @@ const summaryCardStyles = StyleSheet.create({
         borderRadius: 10,
     },
     title: {
-        color: 'white',
+        color: colors.secondaryWithDarkBg,
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 15,

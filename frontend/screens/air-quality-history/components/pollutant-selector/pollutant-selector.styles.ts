@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native';
+import {hp} from '../../../../utils/responsive.util.ts';
 
 export const styles = StyleSheet.create({
   scrollContainer: {
-    marginTop: '10%',
+    marginTop: hp(10),
     alignItems: 'center',
   },
   container: {

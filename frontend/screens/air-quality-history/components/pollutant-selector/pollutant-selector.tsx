@@ -38,7 +38,7 @@ export const PollutantSelector: React.FC<PollutantSelectorProps> = ({
     label: getTranslatedPollutantName(value),
   }));
 
-  return ( 
+  return (
     <View>
       <View style={styles.scrollContainer}>
         <ScrollView
@@ -69,4 +69,4 @@ export const PollutantSelector: React.FC<PollutantSelectorProps> = ({
       </View>
     </View>
   );
-}; 
+};

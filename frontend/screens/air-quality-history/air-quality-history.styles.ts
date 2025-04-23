@@ -1,19 +1,24 @@
 import {StyleSheet} from 'react-native';
+import {colors} from '../../App.styles.ts';
+import {hp, wp} from '../../utils/responsive.util.ts';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // backgroundColor: 'black',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 15,
+        padding: wp(15),
+        backgroundColor: 'black',
+        borderBottomColor: colors.secondaryWithDarkBg,
+        borderBottomWidth: 1,
+        marginBottom: hp(10),
     },
     headerTitle: {
         fontSize: 25,
         fontWeight: 'bold',
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
         marginLeft: 10,
     },
     content: {
@@ -77,7 +82,7 @@ export const styles = StyleSheet.create({
         marginBottom: 10,
     },
     timeLabel: {
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 5,
@@ -87,7 +92,7 @@ export const styles = StyleSheet.create({
         fontSize: 14,
     },
     chartContainer: {
-        marginTop: 20,
+        marginTop: hp(10),
         backgroundColor: '#222',
         borderRadius: 10,
         justifyContent: 'center',

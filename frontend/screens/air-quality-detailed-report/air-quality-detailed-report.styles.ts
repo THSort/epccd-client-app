@@ -50,22 +50,22 @@ export const styles = StyleSheet.create({
     },
     aqiStatus: {
         fontSize: fontScale(14),
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
     },
     updateLabel: {
         fontSize: fontScale(14),
         fontWeight: 'bold',
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
         textAlign: 'center',
     },
     updateTime: {
         fontSize: fontScale(12),
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
         textAlign: 'center',
     },
     divider: {
         height: 1,
-        backgroundColor: 'yellow',
+        backgroundColor: colors.primaryWithDarkBg,
         marginVertical: hp(10),
     },
     pollutantContainer: {
@@ -81,7 +81,7 @@ export const styles = StyleSheet.create({
     pollutantTitle: {
         fontSize: fontScale(18),
         fontWeight: 'bold',
-        color: 'yellow',
+        color: colors.primaryWithDarkBg,
     },
     pollutantList: {
         flex: 1,

@@ -1,8 +1,10 @@
 import {StyleSheet} from 'react-native';
+import {colors} from '../../../../App.styles.ts';
+import {hp} from '../../../../utils/responsive.util.ts';
 
 export const styles = StyleSheet.create({
     scrollContainer: {
-        marginVertical: 15,
+        marginVertical: hp(15),
     },
     container: {
         flexDirection: 'row',
@@ -20,7 +22,7 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedOption: {
-        backgroundColor: '#FFD700',
+        backgroundColor: colors.primaryWithDarkBg,
     },
     optionText: {
         color: 'white',
