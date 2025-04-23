@@ -9,7 +9,26 @@
       "client_info": {
         "mobilesdk_app_id": "1:64508878853:android:31955df46758cf64d9bc6c",
         "android_client_info": {
-          "package_name": "com.frontend"
+          "package_name": "com.frontend.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtxR7n_9ro3SldvyGLN3ehjV9W7_qWAKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64508878853:android:5331745a8f5fdfafd9bc6c",
+        "android_client_info": {
+          "package_name": "com.lahore_aqi_monitoring"
         }
       },
       "oauth_client": [],

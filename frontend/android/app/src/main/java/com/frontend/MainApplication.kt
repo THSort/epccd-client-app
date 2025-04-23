@@ -1,4 +1,4 @@
-package com.frontend
+package com.lahore_aqi_monitoring
 
 import android.app.Application
 import com.facebook.react.PackageList

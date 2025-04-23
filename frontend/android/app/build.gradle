@@ -78,7 +78,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.frontend"
+    namespace "com.lahore_aqi_monitoring"
     
     // Read API keys from local.properties
     def localProperties = new Properties()
@@ -90,7 +90,7 @@ android {
     }
     
     defaultConfig {
-        applicationId "com.frontend"
+        applicationId "com.lahore_aqi_monitoring"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
