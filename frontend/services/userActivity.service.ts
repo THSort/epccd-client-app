@@ -4,6 +4,7 @@ import DeviceInfo from 'react-native-device-info';
 
 // Base URL for API requests
 const API_BASE_URL = 'http://13.61.251.147/api/user-activity';
+// const API_BASE_URL = 'http://10.0.2.2:3000/api/user-activity';
 
 // Queue to store activities when offline
 let activityQueue: any[] = [];

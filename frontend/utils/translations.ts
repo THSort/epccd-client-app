@@ -61,6 +61,7 @@ export interface TranslationStrings {
   failedToLoadMap: string;
   noDataAvailable: string;
   failedToLoadHistoricalData: string;
+  failedToLoadSummaryData: string;
   noHistoricalDataAvailable: string;
 
   // Other common strings
@@ -199,6 +200,7 @@ const translations: Record<Language, TranslationStrings> = {
     failedToLoadMap: 'Failed to load Map',
     noDataAvailable: 'No data available',
     failedToLoadHistoricalData: 'Failed to load historical air quality data. Please try again later.',
+    failedToLoadSummaryData: 'Failed to load summary of air quality data. Please try again later.',
     noHistoricalDataAvailable: 'No historical data available',
 
     // Other common strings
@@ -334,6 +336,7 @@ const translations: Record<Language, TranslationStrings> = {
     failedToLoadMap: 'نقشہ لوڈ کرنے میں ناکام',
     noDataAvailable: 'کوئی ڈیٹا دستیاب نہیں',
     failedToLoadHistoricalData: 'ہوا کے معیار کا تاریخی ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
+    failedToLoadSummaryData: 'ہوا کے معیار کے ڈیٹا کا خلاصہ لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     noHistoricalDataAvailable: 'کوئی تاریخی ڈیٹا دستیاب نہیں ہے',
 
     // Other common strings
@@ -399,17 +402,17 @@ const translations: Record<Language, TranslationStrings> = {
     hillParkLahore: 'ہل پارک، لاہور',
 
     // Digits - Urdu/Eastern Arabic numerals
-    digit0: '۰',
-    digit1: '۱',
-    digit2: '۲',
-    digit3: '۳',
-    digit4: '۴',
-    digit5: '۵',
-    digit6: '۶',
-    digit7: '۷',
-    digit8: '۸',
-    digit9: '۹',
-    decimalPoint: '٫',
+    digit0: '0',
+    digit1: '1',
+    digit2: '2',
+    digit3: '3',
+    digit4: '4',
+    digit5: '5',
+    digit6: '6',
+    digit7: '7',
+    digit8: '8',
+    digit9: '9',
+    decimalPoint: '.',
   },
 };
 

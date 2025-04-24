@@ -2,6 +2,7 @@ import axios from 'axios';
 
 // Base URL for API requests
 const API_BASE_URL = 'http://13.61.251.147/api';
+// const API_BASE_URL = 'http://10.0.2.2:3000/api';
 
 /**
  * Register a new user
@@ -20,7 +21,7 @@ export const registerUser = async (
       url: `${API_BASE_URL}/users/register`,
       fcmToken,
       location,
-      mobile_number
+      mobile_number,
     });
 
     const response = await axios.post(`${API_BASE_URL}/users/register`, {
@@ -42,7 +43,7 @@ export const registerUser = async (
           url: error.config?.url,
           method: error.config?.method,
           headers: error.config?.headers,
-        }
+        },
       });
     } else {
       console.error('Non-Axios error during registration:', error);
@@ -67,7 +68,7 @@ export const submitDemographicSurvey = async (
     const response = await axios.post(`${API_BASE_URL}/demographics`, {
       id_user,
       asthma,
-      language_preference
+      language_preference,
     });
     return response.data;
   } catch (error) {

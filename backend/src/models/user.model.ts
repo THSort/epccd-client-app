@@ -12,7 +12,7 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>({
     id_user: { type: String, default: uuidv4, unique: true }, // Generate UUID as user ID
     fcmToken: { type: String, required: true, unique: true },
-    mobile_number: { type: String, unique: true, sparse: true }, // Unique but can be null
+    mobile_number: { type: String, unique: false, sparse: true }, // Unique but can be null
     location: { type: Number, required: true, min: 1, max: 21 },
     alerts_threshold: { type: String, default: 'unhealthy', enum: ['good', 'satisfactory', 'moderate', 'unhealthyForSensitive', 'unhealthy', 'veryUnhealthy', 'hazardous'] },
 });

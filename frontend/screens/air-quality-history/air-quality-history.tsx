@@ -55,7 +55,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const [isLoadingSummaryData, setIsLoadingSummaryData] = useState<boolean>(true);
     const [summaryData, setSummaryData] = useState<PollutantSummaryResponse | null>(null);
 
-    const [error, setError] = useState<string | null>(null);
+    const [errorLoadingHistoricalData, setErrorLoadingHistoricalData] = useState<string | null>(null);
+    const [errorLoadingSummaryData, setErrorLoadingSummaryData] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1d');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
     const [refreshing, setRefreshing] = useState(false);
@@ -102,14 +103,14 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
 
         setIsLoadingAllHistoricalData(true);
-        setError(null);
+        setErrorLoadingHistoricalData(null);
 
         try {
             const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
             setHistoricalData(data);
         } catch (error) {
             console.error('Error fetching historical data:', error);
-            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
+            setErrorLoadingHistoricalData(getTranslation('failedToLoadHistoricalData', currentLanguage));
         } finally {
             setIsLoadingAllHistoricalData(false);
         }
@@ -121,14 +122,14 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
 
         setIsLoadingSummaryData(true);
-        setError(null);
+        setErrorLoadingSummaryData(null);
 
         try {
             const data = await fetchPollutantSummary(selectedLocation);
             setSummaryData(data);
         } catch (error) {
             console.error('Error fetching summary data:', error);
-            setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
+            setErrorLoadingSummaryData(getTranslation('failedToLoadSummaryData', currentLanguage));
         } finally {
             setIsLoadingSummaryData(false);
         }
@@ -345,6 +346,10 @@ export function AirQualityHistory({route}: Props): ReactElement {
     };
 
     const getSummaryContent = (): ReactElement => {
+        if (errorLoadingSummaryData) {
+            return <Text style={styles.errorText}>{errorLoadingSummaryData}</Text>;
+        }
+
         if (isLoadingSummaryData) {
             return (
                 <View style={summaryCardStyles.container}>
@@ -418,16 +423,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         if (selectedLocation) {
-            try {
-                await Promise.all([
-                    fetchHistoricalData(),
-                    fetchSummaryData(),
-                ]);
-                setError(null);
-            } catch (error) {
-                console.error('Error refreshing data:', error);
-                setError(getTranslation('failedToLoadHistoricalData', currentLanguage));
-            }
+            await fetchHistoricalData();
+            await fetchSummaryData();
         }
         setRefreshing(false);
     }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData]);
@@ -496,8 +493,8 @@ export function AirQualityHistory({route}: Props): ReactElement {
                             }}
                         />
 
-                        {error ? (
-                            <Text style={styles.errorText}>{error}</Text>
+                        {errorLoadingHistoricalData ? (
+                            <Text style={styles.errorText}>{errorLoadingHistoricalData}</Text>
                         ) : (
                             <>
                                 <TimeRangeSelector

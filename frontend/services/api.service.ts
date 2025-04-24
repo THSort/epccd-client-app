@@ -5,6 +5,7 @@ import {TimeRange} from '../screens/air-quality-history/components/time-range-se
 
 // Base URL for API requests
 const API_BASE_URL = 'http://13.61.251.147/api';
+// const API_BASE_URL = 'http://10.0.2.2:3000/api';
 
 /**
  * Interface for Lahore location AQI data
@@ -107,7 +108,7 @@ export const updateUserLocation = async (userId: string, location: number): Prom
         const url = `${API_BASE_URL}/settings/location`;
         const response = await axios.put(url, {
             id_user: userId,
-            location
+            location,
         });
         return response.data;
     } catch (error) {
@@ -127,7 +128,7 @@ export const updateUserAlertsThreshold = async (userId: string, alertsThreshold:
         const url = `${API_BASE_URL}/settings/alerts-threshold`;
         const response = await axios.put(url, {
             id_user: userId,
-            alerts_threshold: alertsThreshold
+            alerts_threshold: alertsThreshold,
         });
         return response.data;
     } catch (error) {
@@ -147,7 +148,7 @@ export const updateUserLanguagePreference = async (userId: string, language: str
         const url = `${API_BASE_URL}/settings/language`;
         const response = await axios.put(url, {
             id_user: userId,
-            language_preference: language
+            language_preference: language,
         });
         return response.data;
     } catch (error) {
