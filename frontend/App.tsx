@@ -14,10 +14,6 @@ import {Pollutant} from './screens/air-quality-detailed-report/air-quality-detai
 import {UserActivityProvider} from './context/UserActivityContext.tsx';
 import {RegistrationScreen} from './screens/registration-screen';
 import {getUserId} from './utils/storage.util.ts';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useNotification} from './hooks/useNotification.ts';
-import {LahoreGraph} from './screens/air-quality-detailed-report/components/lahore-graph/lahore-graph.tsx';
-import AnimatedGradientBackground from './components/animated-gradient-background/animated-gradient-background.tsx';
 
 type RootStackParamList = {
     Home: undefined;
