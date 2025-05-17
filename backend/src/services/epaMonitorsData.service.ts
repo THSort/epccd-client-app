@@ -120,7 +120,7 @@ const calculateAverage = (values: (number | null | undefined)[]): number | undef
 // Poll EPA Monitors Data Every 5 Minutes
 export const pollEpaMonitorsData = async () => {
     try {
-        const locations = Array.from({length: 21}, (_, i) => i + 1);
+        const locations = Array.from({length: 5}, (_, i) => i + 1);
 
         // Fetch data for all locations concurrently
         const results = await Promise.allSettled(locations.map(fetchCurrentEpaMonitorsDataForLocation));
