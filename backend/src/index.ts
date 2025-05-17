@@ -11,7 +11,6 @@ import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
 import userActivityRoutes from "./routes/userActivity.routes";
 import weatherForecastRoutes from "./routes/weatherForecast.routes";
-import {fetchWeatherApi} from 'openmeteo';
 import {pollEpaMonitorsData} from "./services/epaMonitorsData.service";
 
 // Load environment variables first
@@ -38,15 +37,15 @@ const startServer = async () => {
         await connectDB(); // Ensure DB is connected before starting the server
         app.listen(PORT, "0.0.0.0", () => console.log(`🚀 Server running on port ${PORT}`));
 
-        // // // Start polling EPA Monitors Data every 5 minutes
-        // const POLLING_INTERVAL_MS = 5 * 60 * 1000;
-        // setInterval(() => {
-        //     console.log("📡 Polling EPA Monitors data...");
-        //     void pollEpaMonitorsData();
-        // }, POLLING_INTERVAL_MS);
+        // // Start polling EPA Monitors Data every 5 minutes
+        const POLLING_INTERVAL_MS = 5 * 60 * 1000;
+        setInterval(() => {
+            console.log("📡 Polling EPA Monitors data...");
+            void pollEpaMonitorsData();
+        }, POLLING_INTERVAL_MS);
 
-        // // // Run the function immediately on startup
-        // void pollEpaMonitorsData();
+        // // Run the function immediately on startup
+        void pollEpaMonitorsData();
     } catch (error) {
         console.error("❌ Server startup failed:", error);
         process.exit(1); // Exit if DB connection fails
