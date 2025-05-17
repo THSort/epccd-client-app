@@ -78,7 +78,7 @@ export const fetchAndStoreWeatherForecasts = async (req: Request, res: Response)
 
             try {
                 // Construct API URL with location coordinates
-                const forecastApiUrl = `${OPEN_METEO_API_FORECAST_URL}?latitude=${location.latitude}&longitude=${location.longitude}&${WEATHER_PARAMS}&forecast_days=3`;
+                const forecastApiUrl = `${OPEN_METEO_API_FORECAST_URL}?latitude=${location.latitude}&longitude=${location.longitude}&${WEATHER_PARAMS}&forecast_days=4`;
                 const pastWeekApiUrl = `${OPEN_METEO_API_PAST_WEEK_URL}?latitude=${location.latitude}&longitude=${location.longitude}&${WEATHER_PARAMS}&start_date=${pastWeekStartStr}&end_date=${pastWeekEndStr}`;
 
                 logger.debug(`Forecast API URL: ${forecastApiUrl}`);

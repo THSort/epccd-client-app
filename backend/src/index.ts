@@ -37,7 +37,7 @@ const startServer = async () => {
         await connectDB(); // Ensure DB is connected before starting the server
         app.listen(PORT, "0.0.0.0", () => console.log(`🚀 Server running on port ${PORT}`));
 
-        // // Start polling EPA Monitors Data every 5 minutes
+        // Start polling EPA Monitors Data every 5 minutes
         const POLLING_INTERVAL_MS = 5 * 60 * 1000;
         setInterval(() => {
             console.log("📡 Polling EPA Monitors data...");
