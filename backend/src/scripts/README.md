@@ -45,3 +45,54 @@ You can modify the script to:
 - Adjust the number of entries per day by changing the `entriesPerDay` variable
 - Modify the ranges for random values in the `generateRandomData` function
 - Change the starting ID by updating the `startId` variable 
+
+## Weather Forecast Cron Job
+
+A script to fetch weather forecasts for all locations on a daily basis.
+
+### Automatic Setup with PM2
+
+The cron job is automatically configured in the `ecosystem.config.js` file to run at 3:00 PM every day.
+
+When you deploy the application using PM2:
+
+```bash
+pm2 start ecosystem.config.js
+```
+
+The cron job will be automatically scheduled.
+
+### Manual Setup with System Cron
+
+If you prefer to use the system's crontab instead of PM2's built-in scheduler:
+
+1. Open the crontab editor:
+
+```bash
+crontab -e
+```
+
+2. Add the following line to run the script at 3:00 PM daily:
+
+```
+0 15 * * * cd /path/to/your/backend && node dist/scripts/weatherForecastCron.js >> /path/to/your/backend/logs/cron.log 2>&1
+```
+
+Replace `/path/to/your/backend` with the actual path to your backend directory.
+
+### Running Manually
+
+You can also run the script manually:
+
+```bash
+cd /path/to/your/backend
+node dist/scripts/weatherForecastCron.js
+```
+
+Or during development:
+
+```bash
+npx ts-node src/scripts/weatherForecastCron.ts
+```
+
+This will immediately trigger the weather forecast data collection for all configured locations. 

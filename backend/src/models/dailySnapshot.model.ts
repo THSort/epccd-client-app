@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const forecastItemSchema = new mongoose.Schema({
+const snapshotItemSchema = new mongoose.Schema({
     datetime: {type: String},
     temperature_2m: {type: Number},
     relative_humidity_2m: {type: Number},
@@ -52,7 +52,8 @@ const forecastItemSchema = new mongoose.Schema({
 const dailySnapshotSchema = new mongoose.Schema({
     snapshot_date: {type: String, required: true, index: true},
     location_id: {type: Number, required: true, index: true},
-    future_forecast: [forecastItemSchema],
+    future_forecast: [snapshotItemSchema],
+    past_week: [snapshotItemSchema],
     created_at: {type: Date, default: Date.now, required: true}
 }, {timestamps: true});
 
