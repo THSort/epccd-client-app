@@ -5,6 +5,7 @@ import {hp} from '../../../../utils/responsive.util.ts';
 export const styles = StyleSheet.create({
     scrollContainer: {
         marginVertical: hp(15),
+        alignItems: 'center',
     },
     container: {
         flexDirection: 'row',

@@ -180,6 +180,7 @@ export const styles = StyleSheet.create({
         padding:  10,
         borderRadius: 6,
         textAlign: 'center',
+        paddingHorizontal: 25,
     },
     aqiLegend: {
         backgroundColor: 'rgba(255,255,255, 0.15)',

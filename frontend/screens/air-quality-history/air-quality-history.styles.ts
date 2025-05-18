@@ -16,10 +16,7 @@ export const styles = StyleSheet.create({
         marginBottom: hp(10),
     },
     headerTitle: {
-        fontSize: 25,
-        fontWeight: 'bold',
-        color: colors.primaryWithDarkBg,
-        marginLeft: 10,
+        marginLeft: wp(10),
     },
     content: {
         paddingHorizontal: 24,
@@ -104,7 +101,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        height: 300,
+        // height: 500,
     },
     chart: {
         marginVertical: 8,

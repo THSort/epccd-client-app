@@ -5,8 +5,11 @@ import type {ChartProps} from './chart.types';
 import {LineChart, lineDataItem} from 'react-native-gifted-charts';
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext';
 import {Language} from '../../../../utils/translations';
+import {Dimensions} from 'react-native';
 
 export function Chart({...props}: ChartProps): ReactElement {
+    const screenWidth = Dimensions.get('window').width;
+
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
 
@@ -87,7 +90,7 @@ export function Chart({...props}: ChartProps): ReactElement {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            width: 325,
+            width: screenWidth - 64,
         }}>
             <LineChart
                 onlyPositive={true}
@@ -140,7 +143,7 @@ export function Chart({...props}: ChartProps): ReactElement {
                             <View
                                 style={{
                                     height: 90,
-                                    width: 120,
+                                    width: 150,
                                     justifyContent: 'center',
                                 }}>
 
