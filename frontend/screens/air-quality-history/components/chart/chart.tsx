@@ -6,6 +6,7 @@ import {LineChart, lineDataItem} from 'react-native-gifted-charts';
 import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext';
 import {Language} from '../../../../utils/translations';
 import {Dimensions} from 'react-native';
+import {hp} from '../../../../utils/responsive.util.ts';
 
 export function Chart({...props}: ChartProps): ReactElement {
     const screenWidth = Dimensions.get('window').width;
@@ -15,6 +16,8 @@ export function Chart({...props}: ChartProps): ReactElement {
 
     // Function to format numbers for Urdu if needed
     const formatNumberForLanguage = (value: number): string => {
+        return value.toFixed(0);
+
         if (currentLanguage === 'اردو') {
             // Convert digits to Urdu
             return value.toFixed(0).replace(/[0-9]/g, (digit) => {
@@ -90,12 +93,12 @@ export function Chart({...props}: ChartProps): ReactElement {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            width: screenWidth - 64,
+            width: screenWidth - 100,
         }}>
             <LineChart
                 onlyPositive={true}
                 dataPointsColor={'white'}
-                height={200}
+                height={hp(200)}
                 adjustToWidth={true}
                 showScrollIndicator={true}
                 showVerticalLines={true}

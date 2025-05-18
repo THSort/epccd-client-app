@@ -196,7 +196,7 @@ const translations: Record<Language, TranslationStrings> = {
 
     // Error messages
     pleaseRetryLater: 'Please try again later',
-    failedToLoadAirQuality: 'Failed to load air quality data. Please try again later.',
+    failedToLoadAirQuality: 'Failed to connect to the servers. Please try again later.',
     failedToLoadMap: 'Failed to load Map',
     noDataAvailable: 'No data available',
     failedToLoadHistoricalData: 'Failed to load historical air quality data. Please try again later.',
@@ -332,7 +332,7 @@ const translations: Record<Language, TranslationStrings> = {
 
     // Error messages
     pleaseRetryLater: 'براہ کرم بعد میں دوبارہ کوشش کریں',
-    failedToLoadAirQuality: 'ہوا کے معیار کا ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
+    failedToLoadAirQuality: 'سرورز سے منسلک ہونے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     failedToLoadMap: 'نقشہ لوڈ کرنے میں ناکام',
     noDataAvailable: 'کوئی ڈیٹا دستیاب نہیں',
     failedToLoadHistoricalData: 'ہوا کے معیار کا تاریخی ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',

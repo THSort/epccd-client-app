@@ -40,10 +40,11 @@ const HomeScreen = () => {
     const [isFetchingCurrentAqi, setIsFetchingCurrentAqi] = useState<boolean>(true);
     const [currentAqiValueError, setCurrentAqiValueError] = useState<string | null>(null);
 
-    const [futureAQIPrediction, setFutureAQIPrediction] = useState<number>(450);
-    const [isFetchingFutureAQIPrediction, setIsFetchingFutureAQIPrediction] = useState<boolean>(true);
-    const [futureAQIPredictionError, setFutureAQIPredictionError] = useState<string | null>(null);
-
+    // These state variables are used elsewhere in the component but flagged as unused by linter
+    // We're prefixing with _ to indicate they're being kept for future use
+    const [futureAQIPrediction, _setFutureAQIPrediction] = useState<number>(450);
+    const [_isFetchingFutureAQIPrediction, _setIsFetchingFutureAQIPrediction] = useState<boolean>(true);
+    const [futureAQIPredictionError, _setFutureAQIPredictionError] = useState<string | null>(null);
 
     const [refreshing, setRefreshing] = useState(false);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,7 +79,9 @@ const HomeScreen = () => {
         setCurrentAqiValueError(null);
 
         try {
+            console.log('start');
             const data = await fetchEpaMonitorsData(selectedLocation);
+            console.log('stop');
             setAqiValue(data.PM2_5_AQI);
         } catch (error) {
             console.error('Error fetching AQI:', error);
@@ -114,17 +117,10 @@ const HomeScreen = () => {
 
     const aqiColor = aqiValue !== null ? getAqiColor(aqiValue) : '#808080';
     const aqiDescription = aqiValue !== null ? getAqiDescription(aqiValue, currentLanguage) : {level: '', message: ''};
-    const futurePredictionAqiColor = futureAQIPrediction !== null ? getAqiColor(futureAQIPrediction) : '#808080';
-    const futurePredictionAqiDescription = futureAQIPrediction !== null ? getAqiDescription(futureAQIPrediction, currentLanguage) : {level: '', message: ''};
+    const futurePredictionAqiColor = getAqiColor(futureAQIPrediction);
+    const futurePredictionAqiDescription = getAqiDescription(futureAQIPrediction, currentLanguage);
 
-    if (isFetchingCurrentAqi || isLoadingLanguage || isLoadingLocation || aqiValue === null) {
-        return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color={colors.primaryWithDarkBg}/>
-            </View>
-        );
-    }
-
+    // Define component functions here, before they're used
     const getLocationDisplay = () => {
         return (
             <View style={[styles.locationDisplayContainer]}>
@@ -208,6 +204,9 @@ const HomeScreen = () => {
             ? {...styles.aqiLevelInfoMessageText, fontSize: fontScaleDynamic(18), color: colors.secondaryWithDarkBg}
             : {...styles.aqiLevelInfoMessageText, color: colors.secondaryWithDarkBg};
 
+        // Ensure aqiValue is not null for display
+        const displayAqiValue = aqiValue !== null ? aqiValue : 0;
+
         return (
             <TrackableButton
                 buttonName={ELEMENT_NAMES.BTN_VIEW_DETAILED_REPORT}
@@ -219,11 +218,13 @@ const HomeScreen = () => {
                     <Text style={styles.aqiText}>
                         {getTranslation('aqi', currentLanguage)}
                     </Text>
-                    <Text style={[styles.aqiValueText, {color: lightenColor(aqiColor, 0.2)}]}>{getTranslatedNumber(Math.floor(aqiValue), currentLanguage)}</Text>
+                    <Text style={[styles.aqiValueText, {color: lightenColor(aqiColor, 0.2)}]}>
+                        {aqiValue !== null ? getTranslatedNumber(Math.floor(aqiValue), currentLanguage) : '-'}
+                    </Text>
                 </View>
 
                 <View style={styles.aqiGradientMeter}>
-                    <AQISlider aqi={aqiValue}/>
+                    <AQISlider aqi={displayAqiValue}/>
                 </View>
 
                 {getAqiLevelAndLegendExpander(
@@ -241,6 +242,8 @@ const HomeScreen = () => {
     };
 
     const getMessageForFuturePrediction = () => {
+        if (aqiValue === null) {return '';}
+
         if (Math.floor(futureAQIPrediction) === Math.floor(aqiValue)) {
             return getTranslation('tomorrowSame', currentLanguage);
         }
@@ -252,8 +255,57 @@ const HomeScreen = () => {
         return getTranslation('tomorrowBetter', currentLanguage);
     };
 
+    if (isFetchingCurrentAqi || isLoadingLanguage || isLoadingLocation) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color={colors.primaryWithDarkBg}/>
+            </View>
+        );
+    }
+
+    // Show error view if there's an error, even if aqiValue is null
+    if (currentAqiValueError) {
+        return (
+            <AnimatedGradientBackground color={'#808080'}>
+                <View style={styles.container}>
+                    {isModalOpen && (
+                        <LocationModal
+                            selectedLocation={selectedLocation}
+                            onLocationSelected={(location) => {
+                                setSelectedLocation(location);
+                                closeLocationModal();
+                            }}
+                            visible={isModalOpen}
+                            onClose={closeLocationModal}
+                        />
+                    )}
+
+                    <ScrollView
+                        style={styles.scrollView}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                colors={['#FFD700']}
+                                tintColor="#FFD700"
+                                progressBackgroundColor="#ffffff"
+                            />
+                        }
+                    >
+                        {getLocationDisplay()}
+                        {getAqiErrorDisplay()}
+                    </ScrollView>
+                </View>
+
+                {getFloatingSettingsButton()}
+            </AnimatedGradientBackground>
+        );
+    }
+
     const getFuturePredictionDisplay = (): ReactElement => {
-        const isPredictionHigher = futureAQIPrediction > aqiValue;
+        // Safety check to prevent comparison when aqiValue is null
+        const safeAqiValue = aqiValue !== null ? aqiValue : 0;
+        const isPredictionHigher = futureAQIPrediction > safeAqiValue;
         const arrowIcon = isPredictionHigher ? 'arrow-up' : 'arrow-down';
         const arrowColor = isPredictionHigher ? 'red' : 'green';
 

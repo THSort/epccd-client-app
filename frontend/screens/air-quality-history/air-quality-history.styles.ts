@@ -1,5 +1,5 @@
 import {StyleSheet} from 'react-native';
-import {colors} from '../../App.styles.ts';
+import {backgrounds, colors} from '../../App.styles.ts';
 import {hp, wp} from '../../utils/responsive.util.ts';
 
 export const styles = StyleSheet.create({
@@ -28,6 +28,16 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'black',
+    },
+    errorContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: hp(200),
+        backgroundColor: backgrounds.dark,
+        height: 400,
+        marginTop: hp(30),
+        marginHorizontal: hp(15),
+        borderRadius: 20,
     },
     errorText: {
         color: 'red',

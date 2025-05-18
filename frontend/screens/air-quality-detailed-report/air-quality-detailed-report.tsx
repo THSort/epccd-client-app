@@ -185,7 +185,7 @@ export function AirQualityDetailedReport(): ReactElement {
                         timestamp: new Date().toISOString(),
                     });
                 }}>
-                    <Icon name="question-circle" size={30} color={colors.primaryWithDarkBg}/>
+                    <Icon name="question-circle" size={35} color={colors.primaryWithDarkBg}/>
                 </TouchableOpacity>
             </View>
         );
@@ -304,14 +304,14 @@ export function AirQualityDetailedReport(): ReactElement {
                     <ScrollView
                         style={styles.scrollableContent}
                         contentContainerStyle={styles.scrollableContentContainer}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={onRefresh}
-                                tintColor={colors.primaryWithDarkBg}
-                                colors={[colors.primaryWithDarkBg]}
-                            />
-                        }
+                        // refreshControl={
+                        //     <RefreshControl
+                        //         refreshing={refreshing}
+                        //         onRefresh={onRefresh}
+                        //         tintColor={colors.primaryWithDarkBg}
+                        //         colors={[colors.primaryWithDarkBg]}
+                        //     />
+                        // }
                     >
                         {
                             isFetchingData ?

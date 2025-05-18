@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+import {hp} from '../../../../utils/responsive.util.ts';
 
 export const styles = StyleSheet.create({
     container: {
@@ -16,9 +17,9 @@ export const styles = StyleSheet.create({
         borderRadius: 0,
         overflow: 'hidden',
     },
-    // Map container with fixed height
+    // Map container with responsive height based on device height
     mapContainer: {
-        height: 220,
+        height: hp(225), // Using 30% of device height instead of fixed 220px
         width: '100%',
         overflow: 'hidden',
     },
