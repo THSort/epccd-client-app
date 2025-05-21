@@ -53,19 +53,23 @@ const WEATHER_PARAMS = 'hourly=temperature_2m,relative_humidity_2m,dew_point_2m,
  */
 export const fetchAndStoreWeatherForecasts = async (req: Request, res: Response): Promise<void> => {
     logger.info(`Starting weather forecast fetch and store operation for ${locations.length} locations`);
+
     try {
         // Get current date in YYYY-MM-DD format
         const today = new Date();
         const snapshot_date = today.toISOString().split('T')[0];
-        
-        // Calculate past week dates
+
+        // End date: 2 days before today
         const pastWeekEnd = new Date(today);
-        pastWeekEnd.setDate(today.getDate() - 1); // Exclude today
+        pastWeekEnd.setDate(today.getDate() - 2);
+
+        // Start date: 7 days before the end date
         const pastWeekStart = new Date(pastWeekEnd);
-        pastWeekStart.setDate(pastWeekEnd.getDate() - 5); // Include 6 days total (end-start+1=6)
+        pastWeekStart.setDate(pastWeekEnd.getDate() - 6); // 7-day total including both start and end
+
         const pastWeekStartStr = pastWeekStart.toISOString().split('T')[0];
         const pastWeekEndStr = pastWeekEnd.toISOString().split('T')[0];
-        
+
         logger.info(`Snapshot date: ${snapshot_date}, Past week range: ${pastWeekStartStr} to ${pastWeekEndStr}`);
 
         // Array to store results for response
@@ -276,9 +280,9 @@ export const fetchAndStoreWeatherForecasts = async (req: Request, res: Response)
 export const getWeatherForecast = async (req: Request, res: Response): Promise<void> => {
     const locationId = req.params.locationId;
     const date = req.query.date as string || new Date().toISOString().split('T')[0];
-    
+
     logger.info(`Retrieving weather forecast for location ${locationId} on date ${date}`);
-    
+
     try {
         const snapshot = await DailySnapshotModel.findOne({
             snapshot_date: date,
