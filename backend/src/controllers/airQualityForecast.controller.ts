@@ -5,6 +5,8 @@ import {Parser} from 'json2csv';
 import * as fs from 'fs';
 import {exec} from "node:child_process";
 import path from "node:path";
+import {parse} from "csv-parse/sync";
+
 
 export const runAirQualityForecastingModel = async (req: Request, res: Response): Promise<void> => {
     logger.info(`Starting air quality forecast fetch and store operation`);
@@ -68,8 +70,6 @@ export const runAirQualityForecastingModel = async (req: Request, res: Response)
         'CO_AQI'
     ];
 
-    const opts = {fields};
-
     const parser = new Parser({fields});
     const csv = parser.parse(data);
 
@@ -83,25 +83,57 @@ export const runAirQualityForecastingModel = async (req: Request, res: Response)
     }
 
     fs.writeFileSync(inputCsvPath, csv);
+    logger.info('✅ CSV ready, now calling R script...')
     console.log('✅ CSV ready, now calling R script...');
 
     // Run the R script
     exec(`Rscript ${rScriptPath} ${inputCsvPath} ${outputCsvPath}`, (error, stdout, stderr) => {
+        // Clean up input file regardless of result
+        if (fs.existsSync(inputCsvPath)) {
+            fs.unlinkSync(inputCsvPath);
+        }
+
         if (error) {
             logger.error(`❌ R script error: ${error.message}`);
             return res.status(500).json({success: false, message: 'R script failed', error: error.message});
         }
+
         if (stderr) {
             logger.warn(`⚠️ R script stderr: ${stderr}`);
         }
 
         logger.info('✅ Forecasting model executed successfully');
-        console.log(stdout);
 
-        return res.status(200).json({
-            success: true,
-            message: 'Air quality forecast complete',
-            forecastCsvPath: 'temp/forecast_output.csv'
-        });
+        // Read and parse forecast_output.csv
+        if (!fs.existsSync(outputCsvPath)) {
+            return res.status(500).json({success: false, message: 'Output file not found'});
+        }
+
+        try {
+            const csvData = fs.readFileSync(outputCsvPath, 'utf-8');
+            const records = parse(csvData, {
+                columns: true,
+                skip_empty_lines: true
+            });
+
+            logger.info('✅ Forecasting model executed and parsed successfully');
+
+            // await handleAlerts(records);
+            // await storeForecastInDatabase(records);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Air quality forecast complete',
+                forecast: records
+            });
+        } catch (readErr) {
+            if (readErr instanceof Error) {
+                logger.error(`❌ Failed to read or parse output CSV: ${readErr.message}`);
+            } else {
+                logger.error(`❌ Unknown error! Failed to read or parse output CSV`);
+            }
+
+            return res.status(500).json({success: false, message: 'Failed to parse output'});
+        }
     });
 }

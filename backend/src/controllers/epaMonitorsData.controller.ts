@@ -1,6 +1,5 @@
 import {Request, Response} from "express";
 import {
-    fetchCurrentEpaMonitorsDataForLocation,
     getLatestEpaMonitorsDataFromDB,
     getAllPollutantHistoricalData,
     getPollutantHistoryDataForPast24Hours,
