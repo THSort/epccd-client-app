@@ -3,6 +3,8 @@ import logger from "../utils/logger";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 import {Parser} from 'json2csv';
 import * as fs from 'fs';
+import {exec} from "node:child_process";
+import path from "node:path";
 
 export const runAirQualityForecastingModel = async (req: Request, res: Response): Promise<void> => {
     logger.info(`Starting air quality forecast fetch and store operation`);
@@ -68,12 +70,38 @@ export const runAirQualityForecastingModel = async (req: Request, res: Response)
 
     const opts = {fields};
 
-    // Convert to CSV
-    const parser = new Parser(opts);
+    const parser = new Parser({fields});
     const csv = parser.parse(data);
 
-    // Save to file
-    fs.writeFileSync('epa_data.csv', csv);
+    const tempDir = path.join(__dirname, '../../temp');
+    const inputCsvPath = path.join(tempDir, 'epa_data.csv');
+    const outputCsvPath = path.join(tempDir, 'forecast_output.csv');
+    const rScriptPath = path.join(__dirname, '../scripts/forecasting_model.R');
 
-    console.log('csv ready')
+    if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir);
+    }
+
+    fs.writeFileSync(inputCsvPath, csv);
+    console.log('✅ CSV ready, now calling R script...');
+
+    // Run the R script
+    exec(`Rscript ${rScriptPath} ${inputCsvPath} ${outputCsvPath}`, (error, stdout, stderr) => {
+        if (error) {
+            logger.error(`❌ R script error: ${error.message}`);
+            return res.status(500).json({success: false, message: 'R script failed', error: error.message});
+        }
+        if (stderr) {
+            logger.warn(`⚠️ R script stderr: ${stderr}`);
+        }
+
+        logger.info('✅ Forecasting model executed successfully');
+        console.log(stdout);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Air quality forecast complete',
+            forecastCsvPath: 'temp/forecast_output.csv'
+        });
+    });
 }
