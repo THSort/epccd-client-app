@@ -33,6 +33,22 @@ module.exports = {
       out_file: "logs/cron-out.log",
       log_date_format: "YYYY-MM-DD HH:mm:ss",
       merge_logs: true,
+    },
+    {
+      name: "air-quality-forecast-cron",
+      script: "./dist/scripts/airQualityForecastCron.js",
+      instances: 1,
+      exec_mode: "fork",
+      cron_restart: "0 11 * * *", // ✅ Runs at 11AM UTC (1 hour after weather forecast)
+      watch: false,
+      autorestart: false,
+      env: {
+        NODE_ENV: "production",
+      },
+      error_file: "logs/air-quality-cron-err.log",
+      out_file: "logs/air-quality-cron-out.log",
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
     }
   ]
 }; 

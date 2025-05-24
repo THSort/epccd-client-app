@@ -96,3 +96,54 @@ npx ts-node src/scripts/weatherForecastCron.ts
 ```
 
 This will immediately trigger the weather forecast data collection for all configured locations. 
+
+## Air Quality Forecast Cron Job
+
+A script to run the air quality forecasting model and send alerts to users whose threshold preferences are exceeded by the forecast.
+
+### Automatic Setup with PM2
+
+The cron job is automatically configured in the `ecosystem.config.js` file to run at 11:00 AM UTC (1 hour after the weather forecast cron job).
+
+When you deploy the application using PM2:
+
+```bash
+pm2 start ecosystem.config.js
+```
+
+The cron job will be automatically scheduled.
+
+### Manual Setup with System Cron
+
+If you prefer to use the system's crontab instead of PM2's built-in scheduler:
+
+1. Open the crontab editor:
+
+```bash
+crontab -e
+```
+
+2. Add the following line to run the script at 11:00 AM UTC daily:
+
+```
+0 11 * * * cd /path/to/your/backend && node dist/scripts/airQualityForecastCron.js >> /path/to/your/backend/logs/air-quality-cron.log 2>&1
+```
+
+Replace `/path/to/your/backend` with the actual path to your backend directory.
+
+### Running Manually
+
+You can also run the script manually:
+
+```bash
+cd /path/to/your/backend
+node dist/scripts/airQualityForecastCron.js
+```
+
+Or during development:
+
+```bash
+npx ts-node src/scripts/airQualityForecastCron.ts
+```
+
+This will immediately trigger the air quality forecasting model and send alerts to users based on the forecast results. 
