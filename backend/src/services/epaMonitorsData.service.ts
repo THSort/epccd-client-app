@@ -1,7 +1,6 @@
 import axios from "axios";
 import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse, PollutantSummaryData, PollutantHistoryData, PollutantBucketData} from "../types/epaMonitorsData.types";
 import logger from "../utils/logger";
-import {shouldAlertUsersInLocation} from "./forecastingModelService";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 import {alertUsersInLocations} from "./notificationService";
 import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
@@ -134,10 +133,10 @@ export const pollEpaMonitorsData = async () => {
         const locationsNeedingAlerts: EpaMonitorsData[] = [];
 
         for (const data of aqmsData) {
-            // Determine if this location needs an alert using the forecasting model
-            if (shouldAlertUsersInLocation(data.location, data)) {
-                locationsNeedingAlerts.push(data);
-            }
+            // // Determine if this location needs an alert using the forecasting model
+            // if (shouldAlertUsersInLocation(data.location, data)) {
+            //     locationsNeedingAlerts.push(data);
+            // }
             // Store Data in MongoDB
             await storeEpaMonitorsData(data);
 

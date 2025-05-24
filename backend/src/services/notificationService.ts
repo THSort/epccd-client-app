@@ -18,7 +18,7 @@ try {
 }
 
 // Function to send notifications with improved error handling
-export const sendNotifications = async (tokens: string[], message: string) => {
+export const sendNotifications = async (tokens: string[], message: string, title: string = 'Air Quality Alert') => {
   if (!tokens.length) {
     logger.info('No tokens provided for notifications');
     return;
@@ -28,7 +28,7 @@ export const sendNotifications = async (tokens: string[], message: string) => {
   
   const messages = tokens.map(token => ({
     notification: {
-      title: 'Air Quality Alert',
+      title: title,
       body: message,
     },
     token: token,
