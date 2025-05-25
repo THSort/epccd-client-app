@@ -13,6 +13,7 @@ import {fontScale} from '../../utils/responsive.util';
 import {useUserActivity} from '../../context/UserActivityContext';
 import {InfoCard} from './components/info-card/info-card';
 import {LearnMoreTopicContent} from './components/learn_more_topic_content/learn_more_topic_content.tsx';
+import {useBackButtonHandler} from '../../hooks/useBackButtonHandler';
 
 // Screen identifier for analytics
 const currentScreen = 'LearnMoreScreen';
@@ -34,7 +35,22 @@ export function LearnMoreScreen(): React.ReactElement {
     // State to track the selected topic (initially null for main menu)
     const [selectedTopic, setSelectedTopic] = useState<LearnMoreTopic | null>(null);
 
-    // Handler for back button
+    // Custom override function for back button behavior
+    const handleCustomBack = () => {
+        if (selectedTopic) {
+            // If a topic is selected, go back to main menu
+            setSelectedTopic(null);
+            return true; // We handled the action
+        }
+        
+        // For the main menu, let the default behavior handle it
+        return false;
+    };
+
+    // Use our custom hook to handle hardware back button
+    useBackButtonHandler(currentScreen, handleCustomBack);
+
+    // Handler for UI back button
     const handleBack = () => {
         if (selectedTopic) {
             // If a topic is selected, go back to main menu

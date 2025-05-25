@@ -10,6 +10,7 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  BackHandler,
 } from 'react-native';
 import { LocationModal } from '../home-screen/components/location-modal/location-modal';
 import { Location } from '../../App.types';
@@ -393,6 +394,29 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({ onRegist
       </View>
     );
   };
+
+  // Handle hardware back button press
+  const handleBackButtonPress = useCallback(() => {
+    if (locationModalVisible) {
+      setLocationModalVisible(false);
+      return true; // Prevent default behavior
+    }
+    
+    if (currentStep > RegistrationStep.Location) {
+      setCurrentStep(currentStep - 1);
+      return true; // Prevent default behavior
+    }
+    
+    return true; // Prevent default exit since this is the first screen
+  }, [currentStep, locationModalVisible]);
+
+  // Set up hardware back button listener
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButtonPress);
+    
+    // Clean up listener on unmount
+    return () => backHandler.remove();
+  }, [handleBackButtonPress]);
 
   // Complete component structure
   return (

@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, TouchableOpacity, ActivityIndicator, Modal, FlatList, ScrollView, Animated, Easing, TouchableWithoutFeedback} from 'react-native';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
+import {View, Text, TouchableOpacity, ActivityIndicator, Modal, FlatList, ScrollView, Animated, Easing, TouchableWithoutFeedback, BackHandler} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation, useIsFocused} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -49,7 +49,7 @@ const SettingsScreen = () => {
     const {selectedLanguage, isLoadingLanguage} = useSelectedLanguage();
 
     // Tracking
-    const {trackActivity} = useUserActivity();
+    const {trackActivity, trackBackButton} = useUserActivity();
 
     // Get the current language with English as default
     const currentLanguage = (selectedLanguage || 'Eng') as Language;
@@ -247,6 +247,23 @@ const SettingsScreen = () => {
             </TouchableOpacity>
         );
     };
+
+    // Handle hardware back button press
+    const handleBackButtonClick = useCallback(() => {
+        if (showThresholdModal) {
+            setShowThresholdModal(false);
+            return true; // Prevent default behavior
+        }
+        
+        trackBackButton(SCREEN_NAME);
+        navigation.goBack();
+        return true; // Prevent default behavior since we're handling navigation
+    }, [navigation, trackBackButton, showThresholdModal]);
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+        return () => backHandler.remove();
+    }, [handleBackButtonClick]);
 
     return (
         <View style={styles.container}>

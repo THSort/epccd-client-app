@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     },
     tableRow: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         marginBottom: hp(25),
         width: '100%',
     },
