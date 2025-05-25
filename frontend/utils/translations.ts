@@ -139,6 +139,11 @@ export interface TranslationStrings {
     whatDoesAQIMean_content: string;
     whatCanIDo: string;
     contentComingSoon: string;
+    protectiveMeasuresTitle: string;
+    wearMask: string;
+    stayIndoors: string;
+    avoidBurning: string;
+    avoidTraffic: string;
 
     // Health effects of PM2.5
     effect_breathing: string;
@@ -311,6 +316,11 @@ const translations: Record<Language, TranslationStrings> = {
             "Here's what the numbers mean and what you should do to stay safe.\n",
         whatCanIDo: 'What Can I Do?',
         contentComingSoon: 'Content coming soon...',
+        protectiveMeasuresTitle: 'Protective Measures:',
+        wearMask: 'Wear a good-quality mask, like N95, when going out (note, surgical masks do not filter out PM2.5 particles).',
+        stayIndoors: 'Stay indoors or limit time outdoors on high pollution days.',
+        avoidBurning: 'Avoid burning trash or leaves.',
+        avoidTraffic: 'Avoid areas with heavy traffic.',
 
         // Health effects of PM2.5
         effect_breathing: 'Make it hard to breathe',
@@ -479,6 +489,11 @@ const translations: Record<Language, TranslationStrings> = {
         whatDoesAQIMean_content: 'آلودگی کو ناپنے کے لیے اے کیو آئی استعمال کیا جاتا ہے۔ جتنا زیادہ نمبر ہو، ہوا اتنی ہی خطرناک ہو۔\nیہاں نمبروں کا مطلب ہے اور آپ کو محفوظ رہنے کے لیے کیا کرنا چاہیے۔',
         whatCanIDo: 'میں کیا کر سکتا/سکتی ہوں؟',
         contentComingSoon: 'مواد جلد آ رہا ہے...',
+        protectiveMeasuresTitle: 'حفاظتی اقدامات:',
+        wearMask: 'باہر جاتے وقت اچھی کوالٹی کا ماسک پہنیں، جیسے N95 (نوٹ کریں کہ سرجیکل ماسک PM2.5 ذرات کو فلٹر نہیں کرتے)۔',
+        stayIndoors: 'زیادہ آلودگی والے دنوں میں گھر کے اندر رہیں یا باہر کا وقت محدود کریں۔',
+        avoidBurning: 'کچرا یا پتے جلانے سے گریز کریں۔',
+        avoidTraffic: 'بھاری ٹریفک والے علاقوں سے گریز کریں۔',
 
         // Health effects of PM2.5
         effect_breathing: 'سانس لینا مشکل بناتا ہے',

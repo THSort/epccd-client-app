@@ -22,6 +22,7 @@ interface AqiLevel {
 export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactElement | null {
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = getDefaultLanguage(selectedLanguage);
+    const isRtl = currentLanguage === 'اردو'; // Check if language is Urdu
 
     // Define AQI levels data
     const aqiLevels: AqiLevel[] = [
@@ -177,6 +178,34 @@ export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactE
                                 </View>
                             ))}
                         </View>
+                    </View>
+                );
+            case 'what_to_do':
+                // Define the protective measures using translation keys
+                const protectiveMeasures = [
+                    getTranslation('wearMask', currentLanguage),
+                    getTranslation('stayIndoors', currentLanguage),
+                    getTranslation('avoidBurning', currentLanguage),
+                    getTranslation('avoidTraffic', currentLanguage)
+                ];
+                
+                return (
+                    <View style={styles.container}>
+                        {protectiveMeasures.map((measure, index) => (
+                            <View key={index} style={[
+                                styles.tableRow, 
+                                {flexDirection: isRtl ? 'row-reverse' : 'row'}
+                            ]}>
+                                <Text style={styles.bulletPoint}>•</Text>
+                                <Text style={[
+                                    styles.content, 
+                                    styles.bulletText,
+                                    {textAlign: isRtl ? 'right' : 'left'}
+                                ]}>
+                                    {measure.trim()}
+                                </Text>
+                            </View>
+                        ))}
                     </View>
                 );
             default:

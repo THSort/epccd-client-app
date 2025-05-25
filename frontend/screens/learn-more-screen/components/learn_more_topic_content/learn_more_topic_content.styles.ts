@@ -44,8 +44,9 @@ export const styles = StyleSheet.create({
     },
     tableRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         marginBottom: hp(25),
+        width: '100%',
     },
     tableIcon: {
         width: wp(80),
@@ -132,5 +133,20 @@ export const styles = StyleSheet.create({
     },
     aqi_401_500: {
         backgroundColor: '#7e0023', // Dark red
+    },
+    // Bullet point styles
+    bulletPoint: {
+        color: colors.primaryWithDarkBg,
+        fontSize: fontScale(25),
+        marginRight: wp(10),
+        lineHeight: fontScale(28),
+        width: wp(20),
+    },
+    bulletText: {
+        flex: 1,
+        flexWrap: 'wrap',
+        marginBottom: hp(15),
+        textAlign: 'left',
+        paddingRight: wp(10),
     },
 });
