@@ -14,6 +14,7 @@ import {Pollutant} from './screens/air-quality-detailed-report/air-quality-detai
 import {UserActivityProvider} from './context/UserActivityContext.tsx';
 import {RegistrationScreen} from './screens/registration-screen';
 import {getUserId} from './utils/storage.util.ts';
+import {LearnMoreScreen} from './screens/learn-more-screen/learn-more-screen.tsx';
 // test
 
 type RootStackParamList = {
@@ -24,6 +25,7 @@ type RootStackParamList = {
         selectedPollutant: Pollutant
     };
     Settings: undefined;
+    LearnMore: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -87,6 +89,7 @@ function App(): React.JSX.Element {
                                     <Stack.Screen name="AirQualityDetailedReport" component={AirQualityDetailedReport} options={{headerShown: false}}/>
                                     <Stack.Screen name="AirQualityHistory" component={AirQualityHistory} options={{headerShown: false}}/>
                                     <Stack.Screen name="Settings" component={SettingsScreen} options={{headerShown: false}}/>
+                                    <Stack.Screen name="LearnMore" component={LearnMoreScreen} options={{headerShown: false}}/>
                                 </Stack.Navigator>
                             </View>
                         </NavigationContainer>

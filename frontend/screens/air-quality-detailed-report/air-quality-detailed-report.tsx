@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import type {ReactElement} from 'react';
-import {ScrollView, Text, TouchableOpacity, View, ActivityIndicator, BackHandler, RefreshControl} from 'react-native';
+import {ScrollView, Text, TouchableOpacity, View, ActivityIndicator, BackHandler} from 'react-native';
 import {styles} from './air-quality-detailed-report.styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {PollutantInfoCard} from './components/pollutant-info-card/pollutant-info-card';
@@ -26,11 +26,12 @@ import {fontScale, hp} from '../../utils/responsive.util.ts';
 import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
 import {colors} from '../../App.styles.ts';
 import {lightenColor} from '../../utils/colur.util.ts';
+import {AirQualityDetailedReportNavigationProps} from '../../types/navigation.types.ts';
 
 const currentScreen = 'AirQualityReport';
 
 export function AirQualityDetailedReport(): ReactElement {
-    const navigation = useNavigation();
+    const navigation = useNavigation<AirQualityDetailedReportNavigationProps>();
     const {isModalOpen, openLocationModal, closeLocationModal} = useLocationModal();
     const {selectedLocation} = useSelectedLocation();
     const [location, setLocation] = useState<Location | undefined>(selectedLocation);
@@ -46,7 +47,7 @@ export function AirQualityDetailedReport(): ReactElement {
     const [isFetchingData, setIsFetchingData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     // const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-    const [refreshing, setRefreshing] = useState(false);
+    const [_refreshing, setRefreshing] = useState(false);
 
     // Map pollutant types to translation keys
     const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
@@ -184,6 +185,7 @@ export function AirQualityDetailedReport(): ReactElement {
                     void trackButton('learn_more', currentScreen, {
                         timestamp: new Date().toISOString(),
                     });
+                    navigation.navigate('LearnMore');
                 }}>
                     <Icon name="question-circle" size={35} color={colors.primaryWithDarkBg}/>
                 </TouchableOpacity>
