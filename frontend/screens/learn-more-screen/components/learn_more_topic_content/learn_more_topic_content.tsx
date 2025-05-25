@@ -186,21 +186,21 @@ export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactE
                     getTranslation('wearMask', currentLanguage),
                     getTranslation('stayIndoors', currentLanguage),
                     getTranslation('avoidBurning', currentLanguage),
-                    getTranslation('avoidTraffic', currentLanguage)
+                    getTranslation('avoidTraffic', currentLanguage),
                 ];
-                
+
                 return (
                     <View style={styles.container}>
                         {protectiveMeasures.map((measure, index) => (
                             <View key={index} style={[
-                                styles.tableRow, 
-                                {flexDirection: isRtl ? 'row-reverse' : 'row'}
+                                styles.tableRow,
+                                {flexDirection: isRtl ? 'row-reverse' : 'row'},
                             ]}>
                                 <Text style={styles.bulletPoint}>•</Text>
                                 <Text style={[
-                                    styles.content, 
+                                    styles.content,
                                     styles.bulletText,
-                                    {textAlign: isRtl ? 'right' : 'left'}
+                                    {textAlign: isRtl ? 'right' : 'left'},
                                 ]}>
                                     {measure.trim()}
                                 </Text>
