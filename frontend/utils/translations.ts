@@ -135,9 +135,27 @@ export interface TranslationStrings {
     whyIsPM25Harmful_image_caption: string;
     whyShouldICare_title: string;
     whyShouldICare_content: string;
-    whatDoesAQIMean: string;
+    whatDoesAQIMean_title: string;
+    whatDoesAQIMean_content: string;
     whatCanIDo: string;
     contentComingSoon: string;
+
+    // Health effects of PM2.5
+    effect_breathing: string;
+    effect_heart: string;
+    effect_brain: string;
+    effect_baby: string;
+    effect_lifespan: string;
+    effect_work: string;
+
+    // AQI statements
+    aqi_good_statement: string;
+    aqi_satisfactory_statement: string;
+    aqi_moderate_statement: string;
+    aqi_unhealthy_sensitive_statement: string;
+    aqi_unhealthy_statement: string;
+    aqi_very_unhealthy_statement: string;
+    aqi_hazardous_statement: string;
 
     // Digits
     digit0: string;
@@ -287,10 +305,29 @@ const translations: Record<Language, TranslationStrings> = {
         whyIsPM25Harmful_content: 'PM2.5 particles are extremely small — 28x smaller than a human hair. In cities like Lahore, the air often has too much of these particles, especially in the winter. Sometimes they are 7 or 8 times more than what is recommended by the World Health Organization.',
         whyIsPM25Harmful_image_caption: 'Breathing in Lahore = Smoking 13 Cigarettes a Day',
         whyShouldICare_title: 'Why Should I Care?',
-        whyShouldICare_content: 'Breathing in PM2.5 particles can make us sick! It is especially harmful for children, the elderly, and people with asthma or heart and lung problems.',
-        whatDoesAQIMean: 'What Does AQI Mean?',
+        whyShouldICare_content: 'Breathing in PM2.5 particles can make us sick! It is especially harmful for children, the elderly, and people with asthma or heart and lung issues.',
+        whatDoesAQIMean_title: 'What Does AQI Mean?',
+        whatDoesAQIMean_content: 'Pollution is measured using something called the AQI. The higher the number, the more dangerous the air.\n' +
+            "Here's what the numbers mean and what you should do to stay safe.\n",
         whatCanIDo: 'What Can I Do?',
         contentComingSoon: 'Content coming soon...',
+
+        // Health effects of PM2.5
+        effect_breathing: 'Make it hard to breathe',
+        effect_heart: 'Hurt your heart',
+        effect_brain: 'Slow down children\'s brain growth',
+        effect_baby: 'Result in low birth weight in newborns',
+        effect_lifespan: 'Shorten life',
+        effect_work: 'Make work harder and tiring',
+
+        // AQI statements
+        aqi_good_statement: 'None',
+        aqi_satisfactory_statement: 'Sensitive groups: No special precautions needed.',
+        aqi_moderate_statement: 'Sensitive groups: Limit prolonged outdoor activity.',
+        aqi_unhealthy_sensitive_statement: 'Sensitive groups: Avoid strenuous activity; limit time outdoors.',
+        aqi_unhealthy_statement: 'All: Limit time outdoors. Sensitive individuals should avoid exertion.',
+        aqi_very_unhealthy_statement: 'Avoid all outdoor activities. Stay indoors with air filters if available.',
+        aqi_hazardous_statement: 'Restrict indoors. Take emergency precautions, especially for children & elderly.',
 
         // Digits - English uses standard Arabic numerals
         digit0: '0',
@@ -437,10 +474,28 @@ const translations: Record<Language, TranslationStrings> = {
         whyIsPM25Harmful_content: 'PM2.5 کے ذرات انتہائی چھوٹے ہوتے ہیں — ایک انسانی بال سے 28 گنا چھوٹے۔ لاہور جیسے شہروں میں، ہوا میں اکثر یہ ذرات بہت زیادہ ہوتے ہیں، خاص طور پر سردیوں میں۔ بعض اوقات یہ عالمی ادارہ صحت کے تجویز کردہ سے 7 یا 8 گنا زیادہ ہوتے ہیں۔',
         whyIsPM25Harmful_image_caption: 'لاہور میں سانس لینا = دن میں 13 سگریٹ پینا',
         whyShouldICare_title: 'مجھے اس فکر کیوں کرنی چاہیے؟',
-        whyShouldICare_content: 'PM2.5 ذرات میں سانس لینا ہمیں بیمار کر سکتا ہے! یہ خاص طور پر بچوں، بوڑھوں، اور دمہ یا دل اور پھیپھڑوں کے مسائل والے لوگوں کے لیے نقصان دہ ہے۔',
-        whatDoesAQIMean: 'آے کیو آی کا مطلب ہے؟',
+        whyShouldICare_content: 'پی ایم 2.5 ذرات میں سانس لینا ہمیں بیمار کر سکتا ہے! یہ خاص طور پر بچوں، بوڑھوں، اور دمہ یا دل اور پھیپھڑوں کے مسائل والے لوگوں کے لیے نقصان دہ ہے۔',
+        whatDoesAQIMean_title: 'آے کیو آی کا مطلب ہے؟',
+        whatDoesAQIMean_content: 'آلودگی کو ناپنے کے لیے اے کیو آئی استعمال کیا جاتا ہے۔ جتنا زیادہ نمبر ہو، ہوا اتنی ہی خطرناک ہو۔\nیہاں نمبروں کا مطلب ہے اور آپ کو محفوظ رہنے کے لیے کیا کرنا چاہیے۔',
         whatCanIDo: 'میں کیا کر سکتا/سکتی ہوں؟',
         contentComingSoon: 'مواد جلد آ رہا ہے...',
+
+        // Health effects of PM2.5
+        effect_breathing: 'سانس لینا مشکل بناتا ہے',
+        effect_heart: 'آپ کے دل کو نقصان پہنچاتا ہے',
+        effect_brain: 'بچوں کے دماغی نشوونما کو سست کرتا ہے',
+        effect_baby: 'نوزائیدہ بچوں میں کم وزن کا باعث بنتا ہے',
+        effect_lifespan: 'زندگی کو مختصر کرتا ہے',
+        effect_work: 'کام کو زیادہ مشکل اور تھکا دینے والا بناتا ہے',
+
+        // AQI statements
+        aqi_good_statement: 'کوئی نہیں۔',
+        aqi_satisfactory_statement: 'حساس گروپ: کسی خاص احتیاط کی ضرورت نہیں۔',
+        aqi_moderate_statement: 'حساس گروپ: طویل بیرونی سرگرمیوں کو محدود کریں۔',
+        aqi_unhealthy_sensitive_statement: 'حساس گروپس: سخت سرگرمی سے گریز کریں؛ باہر وقت محدود کریں.',
+        aqi_unhealthy_statement: 'تمام: باہر وقت محدود کریں۔ حساس افراد کو مشقت سے گریز کرنا چاہیے۔',
+        aqi_very_unhealthy_statement: 'تمام بیرونی سرگرمیوں سے گریز کریں۔ اگر دستیاب ہو تو ایئر فلٹرز کے ساتھ گھر کے اندر رہیں۔',
+        aqi_hazardous_statement: 'گھر کے اندر تک محدود رکھیں۔ ہنگامی احتیاطی تدابیر اختیار کریں، خاص طور پر بچوں اور بوڑھوں کے لیے۔',
 
         // Digits - Urdu/Eastern Arabic numerals
         digit0: '0',

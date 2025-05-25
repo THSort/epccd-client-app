@@ -60,7 +60,7 @@ export function LearnMoreScreen(): React.ReactElement {
             case 'why_care':
                 return getTranslation('whyShouldICare_title', currentLanguage);
             case 'aqi_meaning':
-                return getTranslation('whatDoesAQIMean', currentLanguage);
+                return getTranslation('whatDoesAQIMean_title', currentLanguage);
             case 'what_to_do':
                 return getTranslation('whatCanIDo', currentLanguage);
             default:
@@ -121,7 +121,7 @@ export function LearnMoreScreen(): React.ReactElement {
                 />
                 <InfoCard
                     icon="bar-chart"
-                    title={getTranslation('whatDoesAQIMean', currentLanguage)}
+                    title={getTranslation('whatDoesAQIMean_title', currentLanguage)}
                     onPress={() => {
                         trackButton('select_topic', currentScreen, {
                             topic: 'aqi_meaning',

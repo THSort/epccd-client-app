@@ -12,7 +12,6 @@ export const styles = StyleSheet.create({
     padding: wp(15),
     borderBottomColor: colors.secondaryWithDarkBg,
     borderBottomWidth: 1,
-    marginBottom: hp(10),
   },
   headerTitle: {
     alignSelf: 'center',

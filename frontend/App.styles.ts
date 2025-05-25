@@ -22,5 +22,6 @@ export const colors = {
 
 export const backgrounds = {
     dark: 'rgba(0, 0, 0, 0.6)',
+    medium: 'rgba(33,33,33,0.82)',
     light: 'rgba(255,255,255,0.7)',
 };
