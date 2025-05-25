@@ -241,6 +241,43 @@ const executeRScript = (rScriptPath: string, inputCsvPath: string, outputCsvPath
 };
 
 /**
+ * Gets the next day's date from the current date
+ * @returns Next day's date in ISO format (YYYY-MM-DD)
+ */
+const getNextDayDate = (): string => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+};
+
+/**
+ * Creates a map of locations to forecast data
+ * @param records Forecast records
+ * @returns Map of location IDs to forecast data
+ */
+const createLocationMap = (records: any[]): Map<number, ForecastData> => {
+    const locationMap = new Map<number, ForecastData>();
+    
+    // Get tomorrow's date instead of using the date from the script
+    const nextDayDate = getNextDayDate();
+    
+    for (const record of records) {
+        // Convert location to number for consistency with user model
+        const locationId = Number(record.location);
+        if (!isNaN(locationId)) {
+            // Store the latest forecast for each location with tomorrow's date
+            locationMap.set(locationId, {
+                location: locationId,
+                date: nextDayDate, // Use next day's date instead of record.date
+                PM2_5_AQI: parseFloat(record.forecast_PM2_5_AQI_loc_day)
+            });
+        }
+    }
+    
+    return locationMap;
+};
+
+/**
  * Process forecast records and send alerts to users based on their location and threshold preferences
  * @param records Forecast records from the R model
  */
@@ -272,30 +309,6 @@ export const processForecasts = async (records: any[]): Promise<void> => {
         }
         throw error;
     }
-};
-
-/**
- * Creates a map of locations to forecast data
- * @param records Forecast records
- * @returns Map of location IDs to forecast data
- */
-const createLocationMap = (records: any[]): Map<number, ForecastData> => {
-    const locationMap = new Map<number, ForecastData>();
-    
-    for (const record of records) {
-        // Convert location to number for consistency with user model
-        const locationId = Number(record.location);
-        if (!isNaN(locationId)) {
-            // Store the latest forecast for each location
-            locationMap.set(locationId, {
-                location: locationId,
-                date: record.date,
-                PM2_5_AQI: parseFloat(record.forecast_PM2_5_AQI_loc_day)
-            });
-        }
-    }
-    
-    return locationMap;
 };
 
 /**
