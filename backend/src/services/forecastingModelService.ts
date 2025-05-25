@@ -169,7 +169,7 @@ const setupFilePaths = () => {
     const tempDir = path.join(__dirname, '../../temp');
     const inputCsvPath = path.join(tempDir, 'epa_data.csv');
     const outputCsvPath = path.join(tempDir, 'forecast_output.csv');
-    const rScriptPath = path.join(__dirname, '../../src/scripts/forecasting_model.R');
+    const rScriptPath = path.join(__dirname, '../scripts/forecasting_model.R');
     
     return { tempDir, inputCsvPath, outputCsvPath, rScriptPath };
 };
