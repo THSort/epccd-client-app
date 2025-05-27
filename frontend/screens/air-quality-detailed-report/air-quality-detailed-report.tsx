@@ -50,10 +50,35 @@ export function AirQualityDetailedReport(): ReactElement {
     const [isDataOutdated, setIsDataOutdated] = useState<boolean>(false);
     const [_refreshing, setRefreshing] = useState(false);
 
-    // Format date to a readable format
+    // Format date to a readable format based on language
     const formatLastUpdatedTime = (dateString: string): string => {
         const date = new Date(dateString);
-        return date.toLocaleString();
+        
+        if (currentLanguage === 'اردو') {
+            // Custom Urdu formatting
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const day = date.getDate();
+            const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+            const year = date.getFullYear();
+            
+            // AM/PM in Urdu
+            const ampm = hours >= 12 ? 'شام' : 'صبح';
+            const hour12 = hours % 12 || 12; // Convert to 12-hour format
+            
+            // Format: day/month/year time AM/PM
+            return `${day}/${month}/${year} - ${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        }
+        
+        // English format
+        return date.toLocaleString('en-US', {
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        });
     };
 
     // Last updated time and outdated warning display
