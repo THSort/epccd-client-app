@@ -1,6 +1,6 @@
 import {ReactElement, useState, useEffect, useCallback} from 'react';
 import React from 'react';
-import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, StyleSheet, RefreshControl} from 'react-native';
+import {Text, TouchableOpacity, View, ActivityIndicator, ScrollView, BackHandler, StyleSheet} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {styles} from './air-quality-history.styles';
@@ -11,7 +11,7 @@ import {LocationModal} from '../home-screen/components/location-modal/location-m
 import {Pollutant} from '../air-quality-detailed-report/air-quality-detailed-report.types';
 import {Location} from '../../App.types.ts';
 import {AirQualityHistoryNavigationProps} from '../../types/navigation.types.ts';
-import {fetchHistoricalEpaMonitorsData, fetchPollutantSummary} from '../../services/api.service.ts';
+import {fetchHistoricalEpaMonitorsData, fetchPollutantSummary, isDataOutdated as checkDataOutdated} from '../../services/api.service.ts';
 import {FilteredHistoricalDataResponse, PollutantChartData, PollutantSummaryResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {TimeRangeSelector} from './components/time-range-selector/time-range-selector.tsx';
 import {TimeRange} from './components/time-range-selector/time-range-selector.types.ts';
@@ -52,14 +52,17 @@ export function AirQualityHistory({route}: Props): ReactElement {
 
     const [historicalData, setHistoricalData] = useState<FilteredHistoricalDataResponse | null>(null);
     const [isLoadingAllHistoricalData, setIsLoadingAllHistoricalData] = useState<boolean>(true);
+    const [errorLoadingHistoricalData, setErrorLoadingHistoricalData] = useState<string | null>(null);
+    const [_latestUpdatedTime, setLatestUpdatedTime] = useState<string | null>(null);
+    const [_dataOutdated, setDataOutdated] = useState<boolean>(false);
+
     const [isLoadingSummaryData, setIsLoadingSummaryData] = useState<boolean>(true);
     const [summaryData, setSummaryData] = useState<PollutantSummaryResponse | null>(null);
-
-    const [errorLoadingHistoricalData, setErrorLoadingHistoricalData] = useState<string | null>(null);
     const [errorLoadingSummaryData, setErrorLoadingSummaryData] = useState<string | null>(null);
+
     const [timeRange, setTimeRange] = useState<TimeRange>('1d');
     const [displayMode, setDisplayMode] = useState<ChartDisplayMode>('concentration');
-    const [refreshing, setRefreshing] = useState(false);
+    const [_refreshing, setRefreshing] = useState(false);
 
     const handleBackButtonClick = useCallback(() => {
         trackBackButton(currentScreen);
@@ -97,30 +100,16 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     }, [historicalData, timeRange]);
 
-    const fetchHistoricalData = useCallback(async () => {
+    const fetchSummaryData = async () => {
         if (!selectedLocation) {
             return;
         }
 
-        setIsLoadingAllHistoricalData(true);
-        setErrorLoadingHistoricalData(null);
-
-        try {
-            const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
-            setHistoricalData(data);
-        } catch (error) {
-            console.error('Error fetching historical data:', error);
-            setErrorLoadingHistoricalData(getTranslation('failedToLoadAirQuality', currentLanguage));
-        } finally {
-            setIsLoadingAllHistoricalData(false);
-        }
-    }, [selectedLocation, currentLanguage]);
-
-    const fetchSummaryData = useCallback(async () => {
-        if (!selectedLocation) {
+        if (_dataOutdated) {
             return;
         }
 
+        setSummaryData(null);
         setIsLoadingSummaryData(true);
         setErrorLoadingSummaryData(null);
 
@@ -133,14 +122,42 @@ export function AirQualityHistory({route}: Props): ReactElement {
         } finally {
             setIsLoadingSummaryData(false);
         }
-    }, [selectedLocation, currentLanguage]);
+    };
+
+    const fetchHistoricalData = async () => {
+        if (!selectedLocation) {
+            return;
+        }
+
+        setIsLoadingAllHistoricalData(true);
+        setHistoricalData(null);
+        setErrorLoadingHistoricalData(null);
+        setLatestUpdatedTime(null);
+        setDataOutdated(false);
+
+        try {
+            const data = await fetchHistoricalEpaMonitorsData(selectedLocation);
+
+            setHistoricalData(data);
+
+            if (data.latest_updated_time) {
+                setLatestUpdatedTime(data.latest_updated_time);
+
+                setDataOutdated(checkDataOutdated(data.latest_updated_time));
+            }
+        } catch (error) {
+            console.error('Error fetching historical data:', error);
+
+            setErrorLoadingHistoricalData(getTranslation('failedToLoadAirQuality', currentLanguage));
+        } finally {
+            setIsLoadingAllHistoricalData(false);
+        }
+    };
 
     useEffect(() => {
-        if (selectedLocation) {
-            void fetchHistoricalData();
-            void fetchSummaryData();
-        }
-    }, [selectedLocation, pollutant, fetchHistoricalData, fetchSummaryData]);
+        void fetchHistoricalData();
+        void fetchSummaryData();
+    }, [selectedLocation]);
 
     const getLabelsForDataToUse = (dataForSelectedPeriod: Record<string, PollutantChartData>): string[] => {
         return Object.values(dataForSelectedPeriod).map((dataPoint) => {
@@ -285,6 +302,37 @@ export function AirQualityHistory({route}: Props): ReactElement {
         }
     };
 
+    // Format date to a readable format based on language
+    const formatLastUpdatedTime = (dateString: string): string => {
+        const date = new Date(dateString);
+
+        if (currentLanguage === 'اردو') {
+            // Custom Urdu formatting
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const day = date.getDate();
+            const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+            const year = date.getFullYear();
+
+            // AM/PM in Urdu
+            const ampm = hours >= 12 ? 'شام' : 'صبح';
+            const hour12 = hours % 12 || 12; // Convert to 12-hour format
+
+            // Format: day/month/year time AM/PM
+            return `${day}/${month}/${year} - ${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        // English format
+        return date.toLocaleString('en-US', {
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+        });
+    };
+
     const getLoader = (): ReactElement => {
         return (
             <View style={styles.chartContainer}>
@@ -301,54 +349,48 @@ export function AirQualityHistory({route}: Props): ReactElement {
             return getLoader();
         }
 
+        if (errorLoadingHistoricalData) {
+            return (
+                <TouchableOpacity onPress={onRefreshHistoricalData} activeOpacity={0.7} style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{errorLoadingHistoricalData}</Text>
+                </TouchableOpacity>
+            );
+        }
+
         const data = getChartData();
 
         if (data) {
             return (
-                <>
-                    <TimeRangeSelector
-                        selectedTimeRange={timeRange}
-                        onTimeRangeSelected={(timeRangeSelected) => {
-                            setTimeRange(timeRangeSelected);
+                <View style={styles.chartContainer}>
+                    {/* Concentration/AQI Toggle */}
+                    <ChartDisplayToggle
+                        selectedMode={displayMode}
+                        onModeSelected={(mode) => {
+                            setDisplayMode(mode);
 
-                            void trackButton('time_range_toggle', currentScreen, {
+                            void trackButton('chart_display_mode_toggle', currentScreen, {
                                 timestamp: new Date().toISOString(),
-                                selectedTimeRange: timeRangeSelected,
+                                selectedMode: mode,
                             });
                         }}
                     />
 
-                    <View style={styles.chartContainer}>
-                        {/* Concentration/AQI Toggle */}
-                        <ChartDisplayToggle
-                            selectedMode={displayMode}
-                            onModeSelected={(mode) => {
-                                setDisplayMode(mode);
-
-                                void trackButton('chart_display_mode_toggle', currentScreen, {
-                                    timestamp: new Date().toISOString(),
-                                    selectedMode: mode,
-                                });
-                            }}
-                        />
-
-                        {/* Historical Data Chart */}
-                        <View style={styles.chartWrapper}>
-                            <View style={{marginBottom: 10, alignItems: 'center'}}>
-                                <Text style={{color: colors.secondaryWithDarkBg, fontSize: 14, fontWeight: 'bold'}}>
-                                    {displayMode === 'concentration'
-                                        ? currentLanguage === 'اردو'
-                                            ? `${getPollutantName(pollutant)} کا اوسط (${getPollutantUnit(pollutant)})`
-                                            : `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
-                                        : currentLanguage === 'اردو'
-                                            ? `${getPollutantName(pollutant)} اے کیو آئی کا اوسط`
-                                            : `Average ${getPollutantName(pollutant)} AQI`}
-                                </Text>
-                            </View>
-                            <Chart selectedTimePeriod={timeRange} data={data}/>
+                    {/* Historical Data Chart */}
+                    <View style={styles.chartWrapper}>
+                        <View style={{marginBottom: 10, alignItems: 'center'}}>
+                            <Text style={{color: colors.secondaryWithDarkBg, fontSize: 14, fontWeight: 'bold'}}>
+                                {displayMode === 'concentration'
+                                    ? currentLanguage === 'اردو'
+                                        ? `${getPollutantName(pollutant)} کا اوسط (${getPollutantUnit(pollutant)})`
+                                        : `Average ${getPollutantName(pollutant)} (${getPollutantUnit(pollutant)})`
+                                    : currentLanguage === 'اردو'
+                                        ? `${getPollutantName(pollutant)} اے کیو آئی کا اوسط`
+                                        : `Average ${getPollutantName(pollutant)} AQI`}
+                            </Text>
                         </View>
+                        <Chart selectedTimePeriod={timeRange} data={data}/>
                     </View>
-                </>
+                </View>
             );
         }
 
@@ -360,6 +402,30 @@ export function AirQualityHistory({route}: Props): ReactElement {
     };
 
     const getSummaryContent = (): ReactElement => {
+        if (errorLoadingSummaryData) {
+            return (
+                <TouchableOpacity onPress={onRefreshSummaryData} activeOpacity={0.7} style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{getTranslation('failedToLoadSummaryData', currentLanguage)}</Text>
+                </TouchableOpacity>
+            );
+        }
+
+        if (_dataOutdated) {
+            return (
+                <View style={styles.outdatedWarningContainer}>
+                    <Icon name="exclamation-triangle" size={16} color="#FF9800"/>
+                    <TextWithStroke
+                        text={getTranslation('outdatedDataWarning', currentLanguage)}
+                        color="#FF9800"
+                        strokeColor="#000000"
+                        strokeWidth={0.5}
+                        size={fontScale(14)}
+                        style={{marginLeft: 5}}
+                    />
+                </View>
+            );
+        }
+
         if (isLoadingSummaryData) {
             return (
                 <View style={summaryCardStyles.container}>
@@ -430,14 +496,21 @@ export function AirQualityHistory({route}: Props): ReactElement {
         );
     };
 
-    const onRefresh = useCallback(async () => {
+    const onRefreshHistoricalData = async () => {
         setRefreshing(true);
         if (selectedLocation) {
             await fetchHistoricalData();
+        }
+        setRefreshing(false);
+    };
+
+    const onRefreshSummaryData = async () => {
+        setRefreshing(true);
+        if (selectedLocation) {
             await fetchSummaryData();
         }
         setRefreshing(false);
-    }, [selectedLocation, currentLanguage, fetchHistoricalData, fetchSummaryData]);
+    };
 
     const getHeader = (): ReactElement => {
         return (
@@ -453,69 +526,75 @@ export function AirQualityHistory({route}: Props): ReactElement {
         );
     };
 
+    const getLocationSelector = (): ReactElement => {
+        return (
+            <LocationSelector
+                isFullWidth
+                selectedLocation={selectedLocation}
+                onOpenLocationModal={() => {
+                    void trackButton('location_selector', currentScreen, {
+                        timestamp: new Date().toISOString(),
+                    });
+
+                    openLocationModal();
+                }}
+                selectorStyle={{
+                    backgroundColor: '#1C1C1C',
+                    borderRadius: 10,
+                    paddingVertical: 10,
+                    paddingHorizontal: 15,
+                    marginBottom: 10,
+                    shadowOffset: {width: 0, height: 0},
+                    shadowOpacity: 0.3,
+                    shadowRadius: 3,
+                }}
+            />
+        );
+    };
+
+    const getPollutantSelector = (): ReactElement => {
+        return (
+            <PollutantSelector
+                selectedPollutant={pollutant}
+                onPollutantSelected={(pollutantToSelect) => {
+                    setPollutant(pollutantToSelect);
+                    void trackButton('pollutant_toggle', currentScreen, {
+                        timestamp: new Date().toISOString(),
+                        selectedPollutant: pollutantToSelect,
+                    });
+                }}
+            />
+        );
+    };
+
+    const getTimeRangeSelector = (): ReactElement => {
+        return (
+            <TimeRangeSelector
+                selectedTimeRange={timeRange}
+                onTimeRangeSelected={(timeRangeSelected) => {
+                    setTimeRange(timeRangeSelected);
+
+                    void trackButton('time_range_toggle', currentScreen, {
+                        timestamp: new Date().toISOString(),
+                        selectedTimeRange: timeRangeSelected,
+                    });
+                }}
+            />
+        );
+    };
+
     return (
         <AnimatedGradientBackground color={summaryData?.current.PM2_5_AQI ? getAqiColor(summaryData.current.PM2_5_AQI) : '#808080'}>
             <View style={styles.container}>
                 {getHeader()}
 
-                <ScrollView
-                    style={styles.scrollContainer}
-                    // refreshControl={
-                    //     <RefreshControl
-                    //         refreshing={refreshing}
-                    //         onRefresh={onRefresh}
-                    //         colors={['#FFD700']}
-                    //         tintColor="#FFD700"
-                    //         progressBackgroundColor="#ffffff"
-                    //     />
-                    // }
-                >
+                <ScrollView style={styles.scrollContainer}>
                     <View style={styles.content}>
-                        <LocationSelector
-                            isFullWidth
-                            selectedLocation={selectedLocation}
-                            onOpenLocationModal={() => {
-                                void trackButton('location_selector', currentScreen, {
-                                    timestamp: new Date().toISOString(),
-                                });
-
-                                openLocationModal();
-                            }}
-                            selectorStyle={{
-                                backgroundColor: '#1C1C1C',
-                                borderRadius: 10,
-                                paddingVertical: 10,
-                                paddingHorizontal: 15,
-                                marginBottom: 10,
-                                shadowOffset: {width: 0, height: 0},
-                                shadowOpacity: 0.3,
-                                shadowRadius: 3,
-                            }}
-                        />
-                        {errorLoadingHistoricalData || errorLoadingSummaryData ?
-                            <TouchableOpacity onPress={onRefresh} activeOpacity={0.7} style={styles.errorContainer}>
-                                <Text style={styles.errorText}>{errorLoadingHistoricalData}</Text>
-                            </TouchableOpacity>
-                            : (
-                                <>
-                                    <PollutantSelector
-                                        selectedPollutant={pollutant}
-                                        onPollutantSelected={(pollutantToSelect) => {
-                                            setPollutant(pollutantToSelect);
-                                            void trackButton('pollutant_toggle', currentScreen, {
-                                                timestamp: new Date().toISOString(),
-                                                selectedPollutant: pollutantToSelect,
-                                            });
-                                        }}
-                                    />
-
-                                    <>
-                                        {getHistoricalDataContent()}
-                                        {getSummaryContent()}
-                                    </>
-                                </>
-                            )
-                        }
+                        {getLocationSelector()}
+                        {getPollutantSelector()}
+                        {getTimeRangeSelector()}
+                        {getHistoricalDataContent()}
+                        {getSummaryContent()}
                     </View>
                 </ScrollView>
 

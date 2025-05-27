@@ -74,6 +74,13 @@ export interface FilteredHistoricalDataResponse {
     threeMonths: Record<string, PollutantChartData>;
     sixMonths: Record<string, PollutantChartData>;
     twelveMonths: Record<string, PollutantChartData>;
+    latest_updated_time?: string; // ISO string timestamp of the latest data update
+}
+
+// Interface for specific time period response
+export interface SpecificTimePeriodResponse {
+    data: Record<string, PollutantChartData>;
+    latest_updated_time: string; // ISO string timestamp of the latest data update
 }
 
 // Interface for pollutant summary data containing current value, 24h avg, and weekly avg

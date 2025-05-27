@@ -1,11 +1,12 @@
 import axios from 'axios';
 import {Location} from '../App.types';
-import {EpaMonitorsApiResponse, FilteredHistoricalDataResponse, PollutantSummaryResponse, PollutantChartData} from '../types/epaMonitorsApiResponse.types';
+import {EpaMonitorsApiResponse, FilteredHistoricalDataResponse, PollutantSummaryResponse, SpecificTimePeriodResponse} from '../types/epaMonitorsApiResponse.types';
 import {TimeRange} from '../screens/air-quality-history/components/time-range-selector/time-range-selector.types.ts';
 
 // Base URL for API requests
 const API_BASE_URL = 'http://13.61.251.147/api';
 // const API_BASE_URL = 'http://10.0.2.2:3000/api';
+// const API_BASE_URL = 'http:/192.168.100.34:3000/api';
 
 /**
  * Interface for Lahore location AQI data
@@ -69,7 +70,7 @@ export const fetchHistoricalEpaMonitorsData = async (location: Location): Promis
  * @param pollutant - The pollutant to fetch data for ("o3", "co", "so2", etc.)
  * @returns Array of data points with timeRange, concentration, and aqi values
  */
-export const fetchPollutantDataForTimePeriod = async (location: Location, timePeriod: TimeRange): Promise<Record<string, PollutantChartData>> => {
+export const fetchPollutantDataForTimePeriod = async (location: Location, timePeriod: TimeRange): Promise<SpecificTimePeriodResponse> => {
     try {
         const url = `${API_BASE_URL}/epa-monitors/epaMonitorsData/historical/${location.locationCode}/${timePeriod}`;
 
@@ -164,17 +165,17 @@ export const updateUserLanguagePreference = async (userId: string, language: str
  * @returns Boolean indicating whether data is outdated
  */
 export const isDataOutdated = (reportDateTime: string): boolean => {
-    if (!reportDateTime) return false;
-    
+    if (!reportDateTime) {return false;}
+
     const reportDate = new Date(reportDateTime);
     const currentDate = new Date();
-    
+
     // Calculate difference in milliseconds
     const diffMs = currentDate.getTime() - reportDate.getTime();
-    
+
     // Convert to hours
     const diffHours = diffMs / (1000 * 60 * 60);
-    
+
     // Return true if difference is greater than 1 hour
     return diffHours > 1;
 };

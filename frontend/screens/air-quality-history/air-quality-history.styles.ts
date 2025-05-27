@@ -32,17 +32,14 @@ export const styles = StyleSheet.create({
     errorContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: hp(200),
         backgroundColor: backgrounds.dark,
-        height: 400,
+        padding: hp(15),
         marginTop: hp(30),
-        marginHorizontal: hp(15),
         borderRadius: 20,
     },
     errorText: {
         color: 'red',
         fontSize: 16,
-        marginTop: 20,
         textAlign: 'center',
     },
     dataContainer: {
@@ -117,5 +114,16 @@ export const styles = StyleSheet.create({
         marginVertical: 8,
         borderRadius: 16,
         alignSelf: 'center',
+    },
+    outdatedWarningContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+        backgroundColor: backgrounds.medium,
+        padding: 20,
+        paddingVertical: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 152, 0, 0.3)',
     },
 });

@@ -41,7 +41,16 @@ const getHistoricalPollutantsDataForAllTimePeriods = async (req: Request, res: R
         // Service now handles caching
         const historicalData = await getAllPollutantHistoricalData(location, currentDateTime);
 
-        res.json(historicalData);
+        // Get the latest updated time for this location
+        const latestData = await getLatestEpaMonitorsDataFromDB(location);
+        
+        // Create response with data and latest updated time
+        const response = {
+            ...historicalData,
+            latest_updated_time: latestData.report_date_time.toISOString()
+        };
+
+        res.json(response);
     } catch (error) {
         if (error instanceof Error) {
             logger.error(`Error fetching historical pollutant data for location ${req.params.location}: ${error.message}`);
@@ -82,7 +91,16 @@ const getHistoricalPollutantsDataForSpecificTimePeriod = async (req: Request, re
                 break;
         }
 
-        res.json(data);
+        // Get the latest updated time for this location
+        const latestData = await getLatestEpaMonitorsDataFromDB(location);
+        
+        // Create response with data and latest updated time
+        const response = {
+            data: data,
+            latest_updated_time: latestData.report_date_time.toISOString()
+        };
+
+        res.json(response);
     } catch (error) {
         if (error instanceof Error) {
             logger.error(`Error fetching pollutant data for time period for location ${req.params.location}: ${error.message}`);
