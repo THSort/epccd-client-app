@@ -10,18 +10,19 @@ import {useSelectedLocation} from '../../context/SelectedLocationContext.tsx';
 import {useSelectedLanguage} from '../../context/SelectedLanguageContext.tsx';
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {getAqiDescription} from '../../utils/aqi-description.util.ts';
-import {fetchEpaMonitorsData} from '../../services/api.service.ts';
+import {fetchEpaMonitorsData, isDataOutdated as checkDataOutdated} from '../../services/api.service.ts';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenNavigationProps} from '../../types/navigation.types.ts';
 import {useUserActivity} from '../../context/UserActivityContext.tsx';
 import {getTranslation, getTranslatedNumber} from '../../utils/translations';
 import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../components/tracking';
-import {hp, useResponsiveDimensions} from '../../utils/responsive.util';
+import {fontScale, hp, useResponsiveDimensions} from '../../utils/responsive.util';
 import {getDefaultLanguage} from '../../utils/language.util';
 import AnimatedGradientBackground from '../../components/animated-gradient-background/animated-gradient-background.tsx';
 import {AqiLegend} from '../../components/aqi-legend/aqi-legend.tsx';
 import {colors} from '../../App.styles.ts';
 import {lightenColor} from '../../utils/colur.util.ts';
+import TextWithStroke from '../../components/text-with-stroke/text-with-stroke.tsx';
 
 const currentScreen = 'HomeScreen';
 
@@ -39,6 +40,8 @@ const HomeScreen = () => {
     const [aqiValue, setAqiValue] = useState<number | null>(null);
     const [isFetchingCurrentAqi, setIsFetchingCurrentAqi] = useState<boolean>(true);
     const [currentAqiValueError, setCurrentAqiValueError] = useState<string | null>(null);
+    const [lastUpdatedTime, setLastUpdatedTime] = useState<string | null>(null);
+    const [isDataOutdated, setIsDataOutdated] = useState<boolean>(false);
 
     // These state variables are used elsewhere in the component but flagged as unused by linter
     // We're prefixing with _ to indicate they're being kept for future use
@@ -69,6 +72,12 @@ const HomeScreen = () => {
         };
     }, [handleBackButtonClick]);
 
+    // Format date to a readable format
+    const formatLastUpdatedTime = (dateString: string): string => {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    };
+
     const loadAqi = useCallback(async () => {
         if (!selectedLocation) {
             setIsFetchingCurrentAqi(false);
@@ -83,10 +92,18 @@ const HomeScreen = () => {
             const data = await fetchEpaMonitorsData(selectedLocation);
             console.log('stop');
             setAqiValue(data.PM2_5_AQI);
+
+            // Set last updated time and check if data is outdated
+            if (data.report_date_time) {
+                setLastUpdatedTime(data.report_date_time);
+                setIsDataOutdated(checkDataOutdated(data.report_date_time));
+            }
         } catch (error) {
             console.error('Error fetching AQI:', error);
             setCurrentAqiValueError(getTranslation('failedToLoadAirQuality', currentLanguage));
             setAqiValue(null);
+            setLastUpdatedTime(null);
+            setIsDataOutdated(false);
         } finally {
             setIsFetchingCurrentAqi(false);
         }
@@ -137,6 +154,32 @@ const HomeScreen = () => {
         );
     };
 
+    // Last updated time and outdated warning display
+    const getLastUpdatedTimeDisplay = (): ReactElement | null => {
+        if (!lastUpdatedTime) {return null;}
+
+        return (
+            <View style={styles.lastUpdatedContainer}>
+                <Text style={styles.lastUpdatedText}>
+                    {getTranslation('lastUpdated', currentLanguage)}: {formatLastUpdatedTime(lastUpdatedTime)}
+                </Text>
+                {isDataOutdated && (
+                    <View style={styles.outdatedWarningContainer}>
+                        <Icon style={{ marginLeft: 10 }} name="exclamation-triangle" size={16} color="#FF9800" />
+                        <TextWithStroke
+                            text={getTranslation('outdatedDataWarning', currentLanguage)}
+                            color="#FF9800"
+                            strokeColor="#000000"
+                            strokeWidth={0.5}
+                            size={fontScale(14)}
+                            style={{ marginLeft: 5 }}
+                        />
+                    </View>
+                )}
+            </View>
+        );
+    };
+
     const getFloatingSettingsButton = (): ReactElement => {
         return (
             <TouchableOpacity
@@ -158,7 +201,7 @@ const HomeScreen = () => {
         return (
             <TouchableOpacity onPress={() => {
                 void onRefresh();
-            }} activeOpacity={0.7} style={[styles.errorContainer, {marginTop: '35%'}]}>
+            }} activeOpacity={0.7} style={[styles.errorContainer, {marginTop: hp(20)}]}>
                 <Text style={styles.errorText}>{currentAqiValueError}</Text>
             </TouchableOpacity>
         );
@@ -377,6 +420,7 @@ const HomeScreen = () => {
                     }
                 >
                     {getLocationDisplay()}
+                    {getLastUpdatedTimeDisplay()}
                     {currentAqiValueError ? getAqiErrorDisplay() : getAqiDisplayV2()}
                     {!currentAqiValueError && !futureAQIPredictionError ? getFuturePredictionDisplay() : null}
                 </ScrollView>

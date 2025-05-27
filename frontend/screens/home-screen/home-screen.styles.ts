@@ -35,7 +35,7 @@ export const styles = StyleSheet.create({
         marginRight: wp(10),
     },
     aqiDisplay: {
-        marginTop: hp(60), // Using responsive height
+        marginTop: hp(20), // Using responsive height
         marginHorizontal: hp(20),
         backgroundColor: backgrounds.dark,
         padding: 20,
@@ -141,7 +141,7 @@ export const styles = StyleSheet.create({
         fontWeight: '500',
     },
     futurePredictionContainer: {
-        marginTop: hp(50),
+        marginTop: hp(30),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -216,5 +216,33 @@ export const styles = StyleSheet.create({
         position: 'absolute',
         top: 3,
         left: 2,
+    },
+    lastUpdatedContainer: {
+        padding: 10,
+        alignItems: 'center',
+        marginHorizontal: hp(20),
+        marginTop: hp(20),
+    },
+    lastUpdatedText: {
+        color: '#FFFFFF',
+        fontSize: fontScale(12),
+        textAlign: 'center',
+    },
+    outdatedWarningContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+        backgroundColor: backgrounds.medium,
+        padding: 10,
+        paddingVertical: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 152, 0, 0.3)',
+    },
+    outdatedWarningText: {
+        color: '#FF9800',
+        fontSize: fontScale(20),
+        marginLeft: 5,
+        fontWeight: '500',
     },
 });

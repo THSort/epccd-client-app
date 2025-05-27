@@ -4,6 +4,7 @@ export interface EpaMonitorsApiResponse {
     datatime: string; // `datatime`
     report_date: string; // `report_date`
     report_time: string; // `report_time`
+    report_date_time?: string; // timestamp in ISO format
 
     // Air Quality Fields
     o3_ppb: number; // `o3_ppb_field`

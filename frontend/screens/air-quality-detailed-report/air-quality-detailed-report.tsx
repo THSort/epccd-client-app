@@ -11,7 +11,7 @@ import {useSelectedLocation} from '../../context/SelectedLocationContext.tsx';
 import {Location} from '../../App.types.ts';
 import {LocationModal} from '../home-screen/components/location-modal/location-modal.tsx';
 import {Pollutant} from './air-quality-detailed-report.types.ts';
-import {fetchEpaMonitorsData} from '../../services/api.service.ts';
+import {fetchEpaMonitorsData, isDataOutdated as checkDataOutdated} from '../../services/api.service.ts';
 import {EpaMonitorsApiResponse} from '../../types/epaMonitorsApiResponse.types.ts';
 import {getAqiColor} from '../../utils/aqi-colors.util.ts';
 import {getAqiDescription} from '../../utils/aqi-description.util.ts';
@@ -46,8 +46,41 @@ export function AirQualityDetailedReport(): ReactElement {
     const [aqiData, setAqiData] = useState<EpaMonitorsApiResponse | null>(null);
     const [isFetchingData, setIsFetchingData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    // const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [lastUpdatedTime, setLastUpdatedTime] = useState<string | null>(null);
+    const [isDataOutdated, setIsDataOutdated] = useState<boolean>(false);
     const [_refreshing, setRefreshing] = useState(false);
+
+    // Format date to a readable format
+    const formatLastUpdatedTime = (dateString: string): string => {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    };
+
+    // Last updated time and outdated warning display
+    const getLastUpdatedTimeDisplay = (): ReactElement | null => {
+        if (!lastUpdatedTime) {return null;}
+
+        return (
+            <View style={styles.lastUpdatedContainer}>
+                <Text style={styles.lastUpdatedText}>
+                    {getTranslation('lastUpdated', currentLanguage)}: {formatLastUpdatedTime(lastUpdatedTime)}
+                </Text>
+                {isDataOutdated && (
+                    <View style={styles.outdatedWarningContainer}>
+                        <Icon style={{ marginLeft: 10 }} name="exclamation-triangle" size={16} color="#FF9800" />
+                        <TextWithStroke
+                            text={getTranslation('outdatedDataWarning', currentLanguage)}
+                            color="#FF9800"
+                            strokeColor="#000000"
+                            strokeWidth={0.5}
+                            size={fontScale(14)}
+                            style={{ marginLeft: 5 }}
+                        />
+                    </View>
+                )}
+            </View>
+        );
+    };
 
     // Map pollutant types to translation keys
     const getPollutantTranslation = (pollutant: Pollutant, type: 'name' | 'description' | 'unit'): string => {
@@ -127,11 +160,17 @@ export function AirQualityDetailedReport(): ReactElement {
         try {
             const data = await fetchEpaMonitorsData(location);
             setAqiData(data);
-            // setLastUpdated(new Date());
+            // Set last updated time and check if data is outdated
+            if (data.report_date_time) {
+                setLastUpdatedTime(data.report_date_time);
+                setIsDataOutdated(checkDataOutdated(data.report_date_time));
+            }
             setError(null);
         } catch (error) {
             console.error('Error fetching AQI data:', error);
             setError(getTranslation('failedToLoadAirQuality', currentLanguage));
+            setLastUpdatedTime(null);
+            setIsDataOutdated(false);
         } finally {
             setRefreshing(false);
         }
@@ -151,11 +190,17 @@ export function AirQualityDetailedReport(): ReactElement {
             try {
                 const data = await fetchEpaMonitorsData(location);
                 setAqiData(data);
-                // setLastUpdated(new Date());
+                // Set last updated time and check if data is outdated
+                if (data.report_date_time) {
+                    setLastUpdatedTime(data.report_date_time);
+                    setIsDataOutdated(checkDataOutdated(data.report_date_time));
+                }
                 setError(null);
             } catch (error) {
                 console.error('Error fetching AQI data:', error);
                 setError(getTranslation('failedToLoadAirQuality', currentLanguage));
+                setLastUpdatedTime(null);
+                setIsDataOutdated(false);
             } finally {
                 setIsFetchingData(false);
             }
@@ -219,6 +264,8 @@ export function AirQualityDetailedReport(): ReactElement {
                 </View>
 
                 <TextWithStroke strokeWidth={0.8} text={aqiDescription.level} color={lightenColor(aqiColor, 0.3)} size={fontScale(24)} bold={true}/>
+
+                {getLastUpdatedTimeDisplay()}
 
             </View>
         );
@@ -342,7 +389,7 @@ export function AirQualityDetailedReport(): ReactElement {
 
                                         {getPollutantInfoCards(aqiData)}
 
-                                        <View style={{marginTop: hp(10), paddingHorizontal: hp(15)}}>
+                                        <View style={{marginTop: hp(10), marginBottom: hp(10), paddingHorizontal: hp(15)}}>
                                             <LahoreGraph selectedLocation={location}/>
                                         </View>
                                     </>

@@ -13,6 +13,7 @@ const API_BASE_URL = 'http://13.61.251.147/api';
 export interface LahoreLocationAqiData {
     locationCode: string;
     aqi: number;
+    report_date_time?: string;
 }
 
 /**
@@ -32,7 +33,7 @@ export const fetchLahoreLocationsAqi = async (): Promise<LahoreLocationAqiData[]
 /**
  * Fetches EPA Monitors data for a specific location
  * @param location - The location object to fetch data for
- * @returns The EPA Monitors data including PM2.5 AQI
+ * @returns The EPA Monitors data including PM2.5 AQI and report_date_time
  */
 export const fetchEpaMonitorsData = async (location: Location): Promise<EpaMonitorsApiResponse> => {
     try {
@@ -155,4 +156,25 @@ export const updateUserLanguagePreference = async (userId: string, language: str
         console.error('Error updating user language preference:', error);
         throw error;
     }
+};
+
+/**
+ * Helper function to check if data is outdated (older than 1 hour)
+ * @param reportDateTime - The report_date_time from the API
+ * @returns Boolean indicating whether data is outdated
+ */
+export const isDataOutdated = (reportDateTime: string): boolean => {
+    if (!reportDateTime) return false;
+    
+    const reportDate = new Date(reportDateTime);
+    const currentDate = new Date();
+    
+    // Calculate difference in milliseconds
+    const diffMs = currentDate.getTime() - reportDate.getTime();
+    
+    // Convert to hours
+    const diffHours = diffMs / (1000 * 60 * 60);
+    
+    // Return true if difference is greater than 1 hour
+    return diffHours > 1;
 };

@@ -1367,6 +1367,7 @@ export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<
 export interface LahoreLocationAqiData {
     locationCode: string;
     aqi: number;
+    report_date_time: string;
 }
 
 /**
@@ -1402,14 +1403,16 @@ export const getLahoreLocationsAqiData = async (): Promise<LahoreLocationAqiData
 
                     return {
                         locationCode,
-                        aqi
+                        aqi,
+                        report_date_time: locationData.report_date_time.toISOString()
                     };
                 } catch (error) {
                     logger.error(`Error fetching data for location ${locationCode}: ${error instanceof Error ? error.message : 'Unknown error'}`);
                     // Return default values if we can't get the data
                     return {
                         locationCode,
-                        aqi: 0
+                        aqi: 0,
+                        report_date_time: new Date().toISOString()
                     };
                 }
             })

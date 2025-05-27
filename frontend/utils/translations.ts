@@ -13,6 +13,8 @@ export interface TranslationStrings {
     viewDetailedReport: string;
     settings: string;
     selectLocation: string;
+    lastUpdated: string;
+    outdatedDataWarning: string;
 
     // Settings screen
     locationForAlerts: string;
@@ -188,6 +190,8 @@ const translations: Record<Language, TranslationStrings> = {
         viewDetailedReport: 'View Detailed Report',
         settings: 'Settings',
         selectLocation: 'Select Location',
+        lastUpdated: 'Last Updated',
+        outdatedDataWarning: 'There was a problem connecting to the servers, so this data might be old',
 
         // Settings screen
         locationForAlerts: 'Location to receive alerts for',
@@ -362,6 +366,8 @@ const translations: Record<Language, TranslationStrings> = {
         viewDetailedReport: 'تفصیلی رپورٹ دیکھیں',
         settings: 'ترتیبات',
         selectLocation: 'مقام منتخب کریں',
+        lastUpdated: 'آخری بروزرسانی',
+        outdatedDataWarning: 'سرورز سے رابطہ کرنے میں مسئلہ تھا، اس لیے یہ ڈیٹا پرانا ہو سکتا ہے',
 
         // Settings screen
         locationForAlerts: 'مقام جو اطلاعات حاصل کرے گی',
