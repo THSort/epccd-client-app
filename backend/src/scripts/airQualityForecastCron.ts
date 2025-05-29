@@ -19,7 +19,7 @@ async function runAirQualityForecast() {
     const API_URL = process.env.API_URL || 'http://localhost:3000';
     
     // Call the air quality forecast endpoint
-    const response = await axios.get(`${API_URL}/api/air-quality/forecasts/run`);
+    const response = await axios.get(`${API_URL}/api/air-quality-forecasts/run`);
     
     logger.info(`Air quality forecast cron completed successfully: ${response.data.forecast.length} forecast records generated`);
     
