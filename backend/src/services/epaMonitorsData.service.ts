@@ -1,10 +1,9 @@
 import axios from "axios";
-import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse, PollutantSummaryData, PollutantHistoryData, PollutantBucketData, EpaMonitorsDataWithForecast} from "../types/epaMonitorsData.types";
+import {EpaMonitorsData, PollutantSummaryData, PollutantHistoryData, PollutantBucketData, EpaMonitorsDataWithForecast} from "../types/epaMonitorsData.types";
 import logger from "../utils/logger";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
-import {alertUsersInLocations} from "./notificationService";
 import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
-import { getLatestForecastsForAllLocations, getForecastForLocationAndDate } from "./airQualityForecastService";
+import { getForecastForLocationAndDate } from "./airQualityForecastService";
 
 /**
  * EPA Monitors Data Service with In-Memory Caching
@@ -102,23 +101,6 @@ const getCachedTimePeriodData = async (
     }
 };
 
-// Function to invalidate cache for a specific location
-export const invalidateCacheForLocation = (location: number): void => {
-    logger.info(`Invalidating cache for location ${location}`);
-
-    // Remove all cached data for this location
-    delete cache.currentData[location];
-    delete cache.forecastData[location];
-    delete cache.historicalDataForAllPeriods[location];
-    delete cache.pollutantSummary[location];
-    delete cache.lahoreLocationsAqi;
-
-    // If specific period data exists for this location, clear it
-    if (cache.historicalDataForSpecificPeriod[location]) {
-        delete cache.historicalDataForSpecificPeriod[location];
-    }
-};
-
 // Function to invalidate only EPA data cache for a specific location (preserves forecast data)
 export const invalidateEpaDataCacheForLocation = (location: number): void => {
     logger.info(`Invalidating EPA data cache for location ${location} (preserving forecast data)`);
@@ -166,25 +148,10 @@ export const pollEpaMonitorsData = async () => {
         const locationsNeedingAlerts: EpaMonitorsData[] = [];
 
         for (const data of aqmsData) {
-            // // Determine if this location needs an alert using the forecasting model
-            // if (shouldAlertUsersInLocation(data.location, data)) {
-            //     locationsNeedingAlerts.push(data);
-            // }
-            // Store Data in MongoDB
             await storeEpaMonitorsData(data);
 
             // Invalidate cache for this location since data has been updated (preserves forecast data)
             invalidateEpaDataCacheForLocation(data.location);
-        }
-
-        // Log locations that require an alert
-        const alertLocationIds = locationsNeedingAlerts.map(data => data.location);
-        logger.info(`Locations that require an alert based on forecasting model: ${alertLocationIds.join(", ") || "None"}`);
-
-        // Send notifications to users in alert locations (only once, after the loop)
-        if (locationsNeedingAlerts.length > 0) {
-            await alertUsersInLocations(locationsNeedingAlerts);
-            logger.info(`Push notifications sent to users in locations: ${alertLocationIds.join(", ")}`);
         }
     } catch (error) {
         logger.error(`Error polling EPA Monitors data: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
