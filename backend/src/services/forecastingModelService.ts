@@ -7,8 +7,10 @@ import User from "../models/user.model";
 import DemographicSurvey from "../models/demographicSurvey.model";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 import { sendNotifications } from "./notificationService";
+import { storeForecastRecords, ForecastRecord, markAlertsAsSent } from "./airQualityForecastService";
 import logger from "../utils/logger";
 import { ForecastingModelParams } from "../types/forecastingModelParams";
+import { invalidateForecastCacheForLocation } from "./epaMonitorsData.service";
 
 // Map AQI threshold levels to numeric values
 const AQI_THRESHOLD_MAP: Record<string, number> = {
@@ -278,6 +280,37 @@ const createLocationMap = (records: any[]): Map<number, ForecastData> => {
 };
 
 /**
+ * Stores forecast data in the database
+ * @param locationMap Map of location IDs to forecast data
+ */
+const storeForecastsInDatabase = async (locationMap: Map<number, ForecastData>): Promise<void> => {
+    try {
+        // Convert location map to forecast records array
+        const forecastRecords: ForecastRecord[] = Array.from(locationMap.values()).map(forecast => ({
+            location: forecast.location,
+            forecast_date: new Date(forecast.date),
+            PM2_5_AQI_forecast: forecast.PM2_5_AQI,
+        }));
+
+        logger.info(`Preparing to store ${forecastRecords.length} forecast records`);
+        
+        // Store the forecast records in the database
+        const savedForecasts = await storeForecastRecords(forecastRecords);
+        
+        logger.info(`✅ Successfully stored ${savedForecasts.length} forecast records in air_quality_forecasts table`);
+
+        // Invalidate cache for all locations that had forecasts stored
+        for (const locationId of locationMap.keys()) {
+            invalidateForecastCacheForLocation(locationId);
+        }
+        logger.info(`Cache invalidated for ${locationMap.size} locations`);
+    } catch (error) {
+        logger.error(`❌ Failed to store forecasts in database: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw error;
+    }
+};
+
+/**
  * Process forecast records and send alerts to users based on their location and threshold preferences
  * @param records Forecast records from the R model
  */
@@ -300,6 +333,9 @@ export const processForecasts = async (records: any[]): Promise<void> => {
         
         // Send alerts to users whose thresholds were exceeded
         await sendAlertsToUsers(usersToAlert);
+
+        // Store the forecasts in the database table "air_quality_forecasts"
+        await storeForecastsInDatabase(locationMap);
         
     } catch (error) {
         if (error instanceof Error) {

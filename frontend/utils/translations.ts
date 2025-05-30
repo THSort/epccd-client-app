@@ -65,6 +65,8 @@ export interface TranslationStrings {
     failedToLoadHistoricalData: string;
     failedToLoadSummaryData: string;
     noHistoricalDataAvailable: string;
+    noForecastAvailable: string;
+    failedToLoadForecast: string;
 
     // Other common strings
     loading: string;
@@ -242,6 +244,8 @@ const translations: Record<Language, TranslationStrings> = {
         failedToLoadHistoricalData: 'Failed to load historical air quality data. Please try again later.',
         failedToLoadSummaryData: 'Failed to load summary of air quality data. Please try again later.',
         noHistoricalDataAvailable: 'No historical data available',
+        noForecastAvailable: 'No forecast data available',
+        failedToLoadForecast: 'Failed to load forecast data. Please try again later.',
 
         // Other common strings
         loading: 'Loading...',
@@ -418,6 +422,8 @@ const translations: Record<Language, TranslationStrings> = {
         failedToLoadHistoricalData: 'ہوا کے معیار کا تاریخی ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
         failedToLoadSummaryData: 'ہوا کے معیار کے ڈیٹا کا خلاصہ لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
         noHistoricalDataAvailable: 'کوئی تاریخی ڈیٹا دستیاب نہیں ہے',
+        noForecastAvailable: 'کوئی فورکاسٹ دستیاب نہیں ہے',
+        failedToLoadForecast: 'فورکاسٹ کے ڈیٹا لوڈ کرنے میں ناکام۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
 
         // Other common strings
         loading: 'لوڈ ہو رہا ہے...',

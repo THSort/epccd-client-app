@@ -32,6 +32,19 @@ export interface EpaMonitorsData {
     CO_AQI: number; // `CO_AQI`
 }
 
+// Extended interface that includes forecast data
+export interface EpaMonitorsDataWithForecast extends EpaMonitorsData {
+    forecast?: {
+        forecast_date: Date;
+        PM2_5_AQI_forecast: number;
+        PM10_AQI_forecast?: number;
+        SO2_AQI_forecast?: number;
+        NO2_AQI_forecast?: number;
+        O3_AQI_forecast?: number;
+        CO_AQI_forecast?: number;
+    };
+}
+
 export interface HistoricalEpaMonitorsDataResponse {
     oneDay: EpaMonitorsData[];
     oneWeek: EpaMonitorsData[];

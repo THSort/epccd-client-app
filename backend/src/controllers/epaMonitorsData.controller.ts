@@ -12,7 +12,7 @@ import {
     getLahoreLocationsAqiData
 } from "../services/epaMonitorsData.service";
 import logger from "../utils/logger";
-import {PollutantBucketData} from "../types/epaMonitorsData.types";
+import {PollutantBucketData, EpaMonitorsDataWithForecast} from "../types/epaMonitorsData.types";
 import {TimeRange} from "../types/timeRange.types";
 
 const getCurrentEpaMonitorsDataForLocation = async (req: Request, res: Response): Promise<void> => {

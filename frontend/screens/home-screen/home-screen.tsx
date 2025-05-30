@@ -45,9 +45,9 @@ const HomeScreen = () => {
 
     // These state variables are used elsewhere in the component but flagged as unused by linter
     // We're prefixing with _ to indicate they're being kept for future use
-    const [futureAQIPrediction, _setFutureAQIPrediction] = useState<number>(450);
-    const [_isFetchingFutureAQIPrediction, _setIsFetchingFutureAQIPrediction] = useState<boolean>(true);
-    const [futureAQIPredictionError, _setFutureAQIPredictionError] = useState<string | null>(null);
+    const [futureAQIPrediction, setFutureAQIPrediction] = useState<number | null>(null);
+    const [_isFetchingFutureAQIPrediction, setIsFetchingFutureAQIPrediction] = useState<boolean>(true);
+    const [futureAQIPredictionError, setFutureAQIPredictionError] = useState<string | null>(null);
 
     const [refreshing, setRefreshing] = useState(false);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -75,7 +75,7 @@ const HomeScreen = () => {
     // Format date to a readable format based on language
     const formatLastUpdatedTime = (dateString: string): string => {
         const date = new Date(dateString);
-        
+
         if (currentLanguage === 'اردو') {
             // Custom Urdu formatting
             const hours = date.getHours();
@@ -83,15 +83,15 @@ const HomeScreen = () => {
             const day = date.getDate();
             const month = date.getMonth() + 1; // JavaScript months are 0-indexed
             const year = date.getFullYear();
-            
+
             // AM/PM in Urdu
             const ampm = hours >= 12 ? 'شام' : 'صبح';
             const hour12 = hours % 12 || 12; // Convert to 12-hour format
-            
+
             // Format: day/month/year time AM/PM
             return `${day}/${month}/${year} - ${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
         }
-        
+
         // English format
         return date.toLocaleString('en-US', {
             day: 'numeric',
@@ -99,24 +99,39 @@ const HomeScreen = () => {
             year: 'numeric',
             hour: 'numeric',
             minute: 'numeric',
-            hour12: true
+            hour12: true,
         });
     };
 
     const loadAqi = useCallback(async () => {
         if (!selectedLocation) {
             setIsFetchingCurrentAqi(false);
+            setIsFetchingFutureAQIPrediction(false);
             return;
         }
 
         setIsFetchingCurrentAqi(true);
+        setIsFetchingFutureAQIPrediction(true);
         setCurrentAqiValueError(null);
+        setFutureAQIPredictionError(null);
 
         try {
             console.log('start');
             const data = await fetchEpaMonitorsData(selectedLocation);
             console.log('stop');
+
+            // Set current AQI data
             setAqiValue(data.PM2_5_AQI);
+
+            // Set forecast data if available
+            if (data.forecast && data.forecast.PM2_5_AQI_forecast !== null && data.forecast.PM2_5_AQI_forecast !== undefined) {
+                setFutureAQIPrediction(data.forecast.PM2_5_AQI_forecast);
+                setFutureAQIPredictionError(null);
+            } else {
+                // No forecast available
+                setFutureAQIPrediction(null);
+                setFutureAQIPredictionError(getTranslation('noForecastAvailable', currentLanguage));
+            }
 
             // Set last updated time and check if data is outdated
             if (data.report_date_time) {
@@ -129,8 +144,13 @@ const HomeScreen = () => {
             setAqiValue(null);
             setLastUpdatedTime(null);
             setIsDataOutdated(false);
+
+            // Also set forecast error
+            setFutureAQIPrediction(null);
+            setFutureAQIPredictionError(getTranslation('failedToLoadForecast', currentLanguage));
         } finally {
             setIsFetchingCurrentAqi(false);
+            setIsFetchingFutureAQIPrediction(false);
         }
     }, [selectedLocation, currentLanguage]);
 
@@ -159,8 +179,8 @@ const HomeScreen = () => {
 
     const aqiColor = aqiValue !== null ? getAqiColor(aqiValue) : '#808080';
     const aqiDescription = aqiValue !== null ? getAqiDescription(aqiValue, currentLanguage) : {level: '', message: ''};
-    const futurePredictionAqiColor = getAqiColor(futureAQIPrediction);
-    const futurePredictionAqiDescription = getAqiDescription(futureAQIPrediction, currentLanguage);
+    const futurePredictionAqiColor = futureAQIPrediction !== null ? getAqiColor(futureAQIPrediction) : '#808080';
+    const futurePredictionAqiDescription = futureAQIPrediction !== null ? getAqiDescription(futureAQIPrediction, currentLanguage) : {level: '', message: ''};
 
     // Define component functions here, before they're used
     const getLocationDisplay = () => {
@@ -310,7 +330,7 @@ const HomeScreen = () => {
     };
 
     const getMessageForFuturePrediction = () => {
-        if (aqiValue === null) {return '';}
+        if (aqiValue === null || futureAQIPrediction === null) {return '';}
 
         if (Math.floor(futureAQIPrediction) === Math.floor(aqiValue)) {
             return getTranslation('tomorrowSame', currentLanguage);
@@ -371,6 +391,20 @@ const HomeScreen = () => {
     }
 
     const getFuturePredictionDisplay = (): ReactElement => {
+        // Early return if no forecast data is available
+        if (futureAQIPrediction === null) {
+            return (
+                <View style={styles.futurePredictionContainer}>
+                    <Text style={[styles.aqiText]}>
+                        {getTranslation('tomorrowPrediction', currentLanguage)}
+                    </Text>
+                    <Text style={[styles.aqiLevelInfoMessageText, {color: colors.secondaryWithDarkBg}]}>
+                        {futureAQIPredictionError || getTranslation('noForecastAvailable', currentLanguage)}
+                    </Text>
+                </View>
+            );
+        }
+
         // Safety check to prevent comparison when aqiValue is null
         const safeAqiValue = aqiValue !== null ? aqiValue : 0;
         const isPredictionHigher = futureAQIPrediction > safeAqiValue;
@@ -389,7 +423,7 @@ const HomeScreen = () => {
                     {getTranslation('tomorrowPrediction', currentLanguage)}
                 </Text>
                 <View style={styles.futureAqiValue}>
-                    <Text style={[styles.aqiValueText, {color: lightenColor(futurePredictionAqiColor, 0.2)}]}>{getTranslatedNumber(futureAQIPrediction, currentLanguage)}</Text>
+                    <Text style={[styles.aqiValueText, {color: lightenColor(futurePredictionAqiColor, 0.2)}]}>{Math.floor(futureAQIPrediction)}</Text>
                     <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: hp(5), gap: 8}}>
                         <Icon name={arrowIcon} size={20} color={arrowColor}/>
                         <Text style={messageStyle}>{getMessageForFuturePrediction()}</Text>
@@ -447,7 +481,7 @@ const HomeScreen = () => {
                     {getLocationDisplay()}
                     {getLastUpdatedTimeDisplay()}
                     {currentAqiValueError ? getAqiErrorDisplay() : getAqiDisplayV2()}
-                    {!currentAqiValueError && !futureAQIPredictionError ? getFuturePredictionDisplay() : null}
+                    {!currentAqiValueError && futureAQIPrediction !== null && !futureAQIPredictionError ? getFuturePredictionDisplay() : null}
                 </ScrollView>
             </View>
 

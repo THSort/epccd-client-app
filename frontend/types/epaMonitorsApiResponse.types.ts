@@ -32,6 +32,17 @@ export interface EpaMonitorsApiResponse {
     NO2_AQI: number; // `NO2_AQI`
     O3_AQI: number; // `O3_AQI`
     CO_AQI: number; // `CO_AQI`
+    
+    // Forecast data (optional - may not be available for all requests)
+    forecast?: {
+        forecast_date: string; // ISO date string
+        PM2_5_AQI_forecast: number;
+        PM10_AQI_forecast?: number;
+        SO2_AQI_forecast?: number;
+        NO2_AQI_forecast?: number;
+        O3_AQI_forecast?: number;
+        CO_AQI_forecast?: number;
+    };
 }
 
 export interface HistoricalEpaMonitorsDataResponse {

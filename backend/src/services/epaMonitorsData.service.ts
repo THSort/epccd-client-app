@@ -1,9 +1,10 @@
 import axios from "axios";
-import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse, PollutantSummaryData, PollutantHistoryData, PollutantBucketData} from "../types/epaMonitorsData.types";
+import {EpaMonitorsData, HistoricalEpaMonitorsDataResponse, PollutantSummaryData, PollutantHistoryData, PollutantBucketData, EpaMonitorsDataWithForecast} from "../types/epaMonitorsData.types";
 import logger from "../utils/logger";
 import EpaMonitorsDataModel from "../models/epaMonitorsData.model";
 import {alertUsersInLocations} from "./notificationService";
 import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
+import { getLatestForecastsForAllLocations, getForecastForLocationAndDate } from "./airQualityForecastService";
 
 /**
  * EPA Monitors Data Service with In-Memory Caching
@@ -28,9 +29,17 @@ import {PollutantHistoricalData} from "../types/pollutantHistoricalData.types";
 
 const BASE_URL = "http://34.132.171.41:8000/api/aqms_data/";
 
+// Define the Lahore location response type
+export interface LahoreLocationAqiData {
+    locationCode: string;
+    aqi: number;
+    report_date_time: string;
+}
+
 // In-memory cache for EPA monitors data
 interface EpaMonitorsDataCache {
     currentData: { [locationId: number]: { data: EpaMonitorsData, timestamp: number } };
+    forecastData: { [locationId: number]: { data: any, timestamp: number } };
     historicalDataForAllPeriods: { [locationId: number]: { data: PollutantHistoricalData, timestamp: number } };
     historicalDataForSpecificPeriod: {
         [locationId: number]: {
@@ -44,6 +53,7 @@ interface EpaMonitorsDataCache {
 // Initialize empty cache
 const cache: EpaMonitorsDataCache = {
     currentData: {},
+    forecastData: {},
     historicalDataForAllPeriods: {},
     historicalDataForSpecificPeriod: {},
     pollutantSummary: {},
@@ -93,10 +103,27 @@ const getCachedTimePeriodData = async (
 };
 
 // Function to invalidate cache for a specific location
-const invalidateCacheForLocation = (location: number): void => {
+export const invalidateCacheForLocation = (location: number): void => {
     logger.info(`Invalidating cache for location ${location}`);
 
     // Remove all cached data for this location
+    delete cache.currentData[location];
+    delete cache.forecastData[location];
+    delete cache.historicalDataForAllPeriods[location];
+    delete cache.pollutantSummary[location];
+    delete cache.lahoreLocationsAqi;
+
+    // If specific period data exists for this location, clear it
+    if (cache.historicalDataForSpecificPeriod[location]) {
+        delete cache.historicalDataForSpecificPeriod[location];
+    }
+};
+
+// Function to invalidate only EPA data cache for a specific location (preserves forecast data)
+export const invalidateEpaDataCacheForLocation = (location: number): void => {
+    logger.info(`Invalidating EPA data cache for location ${location} (preserving forecast data)`);
+
+    // Remove only EPA-related cached data for this location
     delete cache.currentData[location];
     delete cache.historicalDataForAllPeriods[location];
     delete cache.pollutantSummary[location];
@@ -106,6 +133,12 @@ const invalidateCacheForLocation = (location: number): void => {
     if (cache.historicalDataForSpecificPeriod[location]) {
         delete cache.historicalDataForSpecificPeriod[location];
     }
+};
+
+// Function to invalidate only forecast data cache for a specific location
+export const invalidateForecastCacheForLocation = (location: number): void => {
+    logger.info(`Invalidating forecast data cache for location ${location}`);
+    delete cache.forecastData[location];
 };
 
 // Helper function to calculate average of numeric values, ignoring null/undefined
@@ -140,8 +173,8 @@ export const pollEpaMonitorsData = async () => {
             // Store Data in MongoDB
             await storeEpaMonitorsData(data);
 
-            // Invalidate cache for this location since data has been updated
-            invalidateCacheForLocation(data.location);
+            // Invalidate cache for this location since data has been updated (preserves forecast data)
+            invalidateEpaDataCacheForLocation(data.location);
         }
 
         // Log locations that require an alert
@@ -1329,31 +1362,86 @@ export const getPollutantSummaryForLocation = async (location: number): Promise<
 };
 
 // 🟢 Get Latest EPA Monitors Data from MongoDB for a location
-export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<EpaMonitorsData> => {
+export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<EpaMonitorsDataWithForecast> => {
     try {
-        // Check if data exists in cache and is not expired
-        const cachedData = cache.currentData[location];
         const now = Date.now();
-        if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
-            logger.info(`Using cached data for location ${location}`);
-            return cachedData.data;
+        
+        // Check EPA data cache
+        let currentData: EpaMonitorsData;
+        const cachedEpaData = cache.currentData[location];
+        
+        if (cachedEpaData && (now - cachedEpaData.timestamp < CACHE_EXPIRY)) {
+            logger.info(`Using cached EPA data for location ${location}`);
+            currentData = cachedEpaData.data;
+        } else {
+            logger.info(`Cache miss for EPA data for location ${location}, fetching from database`);
+            const latestRecord = await EpaMonitorsDataModel.findOne({location})
+                .sort({report_date_time: -1}) // Get the latest entry based on report_date_time
+                .lean();
+
+            if (!latestRecord) {
+                throw new Error(`No EPA Monitors data found for location ${location}`);
+            }
+
+            currentData = latestRecord as EpaMonitorsData;
+            
+            // Store EPA data in cache
+            cache.currentData[location] = {
+                data: currentData,
+                timestamp: now
+            };
+        }
+        
+        // Check forecast data cache (with longer expiry - 30 minutes)
+        const FORECAST_CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutes
+        let forecastData = undefined;
+        const cachedForecastData = cache.forecastData[location];
+        
+        if (cachedForecastData && (now - cachedForecastData.timestamp < FORECAST_CACHE_EXPIRY)) {
+            logger.info(`Using cached forecast data for location ${location}`);
+            forecastData = cachedForecastData.data;
+        } else {
+            logger.info(`Cache miss for forecast data for location ${location}, fetching from database`);
+            try {
+                // Get tomorrow's date for forecast lookup
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                const forecast = await getForecastForLocationAndDate(location, tomorrow);
+                if (forecast) {
+                    forecastData = {
+                        forecast_date: new Date(forecast.forecast_date),
+                        PM2_5_AQI_forecast: forecast.PM2_5_AQI_forecast,
+                        PM10_AQI_forecast: forecast.PM10_AQI_forecast,
+                        SO2_AQI_forecast: forecast.SO2_AQI_forecast,
+                        NO2_AQI_forecast: forecast.NO2_AQI_forecast,
+                        O3_AQI_forecast: forecast.O3_AQI_forecast,
+                        CO_AQI_forecast: forecast.CO_AQI_forecast
+                    };
+                    logger.info(`✅ Found forecast for location ${location} on ${tomorrow.toISOString().split('T')[0]}`);
+                } else {
+                    logger.info(`No forecast found for location ${location} on ${tomorrow.toISOString().split('T')[0]}`);
+                }
+                
+                // Store forecast data in cache (even if undefined)
+                cache.forecastData[location] = {
+                    data: forecastData,
+                    timestamp: now
+                };
+            } catch (forecastError) {
+                logger.warn(`Failed to get forecast for location ${location}: ${forecastError instanceof Error ? forecastError.message : 'Unknown error'}`);
+                // Store null in cache to prevent repeated failures
+                cache.forecastData[location] = {
+                    data: undefined,
+                    timestamp: now
+                };
+            }
         }
 
-        logger.info(`Cache miss for location ${location}, fetching from database`);
-        const latestRecord = await EpaMonitorsDataModel.findOne({location})
-            .sort({report_date_time: -1}) // Get the latest entry based on report_date_time
-            .lean();
-
-        if (!latestRecord) {
-            throw new Error(`No EPA Monitors data found for location ${location}`);
-        }
-
-        const result = latestRecord as EpaMonitorsData;
-
-        // Store result in cache
-        cache.currentData[location] = {
-            data: result,
-            timestamp: now
+        // Combine current data with forecast
+        const result: EpaMonitorsDataWithForecast = {
+            ...currentData,
+            forecast: forecastData
         };
 
         return result;
@@ -1362,13 +1450,6 @@ export const getLatestEpaMonitorsDataFromDB = async (location: number): Promise<
         throw new Error(`Failed to fetch latest EPA Monitors data for location ${location}`);
     }
 };
-
-// Define the Lahore location response type
-export interface LahoreLocationAqiData {
-    locationCode: string;
-    aqi: number;
-    report_date_time: string;
-}
 
 /**
  * Get AQI data for all Lahore locations
