@@ -2,7 +2,7 @@
 
 This document explains in simple terms how our system collects air quality data from EPA monitors and uses it to generate daily air pollution forecasts.
 
-## 📊 The Big Picture
+## The Big Picture
 
 Our system works like a pipeline with three main stages:
 1. **Data Collection** - Gathering fresh air quality readings every 5 minutes
@@ -11,7 +11,7 @@ Our system works like a pipeline with three main stages:
 
 ---
 
-## 🔄 Stage 1: Continuous Data Collection (Every 5 Minutes)
+## Stage 1: Continuous Data Collection (Every 5 Minutes)
 
 ### What Happens:
 Every 5 minutes, our server automatically reaches out to the EPA air quality monitoring stations to check if there's any new data available.
@@ -30,7 +30,7 @@ If new data is found at any monitoring station, it gets saved to our MongoDB dat
 
 ---
 
-## 🗄️ Stage 2: Data Storage & Organization
+## Stage 2: Data Storage & Organization
 
 ### Database Structure:
 All the collected data is stored in a structured way in our database. Think of it like a giant spreadsheet where:
@@ -51,7 +51,7 @@ Over time, this creates a rich historical dataset showing:
 - **Format**: Each record contains all measurements with precise timestamps
 - **Retention**: All historical data is kept indefinitely for better predictions
 
-## 🤖 Stage 3: Daily Forecasting Process
+## Stage 3: Daily Forecasting Process
 
 ### What is a "Cron Job"?
 A cron job is like setting an alarm clock for your computer. Just like you might set an alarm to wake up at the same time every day, a cron job tells the computer to automatically run a specific task at scheduled times. In our case, we have two "alarm clocks" set:
@@ -90,7 +90,7 @@ After generating forecasts, the system:
 
 ---
 
-## 📈 Data Flow Summary
+## Data Flow Summary
 
 ```
 EPA Monitors → Server (every 5 min) → Database → Daily Cron Job → R Script → Forecasts → User Alerts
@@ -105,7 +105,7 @@ EPA Monitors → Server (every 5 min) → Database → Daily Cron Job → R Scri
 
 ---
 
-## 🔧 Key Technical Components
+## Key Technical Components
 
 - **`index.ts`**: Sets up the 5-minute data polling when server starts
 - **`epaMonitorsData.service.ts`**: Handles fetching and storing EPA data
