@@ -1,18 +1,19 @@
 import {StyleSheet} from 'react-native';
 import {backgrounds, colors} from '../../../../App.styles.ts';
 import {hp, fontScale, wp} from '../../../../utils/responsive.util';
+import {lightenColor} from '../../../../utils/colur.util.ts';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: hp(2),
+        paddingHorizontal: hp(5),
         paddingVertical: hp(20),
     },
     content: {
-        color: colors.primaryWithDarkBg,
+        color: colors.secondaryWithDarkBg,
         fontSize: fontScale(25),
         lineHeight: fontScale(28),
-        textAlign: 'justify',
+        textAlign: 'center',
     },
     paragraph: {
         marginBottom: fontScale(30),
@@ -31,7 +32,7 @@ export const styles = StyleSheet.create({
         transform: [{scale: 1.2}],
     },
     caption: {
-        color: colors.primaryWithDarkBg,
+        color: colors.secondaryWithDarkBg,
         fontSize: fontScale(18),
         lineHeight: fontScale(28),
         textAlign: 'center',
@@ -49,17 +50,17 @@ export const styles = StyleSheet.create({
         width: '100%',
     },
     tableIcon: {
-        width: wp(80),
-        height: wp(80),
+        width: wp(100),
+        height: wp(100),
         marginRight: wp(15),
         resizeMode: 'contain',
     },
     tableText: {
-        color: colors.primaryWithDarkBg,
+        color: colors.secondaryWithDarkBg,
         fontSize: fontScale(22),
         flex: 1,
         flexWrap: 'wrap',
-        textAlign: 'left',
+        textAlign: 'center',
     },
     // AQI Card styles
     aqiCardContainer: {
@@ -74,35 +75,32 @@ export const styles = StyleSheet.create({
     },
     aqiCardRow: {
         flexDirection: 'row',
-        alignItems: 'stretch',
-        height: 'auto',
     },
     aqiLevelBox: {
-        width: wp(80),
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: hp(5),
     },
     aqiLevelText: {
-        color: '#000',
+        color: 'black',
         fontSize: fontScale(16),
         fontWeight: 'bold',
         textAlign: 'center',
     },
     aqiInfoContainer: {
-        flex: 1,
+        flex: 3,
         backgroundColor: backgrounds.medium,
-        padding: hp(15),
+        padding: hp(10),
     },
     aqiTitle: {
-        color: '#FFCC00',
+        color: colors.primaryWithDarkBg,
         fontSize: fontScale(20),
         fontWeight: 'bold',
         marginBottom: hp(5),
         textAlign: 'center',
     },
     aqiDescription: {
-        color: '#FFCC00',
+        color: colors.secondaryWithDarkBg,
         fontSize: fontScale(16),
         textAlign: 'center',
     },
@@ -129,14 +127,14 @@ export const styles = StyleSheet.create({
         backgroundColor: '#e53210', // Red
     },
     aqi_301_400: {
-        backgroundColor: '#99004c', // Purple
+        backgroundColor: lightenColor('#99004c', 0.05), // Purple
     },
     aqi_401_500: {
-        backgroundColor: '#7e0023', // Dark red
+        backgroundColor: lightenColor('#7e0023', 0.05), // Dark red
     },
     // Bullet point styles
     bulletPoint: {
-        color: colors.primaryWithDarkBg,
+        color: colors.secondaryWithDarkBg,
         fontSize: fontScale(25),
         marginRight: wp(10),
         lineHeight: fontScale(28),

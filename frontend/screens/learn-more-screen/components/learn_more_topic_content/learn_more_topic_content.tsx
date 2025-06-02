@@ -6,6 +6,9 @@ import {useSelectedLanguage} from '../../../../context/SelectedLanguageContext.t
 import {getDefaultLanguage} from '../../../../utils/language.util.ts';
 import {getTranslation, TranslationStrings} from '../../../../utils/translations.ts';
 import {LearnMoreTopicContentProps} from './learn_more_topic_content.types.ts';
+import {hp} from '../../../../utils/responsive.util.ts';
+import TextWithStroke from '../../../../components/text-with-stroke/text-with-stroke.tsx';
+import { colors } from '../../../../App.styles.ts';
 
 interface HealthEffect {
     icon: any;
@@ -19,10 +22,14 @@ interface AqiLevel {
     style: any;
 }
 
+interface ProtectiveMeasure {
+    icon: any;
+    textKey: keyof TranslationStrings;
+}
+
 export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactElement | null {
     const {selectedLanguage} = useSelectedLanguage();
     const currentLanguage = getDefaultLanguage(selectedLanguage);
-    const isRtl = currentLanguage === 'اردو'; // Check if language is Urdu
 
     // Define AQI levels data
     const aqiLevels: AqiLevel[] = [
@@ -80,8 +87,39 @@ export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactE
 
                 return (
                     <View style={styles.container}>
-                        {paragraphs.map((paragraph, index) => (
-                            <Text key={index} style={[styles.content, styles.paragraph]}>
+                        {/* First paragraph */}
+                        {paragraphs[0] && (
+                            <Text style={[styles.content]}>
+                                {paragraphs[0]}
+                            </Text>
+                        )}
+
+                        {/* PM2.5 graphic image */}
+                        <View style={{
+                            height: hp(250),
+                            marginVertical: hp(15),
+                        }}>
+                            <Image
+                                source={require('../../assets/pm25_graphic.png')}
+                                resizeMode="contain"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    margin: 0,
+                                }}
+                            />
+                        </View>
+
+                        {/* Second paragraph */}
+                        {paragraphs[1] && (
+                            <Text style={[styles.content, styles.paragraph]}>
+                                {paragraphs[1]}
+                            </Text>
+                        )}
+
+                        {/* Any additional paragraphs */}
+                        {paragraphs.slice(2).map((paragraph, index) => (
+                            <Text key={index + 2} style={[styles.content, styles.paragraph]}>
                                 {paragraph}
                             </Text>
                         ))}
@@ -166,11 +204,11 @@ export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactE
                                         <View style={[styles.aqiLevelBox, level.style]}>
                                             <Text style={styles.aqiLevelText}>{level.range}</Text>
                                         </View>
-                                        <View style={styles.aqiInfoContainer}>
-                                            <Text style={[styles.aqiTitle, {color: level.style.backgroundColor}]}>
+                                        <View style={[styles.aqiInfoContainer]}>
+                                            <Text style={[styles.aqiTitle]}>
                                                 {level.quality}
                                             </Text>
-                                            <Text style={[styles.aqiDescription, {color: level.style.backgroundColor}]}>
+                                            <Text style={[styles.aqiDescription]}>
                                                 {level.description}
                                             </Text>
                                         </View>
@@ -181,31 +219,27 @@ export function LearnMoreTopicContent(props: LearnMoreTopicContentProps): ReactE
                     </View>
                 );
             case 'what_to_do':
-                // Define the protective measures using translation keys
-                const protectiveMeasures = [
-                    getTranslation('wearMask', currentLanguage),
-                    getTranslation('stayIndoors', currentLanguage),
-                    getTranslation('avoidBurning', currentLanguage),
-                    getTranslation('avoidTraffic', currentLanguage),
+                // Define the protective measures with images and translation keys
+                const protectiveMeasures: ProtectiveMeasure[] = [
+                    { icon: require('../../assets/n95_mask.png'), textKey: 'wearMask' },
+                    { icon: require('../../assets/house_graphic.png'), textKey: 'stayIndoors' },
+                    { icon: require('../../assets/flame_graphic.png'), textKey: 'avoidBurning' },
+                    { icon: require('../../assets/car_graphic.png'), textKey: 'avoidTraffic' },
                 ];
 
                 return (
                     <View style={styles.container}>
-                        {protectiveMeasures.map((measure, index) => (
-                            <View key={index} style={[
-                                styles.tableRow,
-                                {flexDirection: isRtl ? 'row-reverse' : 'row'},
-                            ]}>
-                                <Text style={styles.bulletPoint}>•</Text>
-                                <Text style={[
-                                    styles.content,
-                                    styles.bulletText,
-                                    {textAlign: isRtl ? 'right' : 'left'},
-                                ]}>
-                                    {measure.trim()}
-                                </Text>
-                            </View>
-                        ))}
+                        {/* Protective measures table */}
+                        <View style={styles.tableContainer}>
+                            {protectiveMeasures.map((measure, index) => (
+                                <View key={index} style={styles.tableRow}>
+                                    <Image source={measure.icon} style={styles.tableIcon} />
+                                    <Text style={styles.tableText}>
+                                        {getTranslation(measure.textKey, currentLanguage)}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
                     </View>
                 );
             default:
