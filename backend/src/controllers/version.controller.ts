@@ -4,7 +4,7 @@ import {Request, Response} from "express";
 const LATEST_APP_VERSION = "1.0.0";
 
 // URL where users can download the latest APK - update this with your actual APK URL
-const LATEST_APK_URL = "https://your-domain.com/app-releases/latest.apk";
+const LATEST_APK_URL = "https://drive.google.com/file/d/1L_GgvFuW22AxgXnHRlwOW611dV_o9Sn8/view?usp=drive_link";
 
 /**
  * Check if the provided app version is the latest
