@@ -48,6 +48,25 @@ export interface TranslationStrings {
     invalidMobileNumber: string;
     invalidMobileNumberFormat: string;
 
+    // Update screen
+    updateRequired: string;
+    currentVersion: string;
+    latestVersion: string;
+    updateMessage: string;
+    downloadUpdate: string;
+    copyDownloadLink: string;
+    checkAgain: string;
+    updateNotice: string;
+    linkCopiedTitle: string;
+    linkCopiedMessage: string;
+    downloadUrlNotAvailable: string;
+    unableToOpenLink: string;
+    unableToOpenLinkMessage: string;
+    failedToCopyLink: string;
+    copySuccess: string;
+    error: string;
+    ok: string;
+
     // AQI descriptions
     good: string;
     satisfactory: string;
@@ -227,6 +246,25 @@ const translations: Record<Language, TranslationStrings> = {
         invalidMobileNumber: 'Please enter a valid Pakistani mobile number',
         invalidMobileNumberFormat: 'Number should be exactly 10 digits (like 3XXXXXXXXX)',
 
+        // Update screen
+        updateRequired: 'Update Required',
+        currentVersion: 'Current Version',
+        latestVersion: 'Latest Version',
+        updateMessage: 'A new version of the app is available. Please update to continue using the app with the latest features and bug fixes.',
+        downloadUpdate: 'Download Update',
+        copyDownloadLink: 'Copy Download Link',
+        checkAgain: 'Check Again',
+        updateNotice: '⚠️ This update is required to continue using the app. New features and bug fixes are included.',
+        linkCopiedTitle: 'Link Copied',
+        linkCopiedMessage: 'The download link has been copied to your clipboard. You can now paste it in your browser.',
+        downloadUrlNotAvailable: 'Download URL not available',
+        unableToOpenLink: 'Unable to Open Link',
+        unableToOpenLinkMessage: 'Please copy the download link and open it in your browser manually.',
+        failedToCopyLink: 'Failed to copy link to clipboard',
+        copySuccess: 'Copied to clipboard! ✓',
+        error: 'Error',
+        ok: 'OK',
+
         // AQI descriptions
         good: 'Good',
         satisfactory: 'Satisfactory',
@@ -404,6 +442,25 @@ const translations: Record<Language, TranslationStrings> = {
         registrationError: 'رجسٹریشن مکمل کرنے میں ناکام۔ دوبارہ کوشش کریں۔',
         invalidMobileNumber: 'براہ کرم درست پاکستانی موبائل نمبر درج کریں',
         invalidMobileNumberFormat: 'نمبر بالکل 10 ہندسوں کا ہونا چاہیے (جیسے 3XXXXXXXXX)',
+
+        // Update screen
+        updateRequired: 'اپ ڈیٹ ضروری ہے',
+        currentVersion: 'موجودہ ورژن',
+        latestVersion: 'تازہ ترین ورژن',
+        updateMessage: 'ایپ کا نیا ورژن دستیاب ہے۔ براہ کرم نئے فیچرز اور بگ فکسز کے ساتھ ایپ استعمال کرنے کے لیے اپ ڈیٹ کریں۔',
+        downloadUpdate: 'اپ ڈیٹ ڈاؤن لوڈ کریں',
+        copyDownloadLink: 'ڈاؤن لوڈ لنک کاپی کریں',
+        checkAgain: 'دوبارہ چیک کریں',
+        updateNotice: '⚠️ اس ایپ کو استعمال کرنے کے لیے اپ ڈیٹ ضروری ہے۔ نئے فیچرز اور بگ فکسز شامل ہیں۔',
+        linkCopiedTitle: 'لنک کاپی ہو گیا',
+        linkCopiedMessage: 'ڈاؤن لوڈ لنک آپ کے کلپ بورڈ پر کاپی ہو گیا ہے۔ اب آپ اسے اپنے براؤزر میں پیسٹ کر سکتے ہیں۔',
+        downloadUrlNotAvailable: 'ڈاؤن لوڈ لنک دستیاب نہیں',
+        unableToOpenLink: 'لنک نہیں کھل سکا',
+        unableToOpenLinkMessage: 'براہ کرم ڈاؤن لوڈ لنک کو کاپی کریں اور اپنے براؤزر میں دستی طور پر کھولیں۔',
+        failedToCopyLink: 'لنک کلپ بورڈ پر کاپی نہیں ہو سکا',
+        copySuccess: 'کلپ بورڈ پر کاپی ہو گیا! ✓',
+        error: 'خرابی',
+        ok: 'اوکے',
 
         // AQI descriptions
         good: 'اچھا',

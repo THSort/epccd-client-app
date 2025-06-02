@@ -11,6 +11,7 @@ import epaMonitorsDataRoutes from "./routes/epaMonitorsData.routes";
 import demographicSurveyRoutes from "./routes/demographicSurvey.routes";
 import userActivityRoutes from "./routes/userActivity.routes";
 import weatherForecastRoutes from "./routes/weatherForecast.routes";
+import versionRoutes from "./routes/version.routes";
 import {pollEpaMonitorsData} from "./services/epaMonitorsData.service";
 import airQualityForecastRoutes from "./routes/airQualityForecast.routes";
 
@@ -33,6 +34,7 @@ app.use("/api/demographics", demographicSurveyRoutes); // Routes for demographic
 app.use("/api/user-activity", userActivityRoutes); // User activity tracking routes
 app.use("/api/weather-forecasts", weatherForecastRoutes); // Weather forecasts routes
 app.use("/api/air-quality-forecasts", airQualityForecastRoutes); // air quality forecasts routes
+app.use("/api/version", versionRoutes); // Version checking routes
 
 const startServer = async () => {
     try {
