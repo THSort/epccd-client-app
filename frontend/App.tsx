@@ -14,7 +14,7 @@ import {Pollutant} from './screens/air-quality-detailed-report/air-quality-detai
 import {UserActivityProvider} from './context/UserActivityContext.tsx';
 import {RegistrationScreen} from './screens/registration-screen';
 import {getUserId} from './utils/storage.util.ts';
-import {LearnMoreScreen} from './screens/learn-more-screen/learn-more-screen.tsx';
+import {LearnMoreScreen} from './screens/learn-more-screen';
 import {UpdateScreen} from './screens/update-screen/update-screen.tsx';
 import {checkAppVersion, VersionCheckResponse} from './services/version.service.ts';
 import packageJson from './package.json';
