@@ -23,7 +23,7 @@ module.exports = {
       script: "./dist/scripts/weatherForecastCron.js",
       instances: 1,
       exec_mode: "fork",
-      cron_restart: "0 10 * * *", // ✅ new (10AM UTC = 3PM PKT)
+      cron_restart: "0 15 * * *", // ✅ new (10AM UTC = 3PM PKT)
       watch: false,
       autorestart: false,
       env: {
@@ -39,7 +39,7 @@ module.exports = {
       script: "./dist/scripts/airQualityForecastCron.js",
       instances: 1,
       exec_mode: "fork",
-      cron_restart: "0 11 * * *", // ✅ Runs at 11AM UTC (1 hour after weather forecast)
+      cron_restart: "0 16 * * *", // ✅ Runs at 11AM UTC (1 hour after weather forecast)
       watch: false,
       autorestart: false,
       env: {
