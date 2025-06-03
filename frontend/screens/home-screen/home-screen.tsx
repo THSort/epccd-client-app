@@ -47,7 +47,6 @@ const HomeScreen = () => {
     // We're prefixing with _ to indicate they're being kept for future use
     const [futureAQIPrediction, setFutureAQIPrediction] = useState<number | null>(null);
     const [_isFetchingFutureAQIPrediction, setIsFetchingFutureAQIPrediction] = useState<boolean>(true);
-    const [futureAQIPredictionError, setFutureAQIPredictionError] = useState<string | null>(null);
 
     const [refreshing, setRefreshing] = useState(false);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -113,7 +112,6 @@ const HomeScreen = () => {
         setIsFetchingCurrentAqi(true);
         setIsFetchingFutureAQIPrediction(true);
         setCurrentAqiValueError(null);
-        setFutureAQIPredictionError(null);
 
         try {
             console.log('start');
@@ -126,11 +124,9 @@ const HomeScreen = () => {
             // Set forecast data if available
             if (data.forecast && data.forecast.PM2_5_AQI_forecast !== null && data.forecast.PM2_5_AQI_forecast !== undefined) {
                 setFutureAQIPrediction(data.forecast.PM2_5_AQI_forecast);
-                setFutureAQIPredictionError(null);
             } else {
                 // No forecast available
                 setFutureAQIPrediction(null);
-                setFutureAQIPredictionError(getTranslation('noForecastAvailable', currentLanguage));
             }
 
             // Set last updated time and check if data is outdated
@@ -147,7 +143,6 @@ const HomeScreen = () => {
 
             // Also set forecast error
             setFutureAQIPrediction(null);
-            setFutureAQIPredictionError(getTranslation('failedToLoadForecast', currentLanguage));
         } finally {
             setIsFetchingCurrentAqi(false);
             setIsFetchingFutureAQIPrediction(false);
@@ -399,7 +394,7 @@ const HomeScreen = () => {
                         {getTranslation('tomorrowPrediction', currentLanguage)}
                     </Text>
                     <Text style={[styles.aqiLevelInfoMessageText, {color: colors.secondaryWithDarkBg, opacity: 0.6, marginTop: hp(10)}]}>
-                        {futureAQIPredictionError || (currentLanguage === 'اردو' ? 'فی الوقت کل کے لیے کوئی پیشن گوئی نہیں ہے، جلد دستیاب ہوگی' : 'There is currently no prediction for tomorrow, it will be available soon')}
+                        {(currentLanguage === 'اردو' ? 'فی الوقت کل کے لیے کوئی پیشن گوئی نہیں ہے، جلد دستیاب ہوگی' : 'There is currently no prediction for tomorrow, it will be available soon')}
                     </Text>
                 </View>
             );
