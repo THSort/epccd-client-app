@@ -11,7 +11,6 @@ import {Language, getTranslatedNumber} from '../../../../utils/translations.ts';
 import {TrackableButton, ELEMENT_NAMES, SCREEN_NAMES} from '../../../../components/tracking';
 import {useResponsiveDimensions} from '../../../../utils/responsive.util';
 import {colors} from '../../../../App.styles.ts';
-import TextWithStroke from '../../../../components/text-with-stroke/text-with-stroke.tsx';
 
 // Define units for each pollutant type (fallback if not provided in props)
 const POLLUTANT_UNITS = {

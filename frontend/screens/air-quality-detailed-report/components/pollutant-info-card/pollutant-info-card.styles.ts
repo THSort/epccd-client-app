@@ -40,7 +40,7 @@ export const styles = StyleSheet.create({
         fontSize: fontScale(12),
         lineHeight: fontScale(14),
         fontWeight: '300',
-        flex: 2,
+        // flex: 2,
         paddingRight: wp(5),
     },
     pollutantUnits: {

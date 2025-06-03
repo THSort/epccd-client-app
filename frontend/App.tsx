@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {View, ActivityIndicator, AppState, AppStateStatus} from 'react-native';
+import {View, ActivityIndicator, AppStateStatus, AppState} from 'react-native';
 import HomeScreen from './screens/home-screen/home-screen.tsx';
 import {styles} from './App.styles.ts';
 import {SelectedLocationProvider} from './context/SelectedLocationContext.tsx';
@@ -18,7 +18,6 @@ import {LearnMoreScreen} from './screens/learn-more-screen';
 import {UpdateScreen} from './screens/update-screen/update-screen.tsx';
 import {checkAppVersion, VersionCheckResponse} from './services/version.service.ts';
 import packageJson from './package.json';
-// test
 
 type RootStackParamList = {
     Home: undefined;
@@ -39,10 +38,19 @@ function App(): React.JSX.Element {
     const [isCheckingVersion, setIsCheckingVersion] = useState<boolean>(true);
     const [versionInfo, setVersionInfo] = useState<VersionCheckResponse | null>(null);
     const [updateRequired, setUpdateRequired] = useState<boolean>(false);
-    const appState = useRef(AppState.currentState);
+    // const hasVersionCheckStarted = useRef<boolean>(false);
+    // const appState = useRef(AppState.currentState);
 
     // Version check function (shared)
     const doVersionCheck = async () => {
+        // Prevent multiple concurrent version checks
+        // if (hasVersionCheckStarted.current) {
+        //     console.log('Version check already started, skipping...');
+        //     return;
+        // }
+
+        // hasVersionCheckStarted.current = true;
+        // console.log('doVersionCheck - starting');
         setIsCheckingVersion(true);
         try {
             const currentVersion = packageJson.version;
@@ -53,35 +61,20 @@ function App(): React.JSX.Element {
             } else {
                 setUpdateRequired(false);
             }
+            // console.log('doVersionCheck - completed successfully');
         } catch (error) {
             console.error('Error checking app version:', error);
             setUpdateRequired(false);
+            // console.log('doVersionCheck - completed with error');
         } finally {
             setIsCheckingVersion(false);
+            // hasVersionCheckStarted.current = false;
         }
     };
 
     // Initial version check on mount
     useEffect(() => {
         doVersionCheck();
-    }, []);
-
-    // AppState listener for foreground/background
-    useEffect(() => {
-        const handleAppStateChange = (nextAppState: AppStateStatus) => {
-            if (
-                appState.current.match(/inactive|background/) &&
-                nextAppState === 'active'
-            ) {
-                // App has come to the foreground, check version again
-                doVersionCheck();
-            }
-            appState.current = nextAppState;
-        };
-        const subscription = AppState.addEventListener('change', handleAppStateChange);
-        return () => {
-            subscription.remove();
-        };
     }, []);
 
     // Load user ID from storage only after version check passes
@@ -101,6 +94,24 @@ function App(): React.JSX.Element {
             loadUserId();
         }
     }, [isCheckingVersion, updateRequired]);
+
+    // // AppState listener for foreground/background
+    // useEffect(() => {
+    //     const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    //         if (
+    //             appState.current.match(/inactive|background/) &&
+    //             nextAppState === 'active'
+    //         ) {
+    //             // App has come to the foreground, check version again
+    //             doVersionCheck();
+    //         }
+    //         appState.current = nextAppState;
+    //     };
+    //     const subscription = AppState.addEventListener('change', handleAppStateChange);
+    //     return () => {
+    //         subscription.remove();
+    //     };
+    // }, []);
 
     // Handle registration completion
     const handleRegistrationComplete = () => {

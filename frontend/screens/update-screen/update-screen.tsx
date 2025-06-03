@@ -29,7 +29,7 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
     const handleDownload = async () => {
         if (!versionInfo.downloadUrl) {
             Alert.alert(
-                getTranslation('error', currentLanguage), 
+                getTranslation('error', currentLanguage),
                 getTranslation('downloadUrlNotAvailable', currentLanguage)
             );
             return;
@@ -37,7 +37,7 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
 
         try {
             const supported = await Linking.canOpenURL(versionInfo.downloadUrl);
-            
+
             if (supported) {
                 await Linking.openURL(versionInfo.downloadUrl);
             } else {
@@ -47,16 +47,16 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
                     [
                         {
                             text: getTranslation('copyDownloadLink', currentLanguage),
-                            onPress: handleCopyLink
+                            onPress: handleCopyLink,
                         },
-                        { text: getTranslation('ok', currentLanguage) }
+                        { text: getTranslation('ok', currentLanguage) },
                     ]
                 );
             }
         } catch (error) {
             console.error('Error opening download URL:', error);
             Alert.alert(
-                getTranslation('error', currentLanguage), 
+                getTranslation('error', currentLanguage),
                 getTranslation('unableToOpenLink', currentLanguage)
             );
         }
@@ -65,7 +65,7 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
     const handleCopyLink = async () => {
         if (!versionInfo.downloadUrl) {
             Alert.alert(
-                getTranslation('error', currentLanguage), 
+                getTranslation('error', currentLanguage),
                 getTranslation('downloadUrlNotAvailable', currentLanguage)
             );
             return;
@@ -85,7 +85,7 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
         } catch (error) {
             console.error('Error copying to clipboard:', error);
             Alert.alert(
-                getTranslation('error', currentLanguage), 
+                getTranslation('error', currentLanguage),
                 getTranslation('failedToCopyLink', currentLanguage)
             );
         }
@@ -103,7 +103,7 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
                 <Text style={styles.title}>
                     {getTranslation('updateRequired', currentLanguage)}
                 </Text>
-                
+
                 {/* Version Info */}
                 <View style={styles.versionContainer}>
                     <Text style={styles.versionText}>
@@ -120,8 +120,8 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
                 </Text>
 
                 {/* Download Button */}
-                <TouchableOpacity 
-                    style={styles.downloadButton} 
+                <TouchableOpacity
+                    style={styles.downloadButton}
                     onPress={handleDownload}
                     activeOpacity={0.8}
                 >
@@ -131,8 +131,8 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
                 </TouchableOpacity>
 
                 {/* Copy Link Button */}
-                <TouchableOpacity 
-                    style={styles.copyButton} 
+                <TouchableOpacity
+                    style={styles.copyButton}
                     onPress={handleCopyLink}
                     activeOpacity={0.8}
                 >
@@ -147,8 +147,8 @@ export const UpdateScreen: React.FC<UpdateScreenProps> = ({versionInfo, onRetryC
                 ) : null}
 
                 {/* Retry Button */}
-                <TouchableOpacity 
-                    style={styles.retryButton} 
+                <TouchableOpacity
+                    style={styles.retryButton}
                     onPress={onRetryCheck}
                     activeOpacity={0.8}
                 >
@@ -306,4 +306,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default UpdateScreen; 
+export default UpdateScreen;

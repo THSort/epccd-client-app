@@ -398,8 +398,8 @@ const HomeScreen = () => {
                     <Text style={[styles.aqiText]}>
                         {getTranslation('tomorrowPrediction', currentLanguage)}
                     </Text>
-                    <Text style={[styles.aqiLevelInfoMessageText, {color: colors.secondaryWithDarkBg}]}>
-                        {futureAQIPredictionError || getTranslation('noForecastAvailable', currentLanguage)}
+                    <Text style={[styles.aqiLevelInfoMessageText, {color: colors.secondaryWithDarkBg, opacity: 0.6, marginTop: hp(10)}]}>
+                        {futureAQIPredictionError || (currentLanguage === 'اردو' ? 'فی الوقت کل کے لیے کوئی پیشن گوئی نہیں ہے، جلد دستیاب ہوگی' : 'There is currently no prediction for tomorrow, it will be available soon')}
                     </Text>
                 </View>
             );

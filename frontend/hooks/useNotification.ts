@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const FCM_TOKEN_KEY = 'fcm_token';
 
 const requestUserPermission = async () => {
+    // console.log('requestUserPermission!!!');
+
     const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
 
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
@@ -72,6 +74,8 @@ export const generateFcmToken = async (): Promise<string> => {
 };
 
 export const useNotification = () => {
+    // console.log('useNotification');
+
     const [fcmToken, setFcmToken] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
