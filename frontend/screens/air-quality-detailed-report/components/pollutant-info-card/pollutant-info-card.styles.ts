@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: backgrounds.dark,
-        height: hp(60),
+        height: hp(70),
         width: '45%',
         paddingHorizontal: wp(12),
         paddingVertical: hp(14),
@@ -40,7 +40,7 @@ export const styles = StyleSheet.create({
         fontSize: fontScale(12),
         lineHeight: fontScale(14),
         fontWeight: '300',
-        // flex: 2,
+        flex: 2,
         paddingRight: wp(5),
     },
     pollutantUnits: {
