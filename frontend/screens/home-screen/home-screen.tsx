@@ -481,7 +481,7 @@ const HomeScreen = () => {
                     {getLocationDisplay()}
                     {getLastUpdatedTimeDisplay()}
                     {currentAqiValueError ? getAqiErrorDisplay() : getAqiDisplayV2()}
-                    {!currentAqiValueError && futureAQIPrediction !== null && !futureAQIPredictionError ? getFuturePredictionDisplay() : null}
+                    {!currentAqiValueError ? getFuturePredictionDisplay() : null}
                 </ScrollView>
             </View>
 
